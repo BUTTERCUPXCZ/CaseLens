@@ -17,8 +17,11 @@ from caselens.infrastructure.config import get_settings
 COOKIE = "caselens_access"
 _OPEN_PATHS = ("/health", "/access")
 _MAX_WRONG_PER_MINUTE = 10
-_MAX_CLIENTS = 1000  # bound on remembered clients, so the table itself cannot be used to fill memory
+_MAX_WRONG_PER_MINUTE_ALL = 60  # all clients together: a guesser who fakes addresses still cannot go faster than this
+_MAX_CLIENTS = 1000  # bound on remembered clients; past it, newcomers share one bucket, so memory cannot be filled
+_OVERFLOW = "overflow"
 _wrong_attempts: dict[str, deque[float]] = {}
+_all_wrong: deque[float] = deque()
 
 router = APIRouter(tags=["access"])
 
@@ -41,8 +44,9 @@ async def require_access_code(request: Request, call_next):
 
 
 def _client_key(request: Request) -> str:
-    """Who is guessing: the browser's address as the host's proxy reports it, so one person's wrong tries never
-    lock out the others. (A guesser who fakes this header only gets more tries; a long random code still holds.)"""
+    """Who is guessing: the browser's address as the host's proxy reports it, so one person's wrong tries do not
+    lock out the others. A client can fake this header, so it is only a convenience: the limit for all clients
+    together (`_MAX_WRONG_PER_MINUTE_ALL`) and the cap on remembered clients are what hold against a guesser."""
     forwarded = request.headers.get("x-forwarded-for", "").split(",")[0].strip()
     return forwarded or (request.client.host if request.client else "unknown")
 
@@ -62,17 +66,21 @@ def enter_access_code(body: AccessIn, request: Request, response: Response):
     if code is None:
         return {"required": False, "granted": True}
     now = time.monotonic()
+    while _all_wrong and now - _all_wrong[0] > 60:
+        _all_wrong.popleft()
+    for key in [k for k, v in _wrong_attempts.items() if not v or now - v[-1] > 60]:
+        del _wrong_attempts[key]  # forget clients with no recent mistakes
     client = _client_key(request)
+    if client not in _wrong_attempts and len(_wrong_attempts) >= _MAX_CLIENTS:
+        client = _OVERFLOW
     tries = _wrong_attempts.setdefault(client, deque())
     while tries and now - tries[0] > 60:
         tries.popleft()
-    if len(_wrong_attempts) > _MAX_CLIENTS:  # forget clients with no recent mistakes
-        for key in [k for k, v in _wrong_attempts.items() if not v or now - v[-1] > 60]:
-            del _wrong_attempts[key]
-    if len(tries) >= _MAX_WRONG_PER_MINUTE:
+    if len(tries) >= _MAX_WRONG_PER_MINUTE or len(_all_wrong) >= _MAX_WRONG_PER_MINUTE_ALL:
         return JSONResponse({"detail": "Too many tries. Wait a minute."}, status_code=429)
     if not hmac.compare_digest(_token(body.code.strip()), _token(code)):
         tries.append(now)
+        _all_wrong.append(now)
         return JSONResponse({"detail": "That code is not right."}, status_code=401)
     secure = request.headers.get("x-forwarded-proto", request.url.scheme) == "https"
     response.set_cookie(

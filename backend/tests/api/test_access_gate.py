@@ -10,6 +10,7 @@ from caselens.presentation import access_gate
 @pytest.fixture(autouse=True)
 def _reset_attempts():
     access_gate._wrong_attempts.clear()
+    access_gate._all_wrong.clear()
 
 
 def client_with_code(monkeypatch, code: str | None) -> TestClient:
@@ -62,3 +63,22 @@ def test_one_clients_wrong_tries_do_not_lock_out_another(monkeypatch):
     assert client.post("/access", json={"code": "x"}, headers={"x-forwarded-for": "1.1.1.1"}).status_code == 429
     other = client.post("/access", json={"code": "pass-123"}, headers={"x-forwarded-for": "2.2.2.2"})
     assert other.status_code == 200
+
+
+def test_faking_a_new_address_each_time_does_not_give_unlimited_guesses(monkeypatch):
+    client = client_with_code(monkeypatch, "pass-123")
+    codes = [
+        client.post("/access", json={"code": f"x{i}"}, headers={"x-forwarded-for": f"9.9.{i // 200}.{i % 200}"}).status_code
+        for i in range(70)
+    ]
+    assert codes[:60] == [401] * 60
+    assert set(codes[60:]) == {429}
+
+
+def test_faked_addresses_cannot_fill_the_memory_of_remembered_clients(monkeypatch):
+    client = client_with_code(monkeypatch, "pass-123")
+    monkeypatch.setattr(access_gate, "_MAX_CLIENTS", 5)
+    monkeypatch.setattr(access_gate, "_MAX_WRONG_PER_MINUTE_ALL", 1000)
+    for i in range(30):
+        client.post("/access", json={"code": "x"}, headers={"x-forwarded-for": f"7.7.7.{i}"})
+    assert len(access_gate._wrong_attempts) <= 6  # the cap plus the shared overflow bucket
