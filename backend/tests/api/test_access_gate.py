@@ -82,3 +82,20 @@ def test_faked_addresses_cannot_fill_the_memory_of_remembered_clients(monkeypatc
     for i in range(30):
         client.post("/access", json={"code": "x"}, headers={"x-forwarded-for": f"7.7.7.{i}"})
     assert len(access_gate._wrong_attempts) <= 6  # the cap plus the shared overflow bucket
+
+
+def test_a_burst_of_parallel_guesses_cannot_slip_past_the_limit(monkeypatch):
+    from concurrent.futures import ThreadPoolExecutor
+
+    client = client_with_code(monkeypatch, "pass-123")
+    monkeypatch.setattr(access_gate, "_MAX_WRONG_PER_MINUTE_ALL", 20)
+    with ThreadPoolExecutor(max_workers=16) as pool:
+        codes = list(pool.map(lambda i: client.post("/access", json={"code": f"x{i}"}, headers={"x-forwarded-for": f"5.5.{i}.1"}).status_code, range(80)))
+    assert codes.count(401) == 20  # exactly the limit, however the threads interleave
+    assert codes.count(429) == 60
+
+
+def test_a_right_code_is_not_counted_as_a_mistake(monkeypatch):
+    client = client_with_code(monkeypatch, "pass-123")
+    for _ in range(15):
+        assert client.post("/access", json={"code": "pass-123"}).status_code == 200
