@@ -1,0 +1,516 @@
+{
+  "prompt": "answer-v2",
+  "writer": "gemini-2.5-flash",
+  "checker": "gemini-3.5-flash",
+  "cases": {
+    "gr_180046_2009.html": {
+      "topic": {
+        "seconds": 13.0,
+        "sentences": [
+          {
+            "text": "This case concerns the validity of Executive Order No. 566 (EO 566) and its implementing rules, which directed the Commission on Higher Education (CHED) to regulate review centers and similar entities.",
+            "cites": [
+              "P7",
+              "P11",
+              "P35",
+              "P42"
+            ]
+          },
+          {
+            "text": "Petitioners argued that EO 566 unconstitutionally expanded CHED's jurisdiction beyond its mandate under Republic Act No. 7722.",
+            "cites": [
+              "P17",
+              "P19",
+              "P65",
+              "P101"
+            ]
+          },
+          {
+            "text": "The central issue is whether the Executive Department usurped the legislative power of Congress by issuing EO 566 without an enabling law.",
+            "cites": [
+              "P65",
+              "P105",
+              "P109",
+              "P119",
+              "R1"
+            ]
+          }
+        ],
+        "dropped": []
+      },
+      "why_it_matters": {
+        "seconds": 19.7,
+        "sentences": [
+          {
+            "text": "The Court declared Executive Order No. 566 and CHED Memorandum Order No. 30, series of 2007, void for being unconstitutional.",
+            "cites": [
+              "P132"
+            ]
+          },
+          {
+            "text": "This was because EO 566 expanded the CHED's jurisdiction beyond its statutory mandate, constituting an invalid exercise and usurpation of legislative power.",
+            "cites": [
+              "P101",
+              "P103",
+              "P109",
+              "P110",
+              "P121"
+            ]
+          }
+        ],
+        "dropped": [
+          {
+            "text": "The case affirms that legislative power is vested in Congress, and the President cannot amend laws through executive orders, bearing on the plenary nature of legislative power.",
+            "reason": "checker: partly_supported (The cited passages from the case (P109, P110, and P121) do not mention or discuss the 'plenary nature' of legislative power; that concept is only found in the reference passage R1.)"
+          }
+        ]
+      }
+    },
+    "gr_148263_2009.html": {
+      "topic": {
+        "seconds": 10.5,
+        "sentences": [
+          {
+            "text": "Petitioner Armando David challenged the rulings that held him personally liable, raising issues of denial of due process and the propriety of his solidary liability.",
+            "cites": [
+              "P7",
+              "P26",
+              "P34",
+              "P35",
+              "P36",
+              "P37"
+            ]
+          },
+          {
+            "text": "The Court ruled on whether the labor arbiter acquired jurisdiction over David and if he could be held solidarily liable for the corporation's debts.",
+            "cites": [
+              "P39",
+              "P44",
+              "P46"
+            ]
+          }
+        ],
+        "dropped": [
+          {
+            "text": "This case concerns a petition for review regarding the solidary liability of a corporate president for employees' money claims after the corporation ceased operations.",
+            "reason": "checker: partly_supported (The cited passages do not state that Armando David was a corporate president.)"
+          }
+        ]
+      },
+      "why_it_matters": {
+        "seconds": 12.6,
+        "sentences": [
+          {
+            "text": "It ruled that David was denied due process because he was not properly summoned or given an opportunity to present his case.",
+            "cites": [
+              "P41",
+              "P42",
+              "P44"
+            ]
+          },
+          {
+            "text": "The Court also clarified that corporate officers are not automatically liable for corporate debts under Article 212(e) of the Labor Code, requiring a showing of willful unlawful acts, gross negligence, or bad faith under Section 31 of the Corporation Code.",
+            "cites": [
+              "P46",
+              "P49",
+              "P50",
+              "P51"
+            ]
+          }
+        ],
+        "dropped": [
+          {
+            "text": "The Court granted the petition, setting aside the appellate court's decision that held Armando David solidarily liable for the corporation's obligations.",
+            "reason": "checker: partly_supported (The cited passages do not state that the Court of Appeals (the appellate court) held Armando David solidarily liable; they only mention that the Labor Arbiter held him solidarily liable, and that the propriety of this liability was an issue in the petition.)"
+          }
+        ]
+      }
+    },
+    "gr_173931_2009.html": {
+      "topic": {
+        "seconds": 10.1,
+        "sentences": [
+          {
+            "text": "This case concerns a government employee whose Director II position was reclassified to Director III, leading to a dispute over whether a new appointment was required for her to hold the upgraded role.",
+            "cites": [
+              "P8",
+              "P12",
+              "P37"
+            ]
+          },
+          {
+            "text": "The Commission on Higher Education (CHED) rolled back her salary and sought a refund because she did not receive a new appointment.",
+            "cites": [
+              "P12"
+            ]
+          },
+          {
+            "text": "The Court ultimately dismissed her petition due to forum shopping, but allowed her to keep the salary differential received in good faith.",
+            "cites": [
+              "P25",
+              "P50",
+              "P52",
+              "P53"
+            ]
+          }
+        ],
+        "dropped": []
+      },
+      "why_it_matters": {
+        "seconds": 8.0,
+        "sentences": [
+          {
+            "text": "The Court denied the petition due to forum shopping, which is a proscribed act that merits summary dismissal of actions.",
+            "cites": [
+              "P25",
+              "P26",
+              "P27",
+              "P49"
+            ]
+          },
+          {
+            "text": "However, the Court qualified this by allowing petitioner Alicia D. Tagaro to keep the salary differential she received as Director III.",
+            "cites": [
+              "P29",
+              "P52",
+              "P53"
+            ]
+          },
+          {
+            "text": "This was because she rendered services in good faith, believing she needed no new appointment, and equity prevented the refund.",
+            "cites": [
+              "P29",
+              "P50",
+              "P51",
+              "P52"
+            ]
+          }
+        ],
+        "dropped": []
+      }
+    },
+    "gr_175483_2015.html": {
+      "topic": {
+        "seconds": 8.0,
+        "sentences": [
+          {
+            "text": "This case concerns the validity of deeds of absolute sale between a grandmother and her granddaughter over several parcels of land.",
+            "cites": [
+              "P7",
+              "P9",
+              "P12",
+              "P16"
+            ]
+          },
+          {
+            "text": "The lower courts found these deeds void and inexistent because they were simulated and lacked consideration.",
+            "cites": [
+              "P7",
+              "P25",
+              "P37",
+              "P71"
+            ]
+          },
+          {
+            "text": "The Supreme Court affirmed these findings, concluding the transfers were a sham and no actual payment occurred.",
+            "cites": [
+              "P30",
+              "P37",
+              "P64",
+              "P73"
+            ]
+          }
+        ],
+        "dropped": []
+      },
+      "why_it_matters": {
+        "seconds": 7.8,
+        "sentences": [
+          {
+            "text": "The Court denied the petition, affirming that the deeds of absolute sale between the petitioner and her grandmother were void and inexistent.",
+            "cites": [
+              "P7",
+              "P25",
+              "P30",
+              "P37"
+            ]
+          },
+          {
+            "text": "This was because the contracts were absolutely simulated, lacking both consent and consideration, and thus produced no legal effect.",
+            "cites": [
+              "P37",
+              "P45",
+              "P47",
+              "P48",
+              "P71",
+              "P73",
+              "P78"
+            ]
+          },
+          {
+            "text": "Consequently, no implied trust could arise from these void transfers, and the properties were ordered reconveyed to the grandmother's estate.",
+            "cites": [
+              "P23",
+              "P77",
+              "P78",
+              "P79"
+            ]
+          }
+        ],
+        "dropped": []
+      }
+    },
+    "gr_221664_2022.html": {
+      "topic": {
+        "seconds": 10.3,
+        "sentences": [
+          {
+            "text": "This case concerns a seafarer's complaint for illegal dismissal against his employers, Stolt-Nielsen Philippines, Inc. and Stolt-Nielsen ITS GMBH, after he was repatriated.",
+            "cites": [
+              "P6",
+              "P10",
+              "P12"
+            ]
+          },
+          {
+            "text": "The employers claimed the dismissal was due to the seafarer's incompetence and inefficiency, while the seafarer alleged termination without just cause or proper disciplinary procedures.",
+            "cites": [
+              "P12",
+              "P13",
+              "P45",
+              "P56"
+            ]
+          }
+        ],
+        "dropped": [
+          {
+            "text": "The Supreme Court reviewed whether the Court of Appeals correctly found grave abuse of discretion by the NLRC in its assessment of the evidence for dismissal and compliance with due process.",
+            "reason": "checker: partly_supported (The cited passages do not mention that the Supreme Court's review of the Court of Appeals' decision specifically concerned the NLRC's assessment of 'compliance with due process'.)"
+          }
+        ]
+      },
+      "why_it_matters": {
+        "seconds": 9.1,
+        "sentences": [
+          {
+            "text": "The Court found that the petitioner was illegally dismissed, reversing the Court of Appeals' decision and reinstating the labor tribunals' rulings that affirmed the Labor Arbiter's decision.",
+            "cites": [
+              "P44",
+              "P79",
+              "P80"
+            ]
+          },
+          {
+            "text": "This was because the employer failed to provide substantial evidence of the petitioner's incompetence or inefficiency and did not accord him due process.",
+            "cites": [
+              "P45",
+              "P46",
+              "P56",
+              "P58"
+            ]
+          },
+          {
+            "text": "Consequently, the petitioner was awarded salaries for the unexpired contract, vacation leave pay, bonuses, moral and exemplary damages, and attorney's fees.",
+            "cites": [
+              "P70",
+              "P72",
+              "P73",
+              "P77",
+              "P80"
+            ]
+          }
+        ],
+        "dropped": []
+      }
+    },
+    "gr_71681_1989.html": {
+      "topic": {
+        "seconds": 8.0,
+        "sentences": [
+          {
+            "text": "Cornelio Marilao y Samson appealed his conviction for violating the Dangerous Drugs Act, specifically for selling marijuana.",
+            "cites": [
+              "P5",
+              "P7",
+              "P8",
+              "P27"
+            ]
+          },
+          {
+            "text": "He argued that the prosecution's evidence was insufficient, citing issues like the non-presentation of an informant and marked money, and the improbability of the drug sale.",
+            "cites": [
+              "P27"
+            ]
+          },
+          {
+            "text": "The Court affirmed his conviction, finding the appeal devoid of merit.",
+            "cites": [
+              "P28",
+              "P35"
+            ]
+          }
+        ],
+        "dropped": []
+      },
+      "why_it_matters": {
+        "seconds": 12.8,
+        "sentences": [
+          {
+            "text": "The Court affirmed the conviction of Cornelio Marilao for selling marijuana, finding his appeal devoid of merit and upholding the trial court's decision of guilt beyond reasonable doubt.",
+            "cites": [
+              "P5",
+              "P26",
+              "P28",
+              "P35"
+            ]
+          },
+          {
+            "text": "It held that the non-presentation of an informant or marked money is not fatal to the prosecution's case if witness testimonies clearly establish the transaction.",
+            "cites": [
+              "P29",
+              "P30",
+              "P32"
+            ]
+          }
+        ],
+        "dropped": [
+          {
+            "text": "The Court emphasized that positive identification by prosecution witnesses prevails over denials, especially when official duty is presumed regularly performed.",
+            "reason": "checker: partly_supported (The cited passages do not link the prevalence of positive identification over denials to the presumption of regularly performed official duty; these are two separate findings made in different contexts (positive identification in P34, and the presumption of official duty regarding the integrity of the evidence in P32).)"
+          }
+        ]
+      }
+    },
+    "gr_119935_1997.html": {
+      "topic": {
+        "seconds": 9.2,
+        "sentences": [
+          {
+            "text": "Petitioner United South Dockhandlers, Inc. (USDI) sought to reverse a decision awarding separation pay to an employee, Beato Singuran, who was dismissed for alleged serious misconduct.",
+            "cites": [
+              "P5",
+              "P7",
+              "P8",
+              "P9"
+            ]
+          },
+          {
+            "text": "The National Labor Relations Commission affirmed the award, citing Singuran's long service, lack of prior derogatory record, and the return of the missing items.",
+            "cites": [
+              "P5",
+              "P11",
+              "P12",
+              "P15",
+              "P17"
+            ]
+          },
+          {
+            "text": "The Court held that separation pay is not allowed as social justice for employees validly dismissed for serious misconduct or acts reflecting moral character, such as theft.",
+            "cites": [
+              "P26",
+              "P29",
+              "P31",
+              "P35"
+            ]
+          }
+        ],
+        "dropped": []
+      },
+      "why_it_matters": {
+        "seconds": 10.5,
+        "sentences": [
+          {
+            "text": "The Court granted the petition, modifying the National Labor Relations Commission's decision by deleting the award of separation pay to Beato Singuran.",
+            "cites": [
+              "P25",
+              "P35"
+            ]
+          },
+          {
+            "text": "It held that separation pay as a measure of social justice is allowed only when an employee is validly dismissed for causes other than serious misconduct or those reflecting on moral character.",
+            "cites": [
+              "P26",
+              "P29"
+            ]
+          },
+          {
+            "text": "Granting separation pay for offenses involving moral turpitude, like theft or betrayal of trust, would reward wrongdoing and is not the purpose of social justice.",
+            "cites": [
+              "P29",
+              "P30",
+              "P31",
+              "P33"
+            ]
+          }
+        ],
+        "dropped": []
+      }
+    },
+    "gr_161811_2006.html": {
+      "topic": {
+        "seconds": 11.9,
+        "sentences": [
+          {
+            "text": "This case concerns whether an administrative agency, like the DENR, can order the demolition of structures on land without a special court order.",
+            "cites": [
+              "P11",
+              "P12",
+              "P13",
+              "P19",
+              "P22",
+              "P25",
+              "P46"
+            ]
+          },
+          {
+            "text": "The Court of Appeals held that Section 10(d) of Rule 39 of the Rules of Court requires a special court order for the removal of improvements.",
+            "cites": [
+              "P22",
+              "P25",
+              "P26"
+            ]
+          },
+          {
+            "text": "The Supreme Court affirmed this, stating that the power to order the removal of improvements belongs only to the courts, not to the Bureau of Lands or DENR.",
+            "cites": [
+              "P41",
+              "P46",
+              "P51",
+              "P54"
+            ]
+          }
+        ],
+        "dropped": []
+      },
+      "why_it_matters": {
+        "seconds": 11.7,
+        "sentences": [
+          {
+            "text": "The Court affirmed that a special court order is required for the demolition of improvements on property, even if an administrative agency has issued an order of execution.",
+            "cites": [
+              "P22",
+              "P26",
+              "P28",
+              "P43",
+              "P54"
+            ]
+          },
+          {
+            "text": "This is because administrative agencies like the DENR lack explicit authority to issue demolition orders, and such power belongs only to courts of justice.",
+            "cites": [
+              "P46",
+              "P51"
+            ]
+          },
+          {
+            "text": "The ruling emphasizes that the requirement for a special court order under Section 10(d) of Rule 39 of the Rules of Court upholds the constitutional right to due process.",
+            "cites": [
+              "P43"
+            ]
+          }
+        ],
+        "dropped": []
+      }
+    }
+  }
+}

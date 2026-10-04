@@ -1,0 +1,133 @@
+{
+  "id": 9,
+  "case_id": 1,
+  "upload_id": 3,
+  "template": "full",
+  "status": "ready",
+  "error": null,
+  "case_title": "REVIEW CENTER ASSOCIATION OF THE PHILIPPINES, Petitioner, vs. EXECUTIVE SECRETARY EDUARDO ERMITA and COMMISSION ON HIGHER EDUCATION represented by its Chairman ROMULO L. NERI, Respondents.",
+  "gr_no": "180046",
+  "decision_date": "2009-04-02",
+  "source_url": "https://lawphil.net/judjuris/juri2009/apr2009/gr_180046_2009.html",
+  "fields": [
+    {
+      "key": "facts",
+      "label": "Facts",
+      "kind": "verbatim",
+      "text": "On 11 and 12 June 2006, the Professional Regulation Commission (PRC) conducted the Nursing Board Examinations nationwide. In June 2006, licensure applicants wrote the PRC to report that handwritten copies of two sets of examinations were circulated during the examination period among the examinees reviewing at the R.A. Gapuz Review Center and Inress Review Center. George Cordero, Inress Review Center’s President, was then the incumbent President of the Philippine Nurses Association. The examinees were provided with a list of 500 questions and answers in two of the examinations’ five subjects, particularly Tests III (Psychiatric Nursing) and V (Medical-Surgical Nursing). The PRC later admitted the leakage and traced it to two Board of Nursing members.[^3] On 19 June 2006, the PRC released the results of the Nursing Board Examinations. On 18 August 2006, the Court of Appeals restrained the PRC from proceeding with the oath-taking of the successful examinees set on 22 August 2006.\n\nConsequently, President Gloria Macapagal-Arroyo (President Arroyo) replaced all the members of the PRC’s Board of Nursing. President Arroyo also ordered the examinees to re-take the Nursing Board Examinations.\n\nOn 8 September 2006, President Arroyo issued EO 566 which authorized the CHED to supervise the establishment and operation of all review centers and similar entities in the Philippines.\n\nOn 3 November 2006, the CHED, through its then Chairman Carlito S. Puno (Chairman Puno), approved CHED Memorandum Order No. 49, series of 2006 (IRR).[^4]\n\nIn a letter dated 24 November 2006,[^5] the Review Center Association of the Philippines (petitioner), an organization of independent review centers, asked the CHED to \"amend, if not withdraw\" the IRR arguing, among other things, that giving permits to operate a review center to Higher Education Institutions (HEIs) or consortia of HEIs and professional organizations will effectively abolish independent review centers.\n\nIn a letter dated 3 January 2007,[^6] Chairman Puno wrote petitioner, through its President Jose Antonio Fudolig (Fudolig), that to suspend the implementation of the IRR would be inconsistent with the mandate of EO 566. Chairman Puno wrote that the IRR was presented to the stakeholders during a consultation process prior to its finalization and publication on 13 November 2006. Chairman Puno also wrote that petitioner’s comments and suggestions would be considered in the event of revisions to the IRR.\n\nIn view of petitioner’s continuing request to suspend and re-evaluate the IRR, Chairman Puno, in a letter dated 9 February 2007,[^7] invited petitioner’s representatives to a dialogue on 14 March 2007. In accordance with what was agreed upon during the dialogue, petitioner submitted to the CHED its position paper on the IRR. Petitioner also requested the CHED to confirm in writing Chairman Puno’s statements during the dialogue, particularly on lowering of the registration fee from ₱400,000 to ₱20,000 and the requirement for reviewers to have five years’ teaching experience instead of five years’ administrative experience. Petitioner likewise requested for a categorical answer to their request for the suspension of the IRR. The CHED did not reply to the letter.\n\nOn 7 May 2007, the CHED approved the RIRR. On 22 August 2007, petitioner filed before the CHED a Petition to Clarify/Amend Revised Implementing Rules and Regulations[^8] praying for a ruling:\n\n1. Amending the RIRR by excluding independent review centers from the coverage of the CHED;\n\n2. Clarifying the meaning of the requirement for existing review centers to tie-up or be integrated with HEIs, consortium or HEIs and PRC-recognized professional associations with recognized programs, or in the alternative, to convert into schools; and\n\n3. Revising the rules to make it conform with Republic Act No. 7722 (RA 7722)[^9] limiting the CHED’s coverage to public and private institutions of higher education as well as degree-granting programs in post-secondary educational institutions.\n\nOn 8 October 2007, the CHED issued Resolution No. 718-2007[^10] referring petitioner’s request to exclude independent review centers from CHED’s supervision and regulation to the Office of the President as the matter requires the amendment of EO 566. In a letter dated 17 October 2007,[^11] then CHED Chairman Romulo L. Neri (Chairman Neri) wrote petitioner regarding its petition to be excluded from the coverage of the CHED in the RIRR. Chairman Neri stated:",
+      "origin": "court_heading",
+      "state": "ready",
+      "cites": [],
+      "passage": {
+        "first": 9,
+        "last": 20
+      },
+      "question": null,
+      "note": "Showing the first 12 of 54 paragraphs. Pick the passage you want.",
+      "edited": false,
+      "can_reset": false
+    },
+    {
+      "key": "issues",
+      "label": "Issue",
+      "kind": "verbatim",
+      "text": "The issues raised in this case are the following:\n\n1. Whether EO 566 is an unconstitutional exercise by the Executive of legislative power as it expands the CHED’s jurisdiction; and\n\n2. Whether the RIRR is an invalid exercise of the Executive’s rule-making power.",
+      "origin": "court_heading",
+      "state": "ready",
+      "cites": [],
+      "passage": {
+        "first": 64,
+        "last": 66
+      },
+      "question": null,
+      "note": null,
+      "edited": false,
+      "can_reset": false
+    },
+    {
+      "key": "ruling",
+      "label": "Ruling",
+      "kind": "verbatim",
+      "text": "WHEREFORE, we GRANT the petition and the petition-in-intervention. We DECLARE Executive Order No. 566 and Commission on Higher Education Memorandum Order No. 30, series of 2007 VOID for being unconstitutional.",
+      "origin": "court_ruling",
+      "state": "ready",
+      "cites": [],
+      "passage": {
+        "first": 132,
+        "last": 132
+      },
+      "question": null,
+      "note": null,
+      "edited": false,
+      "can_reset": false
+    },
+    {
+      "key": "doctrine",
+      "label": "Doctrine",
+      "kind": "verbatim",
+      "text": "",
+      "origin": "empty",
+      "state": "ready",
+      "cites": [],
+      "passage": null,
+      "question": null,
+      "note": "Pick the paragraph that states the rule, or paste it. We do not guess which one it is.",
+      "edited": false,
+      "can_reset": false
+    },
+    {
+      "key": "topic",
+      "label": "Topic explained",
+      "kind": "answer",
+      "text": "The case concerns a petition challenging Executive Order No. 566 and a related CHED Memorandum Order, which sought to regulate review centers. Petitioners argued that the Executive Order was an unconstitutional exercise of legislative power, as it expanded the Commission on Higher Education's (CHED) jurisdiction beyond its statutory mandate. This relates to the principle that legislative power, the authority to make and alter laws, is vested in Congress, and the President cannot create law by executive order.",
+      "origin": "ai_drafted",
+      "state": "ready",
+      "cites": [
+        "P7",
+        "P11",
+        "P16",
+        "P35",
+        "P26",
+        "P65",
+        "P101",
+        "R1",
+        "P109",
+        "P110",
+        "P112"
+      ],
+      "passage": null,
+      "question": "Explain the topic of this case accurately, in plain words.",
+      "note": null,
+      "edited": false,
+      "can_reset": false
+    },
+    {
+      "key": "why",
+      "label": "Why this case matters",
+      "kind": "answer",
+      "text": "The Court declared Executive Order No. 566 and CHED Memorandum Order No. 30, series of 2007, void for being unconstitutional. This was because EO 566 expanded the CHED's coverage beyond its mandate under RA 7722, which is limited to degree-granting institutions, and review centers are not such institutions. The President has no legislative power to amend laws through an Executive Order, reinforcing that legislative power is vested in Congress.",
+      "origin": "ai_drafted",
+      "state": "ready",
+      "cites": [
+        "P132",
+        "P101",
+        "P103",
+        "P109",
+        "P110",
+        "P121",
+        "R1"
+      ],
+      "passage": null,
+      "question": "Why does this case matter? Say what the Court decided and what follows from it.",
+      "note": null,
+      "edited": false,
+      "can_reset": false
+    }
+  ],
+  "pickable_first": 6,
+  "pickable_last": 132,
+  "attribution": {
+    "source": "Lawphil (Arellano Law Foundation), https://lawphil.net",
+    "notice": "Informational only, not legal advice. Lawphil gives no warranty of accuracy or completeness: confirm with the originating body (the Supreme Court)."
+  }
+}

@@ -1,0 +1,28 @@
+# secrets and local settings: never commit these
+.env
+.env.*
+!.env.example
+
+# dependencies and build output
+.venv/
+node_modules/
+dist/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# test and tool output
+test-results/
+playwright-report/
+*.log
+.code-review-graph/
+frontend/.claude/
+.claude/
+
+# editors and OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+frontend/.impeccable/review/

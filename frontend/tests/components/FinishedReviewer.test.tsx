@@ -1,0 +1,409 @@
+import { screen, waitFor, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { describe, expect, it } from 'vitest'
+
+import { FinishedReviewer } from '@/features/digest/FinishedReviewer'
+
+import afterAsk from '../fixtures/api/digest-after-ask.json'
+import afterPick from '../fixtures/api/digest-after-pick.json'
+import afterReset from '../fixtures/api/digest-after-reset.json'
+import afterWrite from '../fixtures/api/digest-after-write.json'
+import digest from '../fixtures/api/digest-ermita.json'
+import badPassage from '../fixtures/api/error-bad-passage.json'
+import reviewer from '../fixtures/api/finished-reviewer.json'
+import { API, http, HttpResponse, server } from '../mocks/server'
+import { renderApp } from '../utils'
+
+const show = (checking = false, view: 'boxes' | 'full' = 'boxes') => renderApp(<FinishedReviewer uploadId={3} checking={checking} initialView={view} />)
+const serve = (path: string, body: object, status = 200) =>
+  server.use(http.get(`${API}${path}`, () => HttpResponse.json(body as Record<string, unknown>, { status })))
+
+/** The first digest box (Review Center v. Ermita) once it has loaded. */
+async function ermitaBox() {
+  const box = await screen.findByRole('article', { name: /Review Center/ })
+  await within(box).findByRole('heading', { name: 'Facts' })
+  return box
+}
+
+describe('the finished reviewer (real responses from the running backend)', () => {
+  it('with the reviewer text switched on, puts each digest box right after the paragraph that cites its case', async () => {
+    await show(false, 'full')
+    await ermitaBox()
+
+    const cites = screen.getByText(/See Review Center v Ermita, 538 SCRA 428, GR no 180046/)
+    const box = screen.getByRole('article', { name: /Review Center/ })
+    expect(cites.compareDocumentPosition(box) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    // and before the next paragraph of the reviewer
+    const next = screen.getByText(/Explanation: Legislative power is the authority/)
+    expect(box.compareDocumentPosition(next) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(screen.getAllByRole('article')).toHaveLength(3)
+  })
+
+  it('shows where each field came from: the Court’s words, or a drafted answer to be checked', async () => {
+    await show()
+    const box = await ermitaBox()
+    expect(within(box).getByText(/On 11 and 12 June 2006, the Professional Regulation Commission/)).toBeInTheDocument()
+    expect(within(box).getAllByText('The Court’s own words, under its heading').length).toBeGreaterThan(0)
+    expect(within(box).getByText('The Court’s own ruling')).toBeInTheDocument()
+    expect(within(box).getAllByText('Drafted from the decision. Check it.')).toHaveLength(2)
+    expect(within(box).getAllByText(/Based on paragraphs? \d/).length).toBeGreaterThan(0)
+  })
+
+  it('names the Court’s record and links to the official page', async () => {
+    await show()
+    const box = await ermitaBox()
+    expect(within(box).getByText(/G\.R\. No\. 180046/)).toBeInTheDocument()
+    const link = within(box).getByRole('link', { name: /Court’s record on Lawphil/ })
+    expect(link).toHaveAttribute('href', 'https://lawphil.net/judjuris/juri2009/apr2009/gr_180046_2009.html')
+    expect(link).toHaveAttribute('target', '_blank')
+  })
+
+  it('says plainly why an empty field is empty, and never fills the Doctrine in by itself', async () => {
+    await show()
+    const box = await ermitaBox()
+    const doctrine = within(box).getByRole('region', { name: 'Doctrine' })
+    expect(within(doctrine).getByText(/Pick the paragraph that states the rule, or paste it\. We do not guess/)).toBeInTheDocument()
+  })
+
+  it('offers the Word file as a download', async () => {
+    await show()
+    await ermitaBox()
+    const link = screen.getByRole('link', { name: /Download as Word/ })
+    expect(link).toHaveAttribute('href', '/api/uploads/3/document.docx')
+    expect(link).toHaveAttribute('download')
+  })
+
+  it('tells the student a PDF is rebuilt as a Word file (synthetic: the real response with source set to pdf)', async () => {
+    serve('/uploads/3/document', { ...reviewer, source: 'pdf' })
+    await show()
+    expect(await screen.findByText(/Your PDF is rebuilt as a Word file/)).toBeInTheDocument()
+  })
+})
+
+describe('changing a field', () => {
+  it('typing over a field saves the student’s own words and marks them as theirs', async () => {
+    const user = userEvent.setup()
+    let sent: unknown
+    server.use(
+      http.put(`${API}/digests/9/fields/doctrine/text`, async ({ request }) => {
+        sent = await request.json()
+        return HttpResponse.json(afterWrite)
+      }),
+    )
+    await show()
+    const box = await ermitaBox()
+
+    await user.click(within(box).getByRole('button', { name: 'Edit Doctrine' }))
+    await user.type(within(box).getByRole('textbox', { name: 'Edit Doctrine' }), 'My own words about the rule.')
+    await user.click(within(box).getByRole('button', { name: 'Save' }))
+
+    await waitFor(() => expect(sent).toEqual({ text: 'My own words about the rule.' }))
+    expect(await within(box).findByText('My own words about the rule.')).toBeInTheDocument()
+    expect(within(box).getByText('Written by you')).toBeInTheDocument()
+  })
+
+  it('picking paragraphs of the decision sends only the range; the Court’s words come from the server', async () => {
+    const user = userEvent.setup()
+    let sent: unknown
+    server.use(
+      http.put(`${API}/digests/9/fields/doctrine/passage`, async ({ request }) => {
+        sent = await request.json()
+        return HttpResponse.json(afterPick)
+      }),
+    )
+    await show()
+    const box = await ermitaBox()
+
+    await user.click(within(box).getByRole('button', { name: 'Pick paragraphs for Doctrine' }))
+    const dialog = await screen.findByRole('dialog')
+    const paragraph = await within(dialog).findByRole('button', { name: /The President has no inherent or delegated legislative power/ })
+    await user.click(paragraph)
+    expect(within(dialog).getByText('Paragraph 109')).toBeInTheDocument()
+    await user.click(within(dialog).getByRole('button', { name: 'Use this paragraph' }))
+
+    await waitFor(() => expect(sent).toEqual({ first: 109, last: 109 }))
+    expect(await within(box).findByText('Paragraphs you picked')).toBeInTheDocument()
+  })
+
+  it('picking a range: first click, second click, and the count is shown', async () => {
+    const user = userEvent.setup()
+    await show()
+    const box = await ermitaBox()
+    await user.click(within(box).getByRole('button', { name: 'Pick paragraphs for Facts' }))
+    const dialog = await screen.findByRole('dialog')
+    const first = await within(dialog).findByRole('button', { name: /On 11 and 12 June 2006/ })
+    await user.click(first)
+    await user.click(within(dialog).getByRole('button', { name: /The President has no inherent or delegated legislative power/ }))
+    expect(within(dialog).getByText('Paragraphs 9 to 109')).toBeInTheDocument()
+    expect(within(dialog).getByRole('alert')).toHaveTextContent('Pick at most 40 paragraphs at a time.')
+    expect(within(dialog).getByRole('button', { name: /Use these 101 paragraphs/ })).toBeDisabled()
+  })
+
+  it('shows a server refusal in the server’s own plain words', async () => {
+    const user = userEvent.setup()
+    server.use(http.put(`${API}/digests/9/fields/doctrine/passage`, () => HttpResponse.json(badPassage, { status: 422 })))
+    await show()
+    const box = await ermitaBox()
+    await user.click(within(box).getByRole('button', { name: 'Pick paragraphs for Doctrine' }))
+    const dialog = await screen.findByRole('dialog')
+    await user.click(await within(dialog).findByRole('button', { name: /The President has no inherent or delegated legislative power/ }))
+    await user.click(within(dialog).getByRole('button', { name: 'Use this paragraph' }))
+    expect(await within(dialog).findByText('Pick paragraphs 6 to 132 of the decision.')).toBeInTheDocument()
+  })
+
+  it('pasting text marks it as pasted', async () => {
+    const user = userEvent.setup()
+    let sent: unknown
+    server.use(
+      http.post(`${API}/digests/9/fields/doctrine/paste`, async ({ request }) => {
+        sent = await request.json()
+        return HttpResponse.json({ ...afterWrite })
+      }),
+    )
+    await show()
+    const box = await ermitaBox()
+    await user.click(within(box).getByRole('button', { name: 'Paste text for Doctrine' }))
+    expect(within(box).getByRole('button', { name: 'Save' })).toBeDisabled() // nothing pasted yet
+    await user.type(within(box).getByRole('textbox', { name: 'Paste text into Doctrine' }), 'Pasted rule.')
+    await user.click(within(box).getByRole('button', { name: 'Save' }))
+    await waitFor(() => expect(sent).toEqual({ text: 'Pasted rule.' }))
+  })
+
+  it('an edited field can be put back as the system made it', async () => {
+    const user = userEvent.setup()
+    let called = false
+    serve('/digests/9', afterWrite)
+    server.use(
+      http.post(`${API}/digests/9/fields/doctrine/reset`, () => {
+        called = true
+        return HttpResponse.json(afterReset)
+      }),
+    )
+    await show()
+    const box = await ermitaBox()
+    await user.click(within(box).getByRole('button', { name: /Put back the system’s version: Doctrine/ }))
+    await waitFor(() => expect(called).toBe(true))
+  })
+
+  it('a field that cannot be reset has no reset button', async () => {
+    await show()
+    const box = await ermitaBox()
+    expect(within(box).queryByRole('button', { name: /Put back the system’s version/ })).toBeNull()
+  })
+
+  it('the student can ask a question of their own, and it shows as being written', async () => {
+    const user = userEvent.setup()
+    let sent: unknown
+    server.use(
+      http.post(`${API}/digests/9/questions`, async ({ request }) => {
+        sent = await request.json()
+        return HttpResponse.json(afterAsk, { status: 202 })
+      }),
+    )
+    await show()
+    const box = await ermitaBox()
+    await user.type(within(box).getByRole('textbox', { name: 'Ask your own question about this case' }), 'Is EO 566 valid?')
+    await user.click(within(box).getByRole('button', { name: 'Ask' }))
+    await waitFor(() => expect(sent).toEqual({ question: 'Is EO 566 valid?' }))
+    expect(await within(box).findByRole('heading', { name: 'Is EO 566 valid?' })).toBeInTheDocument()
+    expect(within(box).getByText('Still being written…')).toBeInTheDocument()
+  })
+
+  it('an explanation that is still being written says so and offers no edit yet (synthetic: a real field set to pending)', async () => {
+    const pending = { ...digest, status: 'pending', fields: digest.fields.map((f) => (f.key === 'topic' ? { ...f, state: 'pending', text: '', origin: 'empty', cites: [] } : f)) }
+    serve('/digests/9', pending)
+    await show()
+    const box = await screen.findByRole('article', { name: /Review Center/ })
+    const topic = await within(box).findByRole('region', { name: 'Topic explained' })
+    expect(within(topic).getByRole('status')).toHaveTextContent('Still being written…')
+    expect(within(topic).queryByRole('button')).toBeNull()
+  })
+})
+
+describe('waiting and problems', () => {
+  it('while cases are still being found it says so instead of looking empty (synthetic: the real response with no boxes)', async () => {
+    serve('/uploads/3/document', { ...reviewer, blocks: reviewer.blocks.map((b) => ({ ...b, boxes: [] })), all_ready: true })
+    await show(true)
+    expect(await screen.findByText(/We are still finding your cases/)).toBeInTheDocument()
+  })
+
+  it('with nothing to show and nothing left to wait for, it explains', async () => {
+    serve('/uploads/3/document', { ...reviewer, blocks: reviewer.blocks.map((b) => ({ ...b, boxes: [] })), all_ready: true })
+    await show(false)
+    expect(await screen.findByText('No case boxes yet')).toBeInTheDocument()
+  })
+
+  it('says when some explanations are still being written (synthetic: the real response with all_ready false)', async () => {
+    serve('/uploads/3/document', { ...reviewer, all_ready: false })
+    await show()
+    expect(await screen.findByText(/Some explanations are still being written/)).toBeInTheDocument()
+  })
+
+  it('a failed load says what to do', async () => {
+    server.use(http.get(`${API}/uploads/:id/document`, () => HttpResponse.json({ detail: 'x' }, { status: 500 })))
+    await show()
+    const alert = await screen.findByRole('alert')
+    expect(within(alert).getByText("The finished reviewer didn't open")).toBeInTheDocument()
+    expect(within(alert).getByRole('button', { name: 'Try again' })).toBeInTheDocument()
+  })
+})
+
+describe('the revamped box', () => {
+  it('separates the Court’s own words from the explanations written in plain words', async () => {
+    await show()
+    const box = await ermitaBox()
+    expect(within(box).getByRole('heading', { name: 'From the Court' })).toBeInTheDocument()
+    expect(within(box).getByRole('heading', { name: 'In plain words' })).toBeInTheDocument()
+    const court = within(box).getByRole('heading', { name: 'From the Court' }).parentElement as HTMLElement
+    expect(within(court).getByRole('region', { name: 'Ruling' })).toBeInTheDocument()
+    expect(within(court).queryByRole('region', { name: 'Topic explained' })).toBeNull()
+  })
+
+  it('shows how many cases are ready and lets the student jump to each one', async () => {
+    await show()
+    await ermitaBox()
+    expect(screen.getByText('3 cases, all ready')).toBeInTheDocument()
+    const nav = screen.getByRole('navigation', { name: 'Cases in your reviewer' })
+    expect(within(nav).getAllByRole('link')).toHaveLength(3)
+    expect(within(nav).getAllByRole('link')[0]).toHaveAttribute('href', '#digest-9')
+  })
+
+  it('a digest can be hidden and shown again', async () => {
+    const user = userEvent.setup()
+    await show()
+    const box = await ermitaBox()
+    const hide = within(box).getByRole('button', { name: 'Hide this digest' })
+    expect(hide).toHaveAttribute('aria-expanded', 'true')
+    await user.click(hide)
+    expect(within(box).getByRole('button', { name: 'Show this digest' })).toHaveAttribute('aria-expanded', 'false')
+    expect(within(box).queryByRole('region', { name: 'Ruling' })).toBeNull()
+    await user.click(within(box).getByRole('button', { name: 'Show this digest' }))
+    expect(within(box).getByRole('region', { name: 'Ruling' })).toBeInTheDocument()
+  })
+
+  it('long Court text starts folded and can be opened and folded again', async () => {
+    const user = userEvent.setup()
+    await show()
+    const box = await ermitaBox()
+    const facts = within(box).getByRole('region', { name: 'Facts' })
+    const more = within(facts).getByRole('button', { name: /Show more/ })
+    expect(more).toHaveAttribute('aria-expanded', 'false')
+    await user.click(more)
+    expect(within(facts).getByRole('button', { name: /Show less/ })).toHaveAttribute('aria-expanded', 'true')
+  })
+
+  it('a drafted explanation is a short list of points with its sources, and is marked as a draft (synthetic: the real answer split into points)', async () => {
+    const points = 'The Court declared EO 566 void.\n\nThe President cannot make law by order.\n\nThe IRR fell with it.'
+    serve('/digests/9', { ...digest, fields: digest.fields.map((f) => (f.key === 'why' ? { ...f, text: points } : f)) })
+    await show()
+    const box = await ermitaBox()
+    const why = within(box).getByRole('region', { name: 'Why this case matters' })
+    expect(within(why).getAllByRole('listitem').map((li) => li.textContent)).toEqual([
+      'The Court declared EO 566 void.',
+      'The President cannot make law by order.',
+      'The IRR fell with it.',
+    ])
+    expect(within(why).getByText('Drafted from the decision. Check it.')).toBeInTheDocument()
+  })
+
+  it('an empty field says why and offers the clear next steps, never a guess', async () => {
+    await show()
+    const box = await ermitaBox()
+    const doctrine = within(box).getByRole('region', { name: 'Doctrine' })
+    expect(within(doctrine).getByText(/We do not guess which one it is/)).toBeInTheDocument()
+    expect(within(doctrine).getByRole('button', { name: 'Pick paragraphs for Doctrine' })).toBeInTheDocument()
+    expect(within(doctrine).getByRole('button', { name: 'Paste text for Doctrine' })).toBeInTheDocument()
+    expect(within(doctrine).getByRole('button', { name: 'Edit Doctrine' })).toBeInTheDocument()
+  })
+})
+
+describe('the reviewer’s own titles', () => {
+  it('stand out as real headings, so the document can be scanned, while body text stays plain', async () => {
+    await show(false, 'full')
+    await ermitaBox()
+    expect(screen.getByRole('heading', { name: 'Constitutional Law Reviewer', level: 2 })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /PART NINE: LEGISLATIVE DEPARTMENT/, level: 2 })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'I. Legislative power Section 1:', level: 3 })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'II. Reclassification of positions', level: 3 })).toBeInTheDocument()
+    // a paragraph that cites a case is body text, not a heading
+    expect(screen.queryByRole('heading', { name: /See Review Center v Ermita/ })).toBeNull()
+    expect(screen.getByText(/Explanation: Legislative power is the authority/).tagName).toBe('P')
+  })
+})
+
+describe('a file that already has the student’s own digests', () => {
+  it('says so, once, in plain words, and tells the student what to do', async () => {
+    serve('/uploads/3/document', { ...reviewer, own_digests: 2 }) // synthetic: the real response with the count set to 2
+    await show()
+    const note = await screen.findByRole('complementary', { name: 'Your file already has digests in it' })
+    expect(within(note).getByText(/We found 2 digests you wrote yourself/)).toBeInTheDocument()
+    expect(within(note).getByText(/upload your reviewer without the digests/)).toBeInTheDocument()
+  })
+
+  it('says nothing for a plain reviewer (the real response)', async () => {
+    await show()
+    await ermitaBox()
+    expect(screen.queryByRole('complementary')).toBeNull()
+  })
+
+  it('uses the singular for one digest', async () => {
+    serve('/uploads/3/document', { ...reviewer, own_digests: 1 })
+    await show()
+    expect(await screen.findByText(/We found 1 digest you wrote yourself/)).toBeInTheDocument()
+  })
+})
+
+
+describe('showing only the digest boxes (the default)', () => {
+  it('leaves out the reviewer’s long text and shows just the boxes', async () => {
+    await show()
+    await ermitaBox()
+    expect(screen.getAllByRole('article')).toHaveLength(3)
+    expect(screen.queryByText(/Explanation: Legislative power is the authority/)).toBeNull() // body text of the reviewer
+    expect(screen.queryByRole('heading', { name: 'Constitutional Law Reviewer' })).toBeNull()
+  })
+
+  it('says where each box sits in the reviewer: the heading above it and the start of the citing paragraph', async () => {
+    await show()
+    await ermitaBox()
+    expect(screen.getByText(/In your reviewer, under “I\. Legislative power Section 1:”: “Section 1: The legislative power shall be vested/)).toBeInTheDocument()
+    expect(screen.getByText(/In your reviewer, under “II\. Reclassification of positions”: “A reclassified civil service position/)).toBeInTheDocument()
+  })
+
+  it('a switch brings the reviewer’s text back, and another puts it away again', async () => {
+    const user = userEvent.setup()
+    await show()
+    await ermitaBox()
+    const boxesOnly = screen.getByRole('button', { name: 'Digest boxes only' })
+    const withText = screen.getByRole('button', { name: 'With my reviewer text' })
+    expect(boxesOnly).toHaveAttribute('aria-pressed', 'true')
+    expect(withText).toHaveAttribute('aria-pressed', 'false')
+
+    await user.click(withText)
+    expect(await screen.findByText(/Explanation: Legislative power is the authority/)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Constitutional Law Reviewer' })).toBeInTheDocument()
+    expect(withText).toHaveAttribute('aria-pressed', 'true')
+
+    await user.click(screen.getByRole('button', { name: 'Digest boxes only' }))
+    expect(screen.queryByText(/Explanation: Legislative power is the authority/)).toBeNull()
+  })
+
+  it('a case that could not be found in a paragraph still gets its box, with a plain reason (synthetic: one box moved to unplaced)', async () => {
+    const moved = reviewer.blocks[3].boxes
+    serve('/uploads/3/document', {
+      ...reviewer,
+      blocks: reviewer.blocks.map((b, i) => (i === 3 ? { ...b, boxes: [] } : b)),
+      unplaced: moved,
+    })
+    await show()
+    await ermitaBox()
+    expect(screen.getByText(/We could not find this case in a paragraph of your file/)).toBeInTheDocument()
+    expect(screen.getAllByRole('article')).toHaveLength(3)
+  })
+
+  it('the download is still the whole document, whichever view is on', async () => {
+    await show()
+    await ermitaBox()
+    expect(screen.getByRole('link', { name: /Download as Word/ })).toHaveAttribute('href', '/api/uploads/3/document.docx')
+  })
+})

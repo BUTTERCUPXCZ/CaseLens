@@ -1,0 +1,39 @@
+import logging
+
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+
+from caselens.domain import errors
+from caselens.presentation.api import catalog, cases, digests, health, insights, library, reviewer, uploads
+
+# Domain error -> HTTP status. One table, so no router needs try/except.
+_STATUS_BY_ERROR: list[tuple[type[errors.DomainError], int]] = [
+    (errors.UnsupportedDocumentError, 415),
+    (errors.DocumentExtractionError, 422),
+    (errors.InvalidSourceUrlError, 400),
+    (errors.CaseNotFoundError, 404),
+    (errors.DigestNotFoundError, 404),
+    (errors.InvalidDigestEditError, 422),
+    (errors.AiUnavailableError, 503),
+    (errors.JobQueueUnavailableError, 503),
+    (errors.CaseParseError, 502),
+    (errors.SourceUnavailableError, 502),
+    (errors.DomainError, 400),
+]
+
+
+def _handle_domain_error(_: Request, exc: Exception) -> JSONResponse:
+    status = next(code for error_type, code in _STATUS_BY_ERROR if isinstance(exc, error_type))
+    return JSONResponse({"detail": str(exc)}, status_code=status)
+
+
+def create_app() -> FastAPI:
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+    app = FastAPI(title="CaseLens", version="0.1.0")
+    app.add_exception_handler(errors.DomainError, _handle_domain_error)
+    for router in (health.router, uploads.router, cases.router, library.router, catalog.router, insights.router, digests.router, reviewer.router):
+        app.include_router(router)
+    return app
+
+
+app = create_app()

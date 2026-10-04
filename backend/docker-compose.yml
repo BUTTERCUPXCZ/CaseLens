@@ -1,0 +1,92 @@
+name: caselens
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: caselens
+      POSTGRES_PASSWORD: caselens
+      POSTGRES_DB: caselens
+    ports:
+      - "127.0.0.1:5434:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U caselens -d caselens"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: caselens  # development credentials: change them before any real deployment
+      RABBITMQ_DEFAULT_PASS: caselens
+      RABBITMQ_ERLANG_COOKIE: caselens-dev-cookie  # without it some Docker setups cannot read the cookie file
+    ports:
+      - "127.0.0.1:5675:5672"    # the queue (5672 is taken by another service on this machine)
+      - "127.0.0.1:15675:15672"  # the management page: http://localhost:15675 (caselens / caselens)
+    volumes:
+      - rabbitmqdata:/var/lib/rabbitmq  # queued jobs survive a restart
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build: .
+    environment:
+      DATABASE_URL: postgresql+psycopg://caselens:caselens@db:5432/caselens
+      RABBITMQ_URL: amqp://caselens:caselens@rabbitmq:5672/
+    ports:
+      - "127.0.0.1:${API_PORT:-8000}:8000"  # set API_PORT if 8000 is taken on your machine
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8000/health')"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  # Two workers on purpose. Lawphil jobs run one at a time, so "1 request per second to Lawphil" holds.
+  # Digest jobs only wait for the AI, so four run side by side.
+  worker-lawphil:
+    build: .
+    command: ["dramatiq", "caselens.infrastructure.queue.actors", "--queues", "lawphil", "--processes", "1", "--threads", "1"]
+    environment:
+      DATABASE_URL: postgresql+psycopg://caselens:caselens@db:5432/caselens
+      RABBITMQ_URL: amqp://caselens:caselens@rabbitmq:5672/
+    depends_on:
+      api:
+        condition: service_healthy  # the api container applies the migrations
+      rabbitmq:
+        condition: service_healthy
+
+  worker-digests:
+    build: .
+    command: ["dramatiq", "caselens.infrastructure.queue.actors", "--queues", "digests", "--processes", "1", "--threads", "4"]
+    environment:
+      DATABASE_URL: postgresql+psycopg://caselens:caselens@db:5432/caselens
+      RABBITMQ_URL: amqp://caselens:caselens@rabbitmq:5672/
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}  # read from backend/.env; without it the digest still works, minus the written answers
+    depends_on:
+      api:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  frontend:
+    build: ../frontend
+    ports:
+      - "127.0.0.1:8080:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  rabbitmqdata:

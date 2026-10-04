@@ -1,0 +1,463 @@
+{
+  "prompt": "answer-v1",
+  "writer": "gemini-2.5-flash",
+  "checker": "gemini-3.5-flash",
+  "cases": {
+    "gr_180046_2009.html": {
+      "topic": {
+        "seconds": 11.5,
+        "sentences": [
+          {
+            "text": "This case concerns the constitutionality of Executive Order No. 566 (EO 566) and its implementing rules, CHED Memorandum Order No. 30, series of 2007 (RIRR).",
+            "cites": [
+              "P7"
+            ]
+          },
+          {
+            "text": "EO 566 directed the Commission on Higher Education (CHED) to regulate the establishment and operation of review centers and similar entities.",
+            "cites": [
+              "P11",
+              "P35"
+            ]
+          },
+          {
+            "text": "The main issue is whether EO 566 was an unconstitutional exercise of legislative power by the Executive, as it expanded CHED's jurisdiction.",
+            "cites": [
+              "P65",
+              "P101",
+              "P109"
+            ]
+          }
+        ],
+        "dropped": []
+      },
+      "why_it_matters": {
+        "seconds": 16.7,
+        "sentences": [
+          {
+            "text": "The Court declared Executive Order No. 566 and CHED Memorandum Order No. 30, series of 2007, void for being unconstitutional.",
+            "cites": [
+              "P132"
+            ]
+          },
+          {
+            "text": "This was because EO 566 was an invalid exercise of legislative power, expanding CHED's jurisdiction without an enabling law.",
+            "cites": [
+              "P101",
+              "P108",
+              "P119"
+            ]
+          },
+          {
+            "text": "The President lacks inherent or delegated legislative power to amend CHED's functions under RA 7722.",
+            "cites": [
+              "P108",
+              "P109"
+            ]
+          }
+        ],
+        "dropped": []
+      }
+    },
+    "gr_148263_2009.html": {
+      "topic": {
+        "seconds": 15.0,
+        "sentences": [],
+        "dropped": [
+          {
+            "text": "This case involves a petition challenging a decision that held a corporate officer solidarily liable for employee money claims.",
+            "reason": "checker: partly_supported"
+          },
+          {
+            "text": "Armando David, as President of Mariveles Apparel Corporation (MAC), was found liable for the company's illegal closure and unpaid employee salaries.",
+            "reason": "checker: partly_supported"
+          },
+          {
+            "text": "The Court examined whether David was afforded due process and if his solidary liability for MAC's obligations was proper.",
+            "reason": "checker: partly_supported"
+          }
+        ]
+      },
+      "why_it_matters": {
+        "seconds": 21.8,
+        "sentences": [
+          {
+            "text": "Corporate officers are not personally liable for corporate debts unless they willfully assent to unlawful acts or act with gross negligence or bad faith.",
+            "cites": [
+              "P46",
+              "P49",
+              "P50",
+              "P51"
+            ]
+          }
+        ],
+        "dropped": [
+          {
+            "text": "The Court granted the petition, setting aside the appellate court's decision that held David solidarily liable for employee claims.",
+            "reason": "checker: partly_supported"
+          },
+          {
+            "text": "This was due to a denial of David's due process, as the Labor Arbiter lacked jurisdiction over him.",
+            "reason": "checker: partly_supported"
+          }
+        ]
+      }
+    },
+    "gr_173931_2009.html": {
+      "topic": {
+        "seconds": 14.0,
+        "sentences": [
+          {
+            "text": "This case addresses whether a new appointment is necessary when a civil service position is reclassified or upgraded.",
+            "cites": [
+              "P37",
+              "P38",
+              "P48"
+            ]
+          },
+          {
+            "text": "The Court also considered her actions of filing related cases in multiple forums, which constituted forum shopping.",
+            "cites": [
+              "P19",
+              "P26",
+              "P27"
+            ]
+          }
+        ],
+        "dropped": [
+          {
+            "text": "Petitioner Alicia D. Tagaro's Director II position was upgraded to Director III, but she refused a new appointment, leading to a salary rollback and her removal.",
+            "reason": "checker: partly_supported"
+          }
+        ]
+      },
+      "why_it_matters": {
+        "seconds": 8.4,
+        "sentences": [
+          {
+            "text": "The Court dismissed the petition due to the petitioner's engagement in forum shopping, which is a proscribed act of malpractice that merits summary dismissal of actions.",
+            "cites": [
+              "P25",
+              "P27"
+            ]
+          },
+          {
+            "text": "However, the Court allowed the petitioner to keep the salary differential she had received during her tenure as Director III.",
+            "cites": [
+              "P52",
+              "P53"
+            ]
+          },
+          {
+            "text": "This was because she discharged her duties in good faith, and requiring a refund would be inequitable.",
+            "cites": [
+              "P29",
+              "P50",
+              "P51"
+            ]
+          }
+        ],
+        "dropped": []
+      }
+    },
+    "gr_175483_2015.html": {
+      "topic": {
+        "seconds": 9.0,
+        "sentences": [
+          {
+            "text": "This case concerns a petition challenging the nullification of deeds of absolute sale between Valentina S. Clemente and her grandmother, Adela de Guzman Shotwell.",
+            "cites": [
+              "P6",
+              "P7",
+              "P12",
+              "P28"
+            ]
+          },
+          {
+            "text": "The Supreme Court affirmed this decision, finding no error in the lower courts' conclusion.",
+            "cites": [
+              "P25",
+              "P29",
+              "P30",
+              "P36"
+            ]
+          }
+        ],
+        "dropped": [
+          {
+            "text": "The Court of Appeals ruled these deeds were void and inexistent because they were simulated and lacked consideration.",
+            "reason": "name 'Appeals' is not in the cited text"
+          }
+        ]
+      },
+      "why_it_matters": {
+        "seconds": 10.0,
+        "sentences": [
+          {
+            "text": "The Court denied the petition, affirming that the deeds of absolute sale between the petitioner and her grandmother were void and inexistent.",
+            "cites": [
+              "P7",
+              "P25",
+              "P30",
+              "P37"
+            ]
+          },
+          {
+            "text": "This was because the contracts were absolutely simulated, lacking both consent and consideration.",
+            "cites": [
+              "P25",
+              "P37",
+              "P45",
+              "P71"
+            ]
+          },
+          {
+            "text": "As void contracts, they vested no rights in the petitioner, and the properties must be reconveyed to the grandmother's estate.",
+            "cites": [
+              "P22",
+              "P23",
+              "P77",
+              "P78",
+              "P79"
+            ]
+          }
+        ],
+        "dropped": []
+      }
+    },
+    "gr_221664_2022.html": {
+      "topic": {
+        "seconds": 7.3,
+        "sentences": [
+          {
+            "text": "This case concerns a seafarer, Ruben M. Buenaflor, who filed a complaint for illegal dismissal against his employers, Stolt-Nielsen Philippines, Inc. and Stolt-Nielsen ITS GMBH.",
+            "cites": [
+              "P6",
+              "P12"
+            ]
+          },
+          {
+            "text": "He alleged his employment was terminated without just cause or proper disciplinary procedures.",
+            "cites": [
+              "P12"
+            ]
+          },
+          {
+            "text": "The Court ultimately found that the seafarer was illegally dismissed.",
+            "cites": [
+              "P44",
+              "P80"
+            ]
+          }
+        ],
+        "dropped": []
+      },
+      "why_it_matters": {
+        "seconds": 14.0,
+        "sentences": [
+          {
+            "text": "This was because the employer failed to prove incompetence or inefficiency with substantial evidence and did not accord the seafarer due process.",
+            "cites": [
+              "P45",
+              "P46",
+              "P57",
+              "P58"
+            ]
+          },
+          {
+            "text": "Consequently, the Court ordered the employer to pay the seafarer his salaries for the unexpired contract, vacation leave pay, bonus, moral and exemplary damages, and attorney's fees.",
+            "cites": [
+              "P70",
+              "P72",
+              "P73",
+              "P77",
+              "P80"
+            ]
+          }
+        ],
+        "dropped": [
+          {
+            "text": "The Court found that the National Labor Relations Commission (NLRC) did not gravely abuse its discretion in ruling that the seafarer was illegally dismissed.",
+            "reason": "name 'National' is not in the cited text"
+          }
+        ]
+      }
+    },
+    "gr_71681_1989.html": {
+      "topic": {
+        "seconds": 8.5,
+        "sentences": [
+          {
+            "text": "Cornelio Marilao y Samson appealed his conviction for violating the Dangerous Drugs Act of 1972.",
+            "cites": [
+              "P5",
+              "P7"
+            ]
+          },
+          {
+            "text": "He was found guilty of selling, delivering, and giving away marijuana fruiting tops.",
+            "cites": [
+              "P8",
+              "P26"
+            ]
+          },
+          {
+            "text": "His appeal argued that the prosecution's evidence was insufficient to prove his guilt beyond reasonable doubt.",
+            "cites": [
+              "P27"
+            ]
+          }
+        ],
+        "dropped": []
+      },
+      "why_it_matters": {
+        "seconds": 9.1,
+        "sentences": [
+          {
+            "text": "It held that the non-presentation of an informant or marked bills is not fatal if the transaction is clearly established and testimony is merely corroborative.",
+            "cites": [
+              "P29",
+              "P32"
+            ]
+          },
+          {
+            "text": "The Court emphasized that positive identification by prosecution witnesses prevails over denials, and a single credible witness can be sufficient for conviction.",
+            "cites": [
+              "P30",
+              "P34"
+            ]
+          }
+        ],
+        "dropped": [
+          {
+            "text": "The Court affirmed the conviction of Cornelio Marilao for selling marijuana, finding his appeal devoid of merit.",
+            "reason": "name 'Cornelio' is not in the cited text"
+          }
+        ]
+      }
+    },
+    "gr_119935_1997.html": {
+      "topic": {
+        "seconds": 10.1,
+        "sentences": [
+          {
+            "text": "This case concerns an employer's challenge to an award of separation pay for an employee dismissed due to serious misconduct.",
+            "cites": [
+              "P5",
+              "P23"
+            ]
+          },
+          {
+            "text": "The employee, a foreman/timekeeper, was dismissed after taking metal lamp posts from the company's custody without consent.",
+            "cites": [
+              "P7",
+              "P8",
+              "P9"
+            ]
+          },
+          {
+            "text": "The central issue is whether an employee validly dismissed for serious misconduct or acts reflecting moral character is entitled to separation pay as a measure of social justice.",
+            "cites": [
+              "P26",
+              "P29"
+            ]
+          }
+        ],
+        "dropped": []
+      },
+      "why_it_matters": {
+        "seconds": 9.1,
+        "sentences": [
+          {
+            "text": "The Court decided to delete the award of separation pay for an employee dismissed due to serious misconduct involving moral turpitude, specifically qualified theft of company property.",
+            "cites": [
+              "P25",
+              "P26",
+              "P29",
+              "P33",
+              "P35"
+            ]
+          },
+          {
+            "text": "This case reiterates that separation pay is allowed as social justice only when dismissal is for causes other than serious misconduct or acts reflecting moral character.",
+            "cites": [
+              "P26",
+              "P29"
+            ]
+          },
+          {
+            "text": "It clarifies that social justice is not intended to countenance wrongdoing or reward erring employees, especially those who betray trust.",
+            "cites": [
+              "P30",
+              "P31",
+              "P33"
+            ]
+          }
+        ],
+        "dropped": []
+      }
+    },
+    "gr_161811_2006.html": {
+      "topic": {
+        "seconds": 10.9,
+        "sentences": [
+          {
+            "text": "This case concerns the demolition of improvements on a parcel of land awarded by the Bureau of Lands.",
+            "cites": [
+              "P5",
+              "P9",
+              "P17"
+            ]
+          },
+          {
+            "text": "The central issue is whether a special court order is required for such demolition under Section 10(d) of Rule 39 of the Rules of Court.",
+            "cites": [
+              "P22",
+              "P25",
+              "P38",
+              "P39"
+            ]
+          },
+          {
+            "text": "The Court affirmed that administrative agencies lack the authority to issue demolition orders, and a court order is necessary.",
+            "cites": [
+              "P43",
+              "P46",
+              "P51"
+            ]
+          }
+        ],
+        "dropped": []
+      },
+      "why_it_matters": {
+        "seconds": 13.4,
+        "sentences": [
+          {
+            "text": "The Court affirmed that a special court order is required for the demolition of improvements on property, applying Section 10(d) of Rule 39 of the Rules of Court.",
+            "cites": [
+              "P22",
+              "P26",
+              "P38",
+              "P39",
+              "P43",
+              "P54"
+            ]
+          },
+          {
+            "text": "The power to order the removal of improvements and turn over possession belongs solely to the courts of justice, not the Bureau of Lands.",
+            "cites": [
+              "P51",
+              "P52"
+            ]
+          }
+        ],
+        "dropped": [
+          {
+            "text": "This requirement echoes the constitutional right to due process, as administrative agencies like the DENR lack explicit authority to issue demolition orders.",
+            "reason": "checker: partly_supported"
+          }
+        ]
+      }
+    }
+  }
+}
