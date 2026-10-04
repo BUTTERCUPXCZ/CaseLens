@@ -53,3 +53,12 @@ def test_too_many_wrong_codes_are_stopped(monkeypatch):
 def test_health_is_open_for_the_keep_awake_ping(monkeypatch):
     client = client_with_code(monkeypatch, "pass-123")
     assert client.get("/health").status_code != 401
+
+
+def test_one_clients_wrong_tries_do_not_lock_out_another(monkeypatch):
+    client = client_with_code(monkeypatch, "pass-123")
+    for i in range(12):
+        client.post("/access", json={"code": f"x{i}"}, headers={"x-forwarded-for": "1.1.1.1"})
+    assert client.post("/access", json={"code": "x"}, headers={"x-forwarded-for": "1.1.1.1"}).status_code == 429
+    other = client.post("/access", json={"code": "pass-123"}, headers={"x-forwarded-for": "2.2.2.2"})
+    assert other.status_code == 200

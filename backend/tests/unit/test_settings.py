@@ -18,3 +18,7 @@ def test_a_hosted_database_requires_ssl_and_a_local_one_does_not():
     assert _connect_args("postgresql+psycopg://u:p@aws-0-ap.pooler.supabase.com:5432/postgres") == {"sslmode": "require"}
     assert _connect_args("postgresql+psycopg://u:p@localhost:5434/db") == {}
     assert _connect_args("postgresql+psycopg://u:p@db:5432/db") == {}
+
+
+def test_a_sslmode_already_in_the_url_is_not_overridden():
+    assert _connect_args("postgresql+psycopg://u:p@aws.pooler.supabase.com:5432/postgres?sslmode=verify-full") == {}

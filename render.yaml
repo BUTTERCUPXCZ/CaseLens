@@ -7,7 +7,7 @@ services:
     plan: free
     region: singapore
     rootDir: backend
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: ./backend/Dockerfile
     healthCheckPath: /health
     envVars:
       - key: QUEUE_BACKEND

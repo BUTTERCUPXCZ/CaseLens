@@ -6,9 +6,14 @@ from sqlalchemy.orm import Session, sessionmaker
 from caselens.infrastructure.config import get_settings
 
 def _connect_args(url: str) -> dict:
-    """A hosted database (Supabase) needs an encrypted connection; the local Docker one does not."""
-    host = make_url(url).host or ""
-    return {} if host in ("localhost", "127.0.0.1", "db", "") else {"sslmode": "require"}
+    """A hosted database (Supabase) needs an encrypted connection; the local Docker one does not.
+
+    `require` encrypts but does not check the server's certificate. For that, put `?sslmode=verify-full` (and
+    `sslrootcert=<path to the provider's CA file>`) in DATABASE_URL: a sslmode already in the URL is never overridden."""
+    parsed = make_url(url)
+    if "sslmode" in parsed.query:
+        return {}
+    return {} if (parsed.host or "") in ("localhost", "127.0.0.1", "db", "") else {"sslmode": "require"}
 
 
 _url = get_settings().database_url
