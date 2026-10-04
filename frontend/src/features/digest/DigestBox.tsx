@@ -1,15 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
-import { ChevronDown, ChevronUp, ExternalLink, Loader2, MessageCircleQuestion } from 'lucide-react'
+import { ChevronDown, ChevronUp, ExternalLink, Loader2 } from 'lucide-react'
 import { useState } from 'react'
 
-import { useDigestEdits } from '@/api/mutations'
 import { digestQuery } from '@/api/queries'
 import type { BoxRef, Digest } from '@/api/types'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import { digestActions, finishedCopy, friendlyDigestError } from '@/lib/copy'
+import { finishedCopy, friendlyDigestError } from '@/lib/copy'
 import { formatDate, shortCaseName } from '@/lib/format'
 
 import { boxAnchor } from './anchors'
@@ -66,7 +64,6 @@ export function DigestBox({ box }: { box: BoxRef }) {
               {plain.map((field) => (
                 <DigestFieldView key={field.key} digest={digest} field={field} />
               ))}
-              <AskOwnQuestion digestId={digest.id} />
             </Group>
           </>
         ) : error ? (
@@ -103,39 +100,5 @@ function Record({ digest }: { digest: Digest }) {
         <span className="sr-only">(opens in a new tab)</span>
       </a>
     </p>
-  )
-}
-
-function AskOwnQuestion({ digestId }: { digestId: number }) {
-  const { ask } = useDigestEdits(digestId)
-  const [question, setQuestion] = useState('')
-  const id = `ask-${digestId}`
-  return (
-    <form
-      className="py-5 last:pb-0"
-      onSubmit={(event) => {
-        event.preventDefault()
-        if (question.trim() === '') return
-        ask.mutate(question.trim(), { onSuccess: () => setQuestion('') })
-      }}
-    >
-      <label htmlFor={id} className="flex items-center gap-2 text-base font-semibold">
-        <MessageCircleQuestion className="size-4" aria-hidden />
-        {digestActions.askLabel}
-      </label>
-      <div className="mt-2 flex flex-wrap gap-2">
-        <Input id={id} className="min-w-0 flex-1 basis-64" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder={digestActions.askPlaceholder} maxLength={300} />
-        <Button type="submit" disabled={ask.isPending || question.trim() === ''}>
-          {ask.isPending ? (
-            <>
-              <Loader2 className="animate-spin" data-icon="inline-start" aria-hidden /> {digestActions.asking}
-            </>
-          ) : (
-            digestActions.askButton
-          )}
-        </Button>
-      </div>
-      {ask.error ? <p role="alert" className="mt-2 text-sm text-problem">{friendlyDigestError(ask.error)}</p> : null}
-    </form>
   )
 }

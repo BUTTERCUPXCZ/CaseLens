@@ -29,7 +29,7 @@ CaseLens does the repeating work and keeps the law accurate:
 | **Explanations in plain words** | "Topic explained", "Why this case matters" and any question the student adds. Written by Gemini from the decision, then checked twice. Marked "Drafted from the decision. Check it." |
 | **Edit everything** | Type, paste, pick paragraphs of the decision, put the original back, or write an answer again. |
 | **Word download** | The reviewer with the digest boxes inside, as a `.docx`. A Word upload keeps its own layout. A PDF is rebuilt as a new Word file. |
-| **Library and patterns** | Saved cases with footnotes, and simple counts (laws cited, rulings, justices). |
+| **Case library** | Saved cases with their footnotes, and facts read from each decision (ruling, justice, laws and cases cited). |
 
 ## How the AI is kept honest
 
@@ -120,6 +120,7 @@ docs/
 ## Documentation
 
 - **[docs/TECHNICAL_DOC.md](docs/TECHNICAL_DOC.md)**: what the app is about, the flows, the AI checks, jobs, database, API, limits.
+- **[docs/DEPLOYMENT_PLAN.md](docs/DEPLOYMENT_PLAN.md)**: deployment plan (Vercel web app, Render API, Supabase database; free mode and paid workers mode).
 - **[docs/BACKEND_NOTES.md](docs/BACKEND_NOTES.md)**: backend notes, commands and known limits.
 - **[frontend/PRODUCT.md](frontend/PRODUCT.md)**: who the app is for and the product principles.
 

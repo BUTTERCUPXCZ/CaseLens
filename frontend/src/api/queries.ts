@@ -7,7 +7,6 @@ import {
   getFinishedReviewer,
   getInsights,
   getLibrary,
-  getTrends,
   getUpload,
   getUploads,
   searchCases,
@@ -26,7 +25,6 @@ export const keys = {
   library: (q: string, page: number) => ['library', q, page] as const,
   case: (id: number) => ['case', id] as const,
   insights: (id: number) => ['insights', id] as const,
-  trends: ['trends'] as const,
   search: (grNo: string, year: number | undefined) => ['search', grNo, year ?? null] as const,
   catalog: (q: string, year: number | undefined, page: number) => ['catalog', q, year ?? null, page] as const,
   catalogStatus: ['catalog-status'] as const,
@@ -60,7 +58,6 @@ export const caseQuery = (id: number) =>
 export const insightsQuery = (id: number) =>
   queryOptions({ queryKey: keys.insights(id), queryFn: () => getInsights(id), staleTime: Infinity })
 
-export const trendsQuery = () => queryOptions({ queryKey: keys.trends, queryFn: () => getTrends() })
 
 /** A G.R. search the backend may still be working on ("pending"): keep asking until it is found. */
 export const searchQuery = (grNo: string, year: number | undefined) =>

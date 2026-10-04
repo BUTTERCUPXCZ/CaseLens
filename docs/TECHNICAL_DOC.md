@@ -101,7 +101,7 @@ Law needs **accuracy**. That is why the design has three rules:
 | **Edit** | Type, paste, pick paragraphs of the decision, or put back the original. |
 | **Ask your own question** | Add any question. The AI answers from the decision. |
 | **Word download** | Get the finished reviewer as a `.docx` file. |
-| **Library and patterns** | See saved cases and simple counts (laws, rulings, justices). |
+| **Case library** | Saved cases with footnotes and facts read from each decision. |
 
 **Two rules the app always follows:**
 
@@ -188,7 +188,7 @@ The **catalog** is a local copy of Lawphil's monthly lists (1987 to now, 34,684 
 ### Flow B: Upload and check a reviewer
 
 ```
-Student uploads PDF/Word (max 10 MB)
+Student uploads PDF/Word (max 5 MB, set by UPLOAD_MAX_MB)
         |
         v
 API reads the text, finds citations like "GR no 180046"
@@ -355,7 +355,7 @@ scraper/
 | `POST /digests/{id}/fields/{key}/paste` | Paste text |
 | `POST /digests/{id}/fields/{key}/reset` | Put back the original |
 | `POST /digests/{id}/questions` | Add your own question |
-| `GET /cases/{id}`, `GET /library/cases`, `GET /insights/trends` | Case, library, patterns |
+| `GET /cases/{id}`, `GET /library/cases` | Case and library |
 
 Full list with examples: open `http://localhost:8000/docs`.
 

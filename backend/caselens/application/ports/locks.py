@@ -17,3 +17,7 @@ class JobLockRepository(ABC):
 
     @abstractmethod
     def is_held(self, key: str) -> bool: ...
+
+    @abstractmethod
+    def release_all(self) -> None:
+        """Free every lock. Only for a restart of a single-process host, when nothing from before can still be running."""

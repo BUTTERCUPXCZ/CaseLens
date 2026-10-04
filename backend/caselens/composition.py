@@ -84,9 +84,22 @@ def _lawphil_pages() -> ThrottledPageClient:
 
 @lru_cache
 def _job_queue() -> JobQueue:
+    locks = SqlJobLockRepository(engine)
+    if get_settings().queue_backend == "threads":
+        from caselens.infrastructure.queue.thread_job_queue import ThreadJobQueue  # imported here: it needs Services
+
+        return ThreadJobQueue(locks)  # jobs run inside this process: no RabbitMQ and no workers
     from caselens.infrastructure.queue import actors  # imported here: it connects the broker
 
-    return RabbitJobQueue(SqlJobLockRepository(engine), actors)
+    return RabbitJobQueue(locks, actors)
+
+
+def start_background_jobs() -> None:
+    """Called once when the API starts. With the thread queue, work that was running at the last stop is queued again."""
+    if get_settings().queue_backend == "threads":
+        from caselens.infrastructure.queue.recovery import requeue_unfinished_work
+
+        requeue_unfinished_work(_job_queue(), SqlJobLockRepository(engine))
 
 
 class Services:

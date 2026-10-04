@@ -42,7 +42,7 @@ describe('friendlyError', () => {
   const cases: [number, string | null, RegExp][] = [
     [0, null, /can't reach CaseLens/],
     [415, 'Unsupported file type: notes.txt', /PDF and Word/],
-    [413, 'File is larger than 10 MB.', /larger than 10 MB/],
+    [413, 'File is larger than 5 MB.', /larger than 5 MB/],
     [422, 'PDF has no extractable text (scanned image PDFs are not supported).', /looks like a scan/],
     [422, "Not a valid G.R. number: '12'", /digits only/],
     [400, 'Not an official Lawphil case URL: https://evil.example/a.html', /Lawphil case link/],

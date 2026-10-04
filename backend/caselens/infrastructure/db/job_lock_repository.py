@@ -31,6 +31,10 @@ class SqlJobLockRepository(JobLockRepository):
         with self._engine.begin() as connection:
             connection.execute(text("DELETE FROM job_locks WHERE key = :key"), {"key": key})
 
+    def release_all(self) -> None:
+        with self._engine.begin() as connection:
+            connection.execute(text("DELETE FROM job_locks"))
+
     def is_held(self, key: str) -> bool:
         with self._engine.begin() as connection:
             return connection.execute(

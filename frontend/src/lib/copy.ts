@@ -64,8 +64,8 @@ export const summarizeReview = {
 }
 
 export const upload = {
-  maxBytes: 10 * 1024 * 1024,
-  tooBig: 'That file is larger than 10 MB. Try a smaller one.',
+  maxBytes: 5 * 1024 * 1024,
+  tooBig: 'That file is larger than 5 MB. Try a smaller one.',
   wrongType: 'We can read PDF and Word (.docx) files. Please choose one of those.',
 }
 
@@ -188,6 +188,32 @@ export const finishedCopy = {
   whereIn: (heading: string | null, excerpt: string) =>
     heading ? `In your reviewer, under “${heading}”: “${excerpt}”` : `In your reviewer: “${excerpt}”`,
   whereUnplaced: 'We could not find this case in a paragraph of your file, so it is listed here.',
+  askTitle: 'Ask your own question',
+  askToggle: 'Ask a question',
+  askClose: 'Close the question panel',
+  askOpen: 'Open the question panel',
+  askPlaceholder: 'Ask about this case…',
+  askEmpty: 'Ask anything about this case. The answer is written from the decision and checked.',
+  askTry: 'Try one of these',
+  askSuggestions: [
+    'Give me 4 sentences of the facts in plain words',
+    'Explain the topic of this case in simple words',
+    'What did the Court decide, and why?',
+  ],
+  askDisclaimer: 'Written by AI from the decision. It can make mistakes: check every answer against the Court’s text.',
+  askShowInBox: 'Show in the digest box',
+  askNoAnswer: 'We could not answer this from the decision.',
+  askHelp:
+    'Ask about one of your cases. The answer is written from the decision and checked. It appears in that case’s digest box, under “In plain words”.',
+  askWhich: 'Which case?',
+  askAbout: (name: string) => `About: ${name}`,
+  askSent: (name: string) => `Asked. The answer will appear in the digest box for ${name}.`,
+  askSeeBox: 'See that digest box',
+  askYourQuestions: 'Your questions about this case',
+  askSeeAnswer: 'See the answer',
+  askStateWriting: 'Writing…',
+  askStateReady: 'Answered',
+  askStateEmpty: 'No answer',
   ownDigestsTitle: 'Your file already has digests in it',
   ownDigests: (n: number) =>
     `We found ${n === 1 ? '1 digest' : `${n} digests`} you wrote yourself (like “Digest 1: Facts and Doctrine”). We cannot tell them apart from your other text, so we keep them and add our own box next to each case. A case may appear twice. For a cleaner result, upload your reviewer without the digests.`,
@@ -229,4 +255,13 @@ export const digestActions = {
   emptyWrite: 'Write it yourself',
   basedOn: (paragraphs: string[]) =>
     paragraphs.length === 1 ? `Based on paragraph ${paragraphs[0]} of the decision` : `Based on paragraphs ${paragraphs.join(', ')} of the decision`,
+}
+
+/** The page shown before the app opens, when the owner set an access code. */
+export const accessCopy = {
+  opening: 'Opening CaseLens…',
+  intro: 'This app is shared with a few people. Enter the access code you were given.',
+  label: 'Access code',
+  submit: 'Open CaseLens',
+  unreachable: "We couldn't reach the server. Try again in a minute.",
 }

@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LookupRouteImport } from './routes/lookup'
-import { Route as PatternsRouteImport } from './routes/patterns'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as CasesIndexRouteImport } from './routes/cases.index'
 import { Route as CasesCaseIdRouteImport } from './routes/cases.$caseId'
@@ -26,11 +25,6 @@ const IndexRoute = IndexRouteImport.update({
 const LookupRoute = LookupRouteImport.update({
   id: '/lookup',
   path: '/lookup',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PatternsRoute = PatternsRouteImport.update({
-  id: '/patterns',
-  path: '/patterns',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SearchRoute = SearchRouteImport.update({
@@ -62,7 +56,6 @@ const ReviewsReviewIdRoute = ReviewsReviewIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/lookup': typeof LookupRoute
-  '/patterns': typeof PatternsRoute
   '/search': typeof SearchRoute
   '/cases/$caseId': typeof CasesCaseIdRoute
   '/reviews/$reviewId': typeof ReviewsReviewIdRoute
@@ -72,7 +65,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/lookup': typeof LookupRoute
-  '/patterns': typeof PatternsRoute
   '/search': typeof SearchRoute
   '/cases/$caseId': typeof CasesCaseIdRoute
   '/reviews/$reviewId': typeof ReviewsReviewIdRoute
@@ -83,7 +75,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/lookup': typeof LookupRoute
-  '/patterns': typeof PatternsRoute
   '/search': typeof SearchRoute
   '/cases/$caseId': typeof CasesCaseIdRoute
   '/reviews/$reviewId': typeof ReviewsReviewIdRoute
@@ -95,7 +86,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/lookup'
-    | '/patterns'
     | '/search'
     | '/cases/$caseId'
     | '/reviews/$reviewId'
@@ -105,7 +95,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/lookup'
-    | '/patterns'
     | '/search'
     | '/cases/$caseId'
     | '/reviews/$reviewId'
@@ -115,7 +104,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/lookup'
-    | '/patterns'
     | '/search'
     | '/cases/$caseId'
     | '/reviews/$reviewId'
@@ -126,7 +114,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LookupRoute: typeof LookupRoute
-  PatternsRoute: typeof PatternsRoute
   SearchRoute: typeof SearchRoute
   CasesCaseIdRoute: typeof CasesCaseIdRoute
   ReviewsReviewIdRoute: typeof ReviewsReviewIdRoute
@@ -148,13 +135,6 @@ declare module '@tanstack/react-router' {
       path: '/lookup'
       fullPath: '/lookup'
       preLoaderRoute: typeof LookupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/patterns': {
-      id: '/patterns'
-      path: '/patterns'
-      fullPath: '/patterns'
-      preLoaderRoute: typeof PatternsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/search': {
@@ -198,7 +178,6 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LookupRoute: LookupRoute,
-  PatternsRoute: PatternsRoute,
   SearchRoute: SearchRoute,
   CasesCaseIdRoute: CasesCaseIdRoute,
   ReviewsReviewIdRoute: ReviewsReviewIdRoute,

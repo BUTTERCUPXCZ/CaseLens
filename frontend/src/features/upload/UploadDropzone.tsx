@@ -71,7 +71,7 @@ export function UploadDropzone() {
         <p className="mt-2 max-w-md text-base text-muted-foreground">
           {busy
             ? 'This takes a few seconds.'
-            : 'A PDF or Word file, up to 10 MB. We find every case you cited and compare it with the Court’s record.'}
+            : 'A PDF or Word file, up to 5 MB. We find every case you cited and compare it with the Court’s record.'}
         </p>
 
         {!busy ? (

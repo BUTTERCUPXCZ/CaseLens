@@ -4,6 +4,7 @@ import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
+import { AccessGate } from './components/AccessGate'
 import { routeTree } from './routeTree.gen'
 import './index.css'
 
@@ -34,7 +35,9 @@ declare module '@tanstack/react-router' {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <AccessGate>
+        <RouterProvider router={router} />
+      </AccessGate>
     </QueryClientProvider>
   </StrictMode>,
 )

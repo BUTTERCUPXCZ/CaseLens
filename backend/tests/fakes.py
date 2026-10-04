@@ -350,6 +350,9 @@ class InMemoryJobLocks(JobLockRepository):
     def release(self, key):
         self.held.discard(key)
 
+    def release_all(self):
+        self.held.clear()
+
     def is_held(self, key):
         return key in self.held
 

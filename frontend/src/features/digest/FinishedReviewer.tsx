@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Download, Info, Loader2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Download, Info, Loader2, MessageCircleQuestion } from 'lucide-react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
+import { createPortal } from 'react-dom'
 
 import { finishedReviewerDownloadUrl } from '@/api/endpoints'
 import { finishedReviewerQuery, keys } from '@/api/queries'
@@ -8,8 +9,11 @@ import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { finishedCopy } from '@/lib/copy'
+import { RIGHT_DOCK_ID } from '@/lib/dock'
 import { toTitleCase } from '@/lib/format'
+import { useWideScreen } from '@/hooks/useWideScreen'
 
+import { AskAboutCase } from './AskAboutCase'
 import { boxAnchor } from './anchors'
 import { DigestBox } from './DigestBox'
 
@@ -21,6 +25,32 @@ function ReviewerHeading({ level, text }: { level: 1 | 2 | 3; text: string }) {
 }
 
 type View = 'boxes' | 'full'
+
+/** Shown while the question panel is closed, wherever the student has scrolled to: a tab on the right edge of the window on a
+ *  laptop (where the panel docks), a floating button at the bottom right on a small screen. */
+function ReopenAskPanel({ onOpen }: { onOpen: () => void }) {
+  return createPortal(
+    <button
+      type="button"
+      aria-label={finishedCopy.askOpen}
+      onClick={onOpen}
+      className="fixed right-4 bottom-4 z-30 flex items-center gap-2 rounded-full bg-primary px-4 py-3 text-base font-medium text-primary-foreground shadow-lg hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring lg:top-1/2 lg:right-0 lg:bottom-auto lg:-translate-y-1/2 lg:flex-col lg:rounded-r-none lg:rounded-l-xl lg:px-2.5 lg:py-4"
+    >
+      <MessageCircleQuestion className="size-5" aria-hidden />
+      <span className="lg:[writing-mode:vertical-rl]">{finishedCopy.askToggle}</span>
+    </button>,
+    document.body,
+  )
+}
+
+/** The dock element in the page layout, once the layout has been drawn (it is not there during the very first render). */
+function useDock(): HTMLElement | null {
+  return useSyncExternalStore(
+    () => () => undefined,
+    () => document.getElementById(RIGHT_DOCK_ID),
+    () => null,
+  )
+}
 
 const EXCERPT_CHARS = 140
 
@@ -42,6 +72,9 @@ function whereBoxesSit(blocks: { text: string; heading_level?: number | null; bo
  *  (the reviewer's full text makes a long page); a switch brings the text back. The Word download always has everything. */
 export function FinishedReviewer({ uploadId, checking, initialView = 'boxes' }: { uploadId: number; checking: boolean; initialView?: View }) {
   const [view, setView] = useState<View>(initialView)
+  const wide = useWideScreen()
+  const [askOpen, setAskOpen] = useState(wide) // open at first on a laptop; closed on a phone, where it would push the digests down
+  const dock = useDock()
   const queryClient = useQueryClient()
   const { data, error, refetch } = useQuery(finishedReviewerQuery(uploadId))
 
@@ -78,13 +111,34 @@ export function FinishedReviewer({ uploadId, checking, initialView = 'boxes' }: 
           <p className="font-semibold">{boxCount > 0 ? finishedCopy.progress(readyCount, boxCount) : finishedCopy.tabFinished}</p>
           <p className="max-w-xl text-sm text-muted-foreground">{finishedCopy.intro}</p>
         </div>
-        <Button asChild disabled={boxCount === 0}>
-          <a href={finishedReviewerDownloadUrl(uploadId)} download>
-            <Download data-icon="inline-start" aria-hidden />
-            {finishedCopy.download}
-          </a>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          {boxCount > 0 ? (
+            <Button variant={askOpen ? 'secondary' : 'outline'} aria-pressed={askOpen} onClick={() => setAskOpen(!askOpen)}>
+              <MessageCircleQuestion data-icon="inline-start" aria-hidden />
+              {finishedCopy.askToggle}
+            </Button>
+          ) : null}
+          <Button asChild disabled={boxCount === 0}>
+            <a href={finishedReviewerDownloadUrl(uploadId)} download>
+              <Download data-icon="inline-start" aria-hidden />
+              {finishedCopy.download}
+            </a>
+          </Button>
+        </div>
       </div>
+      {/* The question panel. On a laptop it is docked to the right edge of the window, full height, beside the digests (it is
+          placed into the dock the page layout provides). On a small screen there is no room for a side dock, so it sits
+          above the digests. */}
+      {boxCount > 0 && !askOpen ? <ReopenAskPanel onOpen={() => setAskOpen(true)} /> : null}
+      {boxCount > 0 && askOpen
+        ? wide && dock
+          ? createPortal(<AskAboutCase boxes={allBoxes} docked onClose={() => setAskOpen(false)} />, dock)
+          : (
+            <div className="mb-6">
+              <AskAboutCase boxes={allBoxes} onClose={() => setAskOpen(false)} />
+            </div>
+            )
+        : null}
       {boxCount > 0 ? (
         <div role="group" aria-label={finishedCopy.viewLabel} className="mb-6 flex flex-wrap items-center gap-2">
           <span className="text-sm font-medium">{finishedCopy.viewLabel}:</span>

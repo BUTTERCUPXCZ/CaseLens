@@ -7,6 +7,7 @@ import { GrSearch } from '@/components/GrSearch'
 import { Button } from '@/components/ui/button'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { RIGHT_DOCK_ID } from '@/lib/dock'
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   component: RootLayout,
@@ -39,6 +40,9 @@ function RootLayout() {
               <Outlet />
             </main>
           </SidebarInset>
+          {/* A panel docked to the right edge of the window, full height. A page puts its panel in here (see `RIGHT_DOCK_ID`);
+              while nothing is in it, it is hidden and takes no room. */}
+          <aside id={RIGHT_DOCK_ID} className="sticky top-0 hidden h-svh w-[24rem] shrink-0 border-l border-border bg-card empty:hidden lg:block" />
         </SidebarProvider>
       </TooltipProvider>
   )

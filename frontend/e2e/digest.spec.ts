@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import { expect, test } from '@playwright/test'
 
@@ -60,4 +61,31 @@ test('upload a reviewer, edit the finished version, download it as Word', async 
   expect(xml).toContain('The President has no inherent or delegated legislative power') // the picked Court paragraph, word for word
   expect(xml).toContain('Digest 1: Facts, Issue, Ruling and Doctrine')
   expect(xml).toContain('<w:tbl>')
+})
+
+// The question panel belongs to the Finished reviewer tab of one review. It must not show anywhere else.
+test('the question panel appears only on the Finished reviewer tab', async ({ page }) => {
+  const fixture = (name: string) => JSON.parse(readFileSync(`tests/fixtures/api/${name}.json`, 'utf8'))
+  await page.route('**/api/**', async (route) => {
+    const url = new URL(route.request().url()).pathname.replace('/api', '')
+    const json = (body: unknown) => route.fulfill({ json: body })
+    if (url === '/uploads/3') return json({ ...fixture('upload-needs-a-look'), id: 3 })
+    if (url === '/uploads/3/document') return json(fixture('finished-reviewer'))
+    if (url.startsWith('/digests/')) return json({ ...fixture('digest-ermita'), id: Number(url.split('/')[2]) })
+    return route.fallback()
+  })
+  const panel = page.getByRole('region', { name: 'Ask your own question' })
+
+  await page.goto('/reviews/3?view=finished')
+  await expect(page.getByRole('article').first()).toBeVisible()
+  await expect(panel).toBeVisible() // here, and only here
+
+  await page.getByRole('tab', { name: 'Check results' }).click()
+  await expect(panel).toHaveCount(0)
+
+  for (const url of ['/', '/reviews', '/cases', '/search?q=180046', '/reviews/3']) {
+    await page.goto(url)
+    await page.waitForLoadState('networkidle')
+    await expect(panel).toHaveCount(0)
+  }
 })

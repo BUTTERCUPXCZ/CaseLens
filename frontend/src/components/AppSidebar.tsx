@@ -1,5 +1,5 @@
 import { Link, useRouterState } from '@tanstack/react-router'
-import { BarChart3, FileCheck2, Library, Scale, UploadCloud } from 'lucide-react'
+import { FileCheck2, Library, Scale, UploadCloud } from 'lucide-react'
 
 import { ThemeToggle } from '@/components/ThemeToggle'
 import {
@@ -18,7 +18,6 @@ const NAV = [
   { to: '/', label: 'Check a reviewer', icon: UploadCloud, matches: (path: string) => path === '/' },
   { to: '/reviews', label: 'My reviews', icon: FileCheck2, matches: (path: string) => path.startsWith('/reviews') },
   { to: '/cases', label: 'Case library', icon: Library, matches: (path: string) => path.startsWith('/cases') },
-  { to: '/patterns', label: 'Patterns', icon: BarChart3, matches: (path: string) => path.startsWith('/patterns') },
 ] as const
 
 export function AppSidebar() {

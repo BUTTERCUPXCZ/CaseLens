@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import { FinishedReviewer } from '@/features/digest/FinishedReviewer'
 
@@ -13,6 +13,22 @@ import badPassage from '../fixtures/api/error-bad-passage.json'
 import reviewer from '../fixtures/api/finished-reviewer.json'
 import { API, http, HttpResponse, server } from '../mocks/server'
 import { renderApp } from '../utils'
+
+/** The tests run on a pretend screen: a laptop (wide) unless a test says otherwise. */
+function setScreen(wide: boolean) {
+  window.matchMedia = ((query: string) => ({
+    matches: wide,
+    media: query,
+    onchange: null,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    addListener: () => {},
+    removeListener: () => {},
+    dispatchEvent: () => false,
+  })) as typeof window.matchMedia
+}
+beforeEach(() => setScreen(true))
+afterEach(() => document.getElementById('right-dock')?.remove())
 
 const show = (checking = false, view: 'boxes' | 'full' = 'boxes') => renderApp(<FinishedReviewer uploadId={3} checking={checking} initialView={view} />)
 const serve = (path: string, body: object, status = 200) =>
@@ -191,7 +207,7 @@ describe('changing a field', () => {
     expect(within(box).queryByRole('button', { name: /Put back the system’s version/ })).toBeNull()
   })
 
-  it('the student can ask a question of their own, and it shows as being written', async () => {
+  it('the student can ask a question of their own about a case, and it shows as being written in that case’s box', async () => {
     const user = userEvent.setup()
     let sent: unknown
     server.use(
@@ -202,11 +218,14 @@ describe('changing a field', () => {
     )
     await show()
     const box = await ermitaBox()
-    await user.type(within(box).getByRole('textbox', { name: 'Ask your own question about this case' }), 'Is EO 566 valid?')
-    await user.click(within(box).getByRole('button', { name: 'Ask' }))
+    const ask = screen.getByRole('region', { name: 'Ask your own question' })
+    await user.type(within(ask).getByRole('textbox', { name: 'Ask your own question about this case' }), 'Is EO 566 valid?')
+    await user.click(within(ask).getByRole('button', { name: 'Ask' }))
     await waitFor(() => expect(sent).toEqual({ question: 'Is EO 566 valid?' }))
     expect(await within(box).findByRole('heading', { name: 'Is EO 566 valid?' })).toBeInTheDocument()
     expect(within(box).getByText('Still being written…')).toBeInTheDocument()
+    expect(within(ask).getByRole('status')).toHaveTextContent('Writing…') // and in the panel itself, as a chat
+    expect(within(ask).getByText('Is EO 566 valid?')).toBeInTheDocument() // the student's question as a message
   })
 
   it('an explanation that is still being written says so and offers no edit yet (synthetic: a real field set to pending)', async () => {
@@ -405,5 +424,224 @@ describe('showing only the digest boxes (the default)', () => {
     await show()
     await ermitaBox()
     expect(screen.getByRole('link', { name: /Download as Word/ })).toHaveAttribute('href', '/api/uploads/3/document.docx')
+  })
+})
+
+
+describe('one question form for the whole file', () => {
+  it('is a single card on the review page, outside every digest, with a plain explanation', async () => {
+    await show()
+    await ermitaBox()
+    const asks = screen.getAllByRole('region', { name: 'Ask your own question' })
+    expect(asks).toHaveLength(1) // one form, not one per digest
+    const ask = asks[0]
+    for (const box of screen.getAllByRole('article')) expect(box.contains(ask)).toBe(false)
+    expect(within(ask).getByRole('heading', { name: 'Ask your own question' })).toBeInTheDocument()
+    expect(within(ask).getByText(/Ask anything about this case. The answer is written from the decision and checked/)).toBeInTheDocument()
+  })
+
+  it('lets the student choose which case the question is about', async () => {
+    await show()
+    await ermitaBox()
+    const ask = screen.getByRole('region', { name: 'Ask your own question' })
+    const which = within(ask).getByRole('combobox', { name: 'Which case?' })
+    expect(within(which).getAllByRole('option')).toHaveLength(3)
+    expect(within(which).getAllByRole('option')[0]).toHaveTextContent(/Review Center/)
+  })
+
+  it('sends the question to the case that was chosen', async () => {
+    const user = userEvent.setup()
+    let url = ''
+    server.use(
+      http.post(`${API}/digests/:id/questions`, async ({ params }) => {
+        url = String(params.id)
+        return HttpResponse.json(afterAsk, { status: 202 })
+      }),
+    )
+    await show()
+    await ermitaBox()
+    const ask = screen.getByRole('region', { name: 'Ask your own question' })
+    const which = within(ask).getByRole('combobox', { name: 'Which case?' })
+    await user.selectOptions(which, within(which).getAllByRole('option')[1])
+    await user.type(within(ask).getByRole('textbox', { name: 'Ask your own question about this case' }), 'Who won?')
+    await user.click(within(ask).getByRole('button', { name: 'Ask' }))
+    await waitFor(() => expect(url).toBe('10'))
+  })
+
+  it('with only one case there is nothing to choose: it just says which case (synthetic: one box)', async () => {
+    serve('/uploads/3/document', { ...reviewer, blocks: reviewer.blocks.map((b) => ({ ...b, boxes: b.boxes.slice(0, b.index === 3 ? 1 : 0) })) })
+    await show()
+    await ermitaBox()
+    const ask = screen.getByRole('region', { name: 'Ask your own question' })
+    expect(within(ask).queryByRole('combobox')).toBeNull()
+    expect(within(ask).getByText(/About: Review Center/)).toBeInTheDocument()
+  })
+
+  it('is no longer inside the digest card', async () => {
+    await show()
+    const box = await ermitaBox()
+    expect(within(box).queryByRole('textbox', { name: /Ask your own question/ })).toBeNull()
+    expect(within(box).queryByRole('button', { name: 'Ask' })).toBeNull()
+  })
+
+  it('the Ask button stays off until something is typed', async () => {
+    await show()
+    await ermitaBox()
+    expect(within(screen.getByRole('region', { name: 'Ask your own question' })).getByRole('button', { name: 'Ask' })).toBeDisabled()
+  })
+
+  it('is not shown when there is no case yet (nothing to ask about)', async () => {
+    serve('/uploads/3/document', { ...reviewer, blocks: reviewer.blocks.map((b) => ({ ...b, boxes: [] })), all_ready: true })
+    await show(false)
+    await screen.findByText('No case boxes yet')
+    expect(screen.queryByRole('region', { name: 'Ask your own question' })).toBeNull()
+  })
+})
+
+describe('the question panel (right side, like a coding assistant)', () => {
+  it('shows the conversation inside the panel: the question, then the answer as points with its sources, and a link to the digest box', async () => {
+    const answered = {
+      ...afterAsk,
+      fields: afterAsk.fields.map((f) =>
+        f.key === 'q1' ? { ...f, state: 'ready', origin: 'ai_drafted', text: 'Yes, EO 566 is void.\n\nThe President cannot make law by order.', cites: ['P121', 'P132'] } : f,
+      ),
+    } // synthetic: the real reply with the question answered
+    serve('/digests/9', answered)
+    await show()
+    await ermitaBox()
+    const panel = screen.getByRole('region', { name: 'Ask your own question' })
+    const log = await within(panel).findByRole('log', { name: 'Your questions and the answers' })
+    expect(within(log).getByText('Is EO 566 valid?')).toBeInTheDocument()
+    expect(within(log).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['Yes, EO 566 is void.', 'The President cannot make law by order.'])
+    expect(within(log).getByText('Based on paragraphs 121, 132 of the decision')).toBeInTheDocument()
+    expect(within(log).getByRole('link', { name: 'Show in the digest box' })).toHaveAttribute('href', '#digest-9')
+  })
+
+  it('shows a question that is still being written as a message with a spinner', async () => {
+    serve('/digests/9', afterAsk) // the real reply: the question is still being written
+    await show()
+    await ermitaBox()
+    const panel = screen.getByRole('region', { name: 'Ask your own question' })
+    expect(await within(panel).findByText('Is EO 566 valid?')).toBeInTheDocument()
+    expect(within(panel).getByRole('status')).toHaveTextContent('Writing…')
+  })
+
+  it('offers a few questions to start with, and a click puts one in the box to read and send', async () => {
+    const user = userEvent.setup()
+    await show()
+    await ermitaBox()
+    const panel = screen.getByRole('region', { name: 'Ask your own question' })
+    await user.click(within(panel).getByRole('button', { name: 'Give me 4 sentences of the facts in plain words' }))
+    expect(within(panel).getByRole('textbox', { name: 'Ask your own question about this case' })).toHaveValue('Give me 4 sentences of the facts in plain words')
+  })
+
+  it('sends with the Enter key, and Shift+Enter makes a new line', async () => {
+    const user = userEvent.setup()
+    let sent: unknown
+    server.use(
+      http.post(`${API}/digests/9/questions`, async ({ request }) => {
+        sent = await request.json()
+        return HttpResponse.json(afterAsk, { status: 202 })
+      }),
+    )
+    await show()
+    await ermitaBox()
+    const box = within(screen.getByRole('region', { name: 'Ask your own question' })).getByRole('textbox', { name: 'Ask your own question about this case' })
+    await user.type(box, 'Line one{Shift>}{Enter}{/Shift}Line two')
+    expect(box).toHaveValue('Line one\nLine two')
+    await user.keyboard('{Enter}')
+    await waitFor(() => expect(sent).toEqual({ question: 'Line one\nLine two' }))
+  })
+
+  it('warns that the AI can make mistakes', async () => {
+    await show()
+    await ermitaBox()
+    expect(within(screen.getByRole('region', { name: 'Ask your own question' })).getByText(/It can make mistakes: check every answer/)).toBeInTheDocument()
+  })
+
+  it('shows no messages when nothing has been asked yet (the real digest)', async () => {
+    await show()
+    await ermitaBox()
+    const panel = screen.getByRole('region', { name: 'Ask your own question' })
+    expect(within(panel).getByRole('log').querySelectorAll('li')).toHaveLength(3) // only the three starter questions
+  })
+
+})
+
+
+describe('docked on the right edge of the window', () => {
+  const addDock = () => {
+    const dock = document.createElement('aside')
+    dock.id = 'right-dock'
+    document.body.appendChild(dock)
+    return dock
+  }
+
+  it('on a laptop screen the panel is placed in the dock on the right edge, not inside the page content', async () => {
+    const dock = addDock()
+    await show()
+    await ermitaBox()
+    const panel = await within(dock).findByRole('region', { name: 'Ask your own question' })
+    expect(dock.contains(panel)).toBe(true)
+    for (const box of screen.getAllByRole('article')) expect(box.contains(panel)).toBe(false)
+  })
+
+  it('has a button in the toolbar that closes and opens it, and a close button inside it', async () => {
+    const user = userEvent.setup()
+    const dock = addDock()
+    await show()
+    await ermitaBox()
+    const toggle = screen.getByRole('button', { name: 'Ask a question' })
+    expect(toggle).toHaveAttribute('aria-pressed', 'true')
+
+    await user.click(within(dock).getByRole('button', { name: 'Close the question panel' }))
+    expect(within(dock).queryByRole('region', { name: 'Ask your own question' })).toBeNull() // the dock is empty again, so it takes no room
+    expect(toggle).toHaveAttribute('aria-pressed', 'false')
+
+    await user.click(toggle)
+    expect(await within(dock).findByRole('region', { name: 'Ask your own question' })).toBeInTheDocument()
+  })
+
+  it('when the panel is closed, a handle stays on screen to open it again, and it goes away once the panel is open', async () => {
+    const user = userEvent.setup()
+    const dock = addDock()
+    await show()
+    await ermitaBox()
+    expect(screen.queryByRole('button', { name: 'Open the question panel' })).toBeNull() // open: no handle needed
+
+    await user.click(within(dock).getByRole('button', { name: 'Close the question panel' }))
+    const handle = await screen.findByRole('button', { name: 'Open the question panel' })
+    expect(handle.className).toMatch(/fixed/) // fixed to the window, so it is there wherever the student has scrolled
+    expect(handle.parentElement).toBe(document.body)
+
+    await user.click(handle)
+    expect(await within(dock).findByRole('region', { name: 'Ask your own question' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Open the question panel' })).toBeNull()
+  })
+
+  it('on a small screen the handle is there from the start, because the panel starts closed', async () => {
+    setScreen(false)
+    await show()
+    await ermitaBox()
+    expect(await screen.findByRole('button', { name: 'Open the question panel' })).toBeInTheDocument()
+  })
+
+  it('on a small screen there is no dock: the panel starts closed and opens above the digests', async () => {
+    setScreen(false)
+    const user = userEvent.setup()
+    await show()
+    await ermitaBox()
+    expect(screen.queryByRole('region', { name: 'Ask your own question' })).toBeNull()
+    await user.click(screen.getByRole('button', { name: 'Ask a question' }))
+    const panel = await screen.findByRole('region', { name: 'Ask your own question' })
+    const firstBox = screen.getAllByRole('article')[0]
+    expect(panel.compareDocumentPosition(firstBox) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy() // above the digests
+  })
+
+  it('has no toolbar button when there is no case to ask about (synthetic: no boxes)', async () => {
+    serve('/uploads/3/document', { ...reviewer, blocks: reviewer.blocks.map((b) => ({ ...b, boxes: [] })), all_ready: true })
+    await show(false)
+    await screen.findByText('No case boxes yet')
+    expect(screen.queryByRole('button', { name: 'Ask a question' })).toBeNull()
   })
 })

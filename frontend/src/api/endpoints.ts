@@ -9,7 +9,6 @@ import type {
   Digest,
   FinishedReviewer,
   SearchResult,
-  Trends,
   Upload,
   UploadSummary,
 } from './types'
@@ -41,7 +40,6 @@ export const getCase = (id: number) => request<CaseDetail>(`/cases/${id}`)
 
 export const getInsights = (id: number) => request<CaseInsights>(`/cases/${id}/insights`)
 
-export const getTrends = (limit = 10) => request<Trends>(`/insights/trends${query({ limit })}`)
 
 export const searchCatalog = (params: { q: string; year?: number; limit?: number; offset?: number }) =>
   request<CatalogSearch>(`/catalog/search${query(params)}`)

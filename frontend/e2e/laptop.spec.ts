@@ -14,7 +14,6 @@ test('the start page offers one clear thing to do, and is accessible', async ({ 
     'Check a reviewer',
     'My reviews',
     'Case library',
-    'Patterns',
   ])
   await expectAccessible(page)
 })
@@ -94,13 +93,6 @@ test('the case library lists, finds, and says when nothing matches', async ({ pa
   await expectAccessible(page)
 })
 
-test('patterns are honest about having too few cases', async ({ page }) => {
-  await page.goto('/patterns')
-  await expect(page.getByRole('heading', { name: /Save 5 cases to see patterns/ })).toBeVisible()
-  await expect(page.getByText(/read these as examples, not patterns/)).toBeVisible()
-  await expectAccessible(page)
-})
-
 test('searching by G.R. number finds the case on Lawphil\'s list and opens it', async ({ page }) => {
   await page.goto('/')
   await page.getByLabel('Find a case by name or G.R. number').fill('G.R. No. 180046')
@@ -150,7 +142,7 @@ test('no browser errors or content-policy violations on any screen', async ({ pa
   })
   page.on('pageerror', (error) => problems.push(error.message))
 
-  for (const url of ['/', '/reviews', '/cases', '/patterns', '/search?q=180046']) {
+  for (const url of ['/', '/reviews', '/cases', '/search?q=180046']) {
     await page.goto(url)
     await page.waitForLoadState('networkidle')
   }

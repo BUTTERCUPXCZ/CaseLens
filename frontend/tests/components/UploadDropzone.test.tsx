@@ -20,7 +20,7 @@ describe('the drop zone', () => {
     await renderApp(<UploadDropzone />)
     expect(await screen.findByRole('heading', { name: 'Drop your reviewer here' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Choose a file' })).toBeInTheDocument()
-    expect(screen.getByText(/A PDF or Word file, up to 10 MB/)).toBeInTheDocument()
+    expect(screen.getByText(/A PDF or Word file, up to 5 MB/)).toBeInTheDocument()
   })
 
   it('takes a PDF to the results page of the review the backend created', async () => {
@@ -34,7 +34,7 @@ describe('the drop zone', () => {
 
   it.each([
     ['a text file', new File(['hello'], 'notes.txt', { type: 'text/plain' }), /We can read PDF and Word/],
-    ['a file over 10 MB', pdf('huge.pdf', 10 * 1024 * 1024 + 1), /larger than 10 MB/],
+    ['a file over 5 MB', pdf('huge.pdf', 5 * 1024 * 1024 + 1), /larger than 5 MB/],
   ])('refuses %s in plain words and never contacts the server', async (_name, file, message) => {
     let contacted = false
     server.use(http.post(`${API}/uploads`, () => ((contacted = true), HttpResponse.json({}))))

@@ -1,12 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, UploadFile
 
 from caselens.composition import Services
+from caselens.infrastructure.config import get_settings
 from caselens.presentation.api.schemas import FetchByUrlIn, UploadOut, UploadSummaryOut
 from caselens.presentation.dependencies import get_services
 
 router = APIRouter(prefix="/uploads", tags=["uploads"])
-
-MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 
 
 @router.post("", response_model=UploadOut)
@@ -15,9 +14,10 @@ def create_upload(
 ) -> UploadOut:
     """Upload a PDF/DOCX. Known citations are checked now; the rest finish in the
     background (poll GET /uploads/{id}). 202 means "still processing"."""
-    data = file.file.read(MAX_UPLOAD_BYTES + 1)
-    if len(data) > MAX_UPLOAD_BYTES:
-        raise HTTPException(413, f"File is larger than {MAX_UPLOAD_BYTES // (1024 * 1024)} MB.")
+    max_bytes = get_settings().upload_max_mb * 1024 * 1024
+    data = file.file.read(max_bytes + 1)
+    if len(data) > max_bytes:
+        raise HTTPException(413, f"File is larger than {get_settings().upload_max_mb} MB.")
 
     upload = services.process_upload().execute(file.filename or "upload", data)
     if upload.status == "processing":
