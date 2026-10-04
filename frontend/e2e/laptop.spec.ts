@@ -14,6 +14,7 @@ test('the start page offers one clear thing to do, and is accessible', async ({ 
     'Check a reviewer',
     'My reviews',
     'Case library',
+    'How to use it',
   ])
   await expectAccessible(page)
 })
@@ -165,4 +166,22 @@ test('the theme the student picks is remembered and applied before the page pain
 
   await page.getByRole('button', { name: /Switch to the light theme/ }).click()
   await expect(page.locator('html')).not.toHaveClass(/dark/)
+})
+
+test('the guide opens from the menu, is accessible, and the welcome card closes for good', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByRole('heading', { name: 'New here? It takes four steps' })).toBeVisible()
+  await page.getByRole('link', { name: 'Read the full guide' }).click()
+  await expect(page).toHaveURL(/\/guide/)
+  await expect(page.getByRole('heading', { name: 'How to use CaseLens', level: 1 })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Upload your reviewer', level: 3 })).toBeVisible()
+  await expect(page.getByText('Matches the Court\'s record')).toBeVisible()
+  await expectAccessible(page)
+
+  await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Check a reviewer' }).click()
+  await page.getByRole('button', { name: 'Got it' }).click()
+  await expect(page.getByRole('heading', { name: 'New here? It takes four steps' })).toBeHidden()
+  await page.reload()
+  await expect(page.getByRole('heading', { name: 'Drop your reviewer here' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'New here? It takes four steps' })).toBeHidden()
 })

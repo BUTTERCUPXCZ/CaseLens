@@ -22,7 +22,7 @@ Checks a student's own citations against the official record and links every res
 
 ## Operating Context
 
-- Input: PDF (text-based) or DOCX reviewers, up to 10 MB. Scanned image PDFs are not supported.
+- Input: PDF (text-based) or DOCX reviewers, up to 5 MB. Scanned image PDFs are not supported.
 - Source of truth: Lawphil (lawphil.net, Arellano Law Foundation). The backend fetches on demand, throttled and cached; a first lookup can take about 30 to 60 seconds, repeat lookups are instant.
 - Backend API already exists (FastAPI, PostgreSQL): uploads, case search by G.R. number, stored cases with footnotes, per-case findings, and cross-case patterns. The app is an internal tool; no accounts or login in this version.
 - A G.R. number alone cannot be searched: the backend needs the year the student wrote (it tolerates a year that is off by up to 2). Without a year the student can paste the case's Lawphil link instead.

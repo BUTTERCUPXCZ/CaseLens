@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 
 import { PageHeader } from '@/components/PageHeader'
+import { WelcomeCard } from '@/features/guide/WelcomeCard'
 import { ReviewList } from '@/features/reviews/ReviewList'
 import { UploadDropzone } from '@/features/upload/UploadDropzone'
 
@@ -15,6 +16,8 @@ function Home() {
         title="Check a reviewer"
         description="Drop the file you wrote. We look up every case it cites and show you what matches the Supreme Court's record and what needs fixing."
       />
+
+      <WelcomeCard />
 
       <UploadDropzone />
 

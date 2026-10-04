@@ -265,3 +265,115 @@ export const accessCopy = {
   submit: 'Open CaseLens',
   unreachable: "We couldn't reach the server. Try again in a minute.",
 }
+
+/** The "How to use CaseLens" page. Plain words, one idea per step. The result labels are not repeated here: the page shows the
+ *  real ones from `citationStatus`, so the guide cannot drift from the app. */
+export type GuideExample = 'redpen' | 'labels'
+export type GuideStep = { title: string; body: string[]; example?: GuideExample }
+
+export const guideCopy = {
+  navLabel: 'How to use it',
+  title: 'How to use CaseLens',
+  description: 'From your reviewer file to a checked, finished reviewer in a few steps.',
+  promise:
+    'CaseLens finds the cases your reviewer cites, gets the real decision from Lawphil, and checks what you wrote against the Court’s record. It shows where everything comes from and never guesses. You always decide what stays in your reviewer.',
+  stepsTitle: 'The steps',
+  steps: [
+    {
+      title: 'Upload your reviewer',
+      body: [
+        'On “Check a reviewer”, drop your file or choose it. It can be a PDF or a Word (.docx) file, up to 5 MB.',
+        'The file must have real text. A scanned picture of pages cannot be read.',
+      ],
+    },
+    {
+      title: 'Wait while we check your cases',
+      body: [
+        'We look up each G.R. number you cited on Lawphil. This can take a minute or two the first time. The page updates by itself, so you can leave it open.',
+        'If the site has been quiet, the very first page can be slow to open. Wait a moment and it will load.',
+      ],
+    },
+    {
+      title: 'Read the results',
+      body: [
+        'Each case you cited gets one of these labels. When something is off, we mark it the way a proofreader would: your words crossed out, the Court’s record beside them.',
+        reporterNote,
+      ],
+      example: 'labels',
+    },
+    {
+      title: 'Open your finished reviewer',
+      body: [
+        'Open “Finished reviewer” to see one digest box for each case: Facts, Issue, Ruling and Doctrine, then short explanations in plain words.',
+        'The Facts, Issue and Ruling are the Court’s own words, never reworded. The explanations are written from the decision and marked “Drafted from the decision. Check it.” Read them against the Court’s text.',
+        'Choose “Digest boxes only” for a short page, or “With my reviewer text” to see the boxes inside your own paragraphs.',
+      ],
+      example: 'redpen',
+    },
+    {
+      title: 'Make it yours',
+      body: [
+        'Every box can be changed. Use Edit to type, pick paragraphs of the decision, or paste your own Doctrine. “Put back the system’s version” undoes your change, and “Write it again” asks for a new explanation.',
+      ],
+    },
+    {
+      title: 'Ask your own question',
+      body: [
+        'Use “Ask a question” to open the panel on the right side. Choose a case and ask anything about it. The answer is written from the decision, checked, and added to that case’s box.',
+        'Closed the panel? Use the tab on the right edge to open it again.',
+      ],
+    },
+    {
+      title: 'Download your Word file',
+      body: [
+        'Press “Download as Word”. You get your whole reviewer with the digest boxes inside. A Word upload keeps its own layout. A PDF is rebuilt as a new Word file: the text is the same, but the fonts and layout differ.',
+        'Download it before you leave. To keep the service small, reviewers you uploaded may be removed after about a week.',
+      ],
+    },
+    {
+      title: 'Find any case',
+      body: [
+        'Type a case name or a G.R. number in the box at the top of any page. Cases from 1987 onward are in the list. For an older case, add the year or paste its Lawphil link.',
+        'Cases you open are kept in the Case library, with their footnotes, the ruling, and the laws and cases they cite.',
+      ],
+    },
+  ] satisfies GuideStep[],
+  goodToKnowTitle: 'Good to know',
+  goodToKnow: [
+    'CaseLens gives information, not legal advice. Lawphil gives no warranty that its text is complete or correct: confirm with the Supreme Court.',
+    'If your file already has digests you wrote, we keep them and add our own box next to each case.',
+    'If the explanation service is busy, you still get the Court’s own text. Come back later for the explanations.',
+    'The text of every decision comes from Lawphil, and each box links to the official page.',
+  ],
+  faqTitle: 'Questions',
+  faq: [
+    {
+      q: 'Why does it say “Needs a look”?',
+      a: 'Something you wrote differs from the Court’s record, for example the year or date. The Court’s version is shown next to yours. Check it, then fix your reviewer if needed.',
+    },
+    {
+      q: 'Why is a box or an explanation empty?',
+      a: 'We only show what the decision supports. If it cannot be shown, the box says so, and you can pick paragraphs, paste your own text, or write it yourself.',
+    },
+    {
+      q: 'Can I trust the explanations?',
+      a: 'They are written from the decision, and each sentence is checked against it. They can still be wrong, so they are marked as drafts. The Court’s own words are the source.',
+    },
+    {
+      q: 'A case could not be found. What now?',
+      a: 'Check the number and year you wrote, or paste the case’s Lawphil link on its row. If it says it could not check right now, try again in a minute.',
+    },
+  ],
+  start: 'Check a reviewer',
+  redpenCaption: 'Example: you wrote 2010, and the Court’s record says 2009.',
+  labelsCaption: 'The labels you can see next to each case',
+}
+
+/** The short card new visitors see once on the start page. */
+export const welcomeCopy = {
+  title: 'New here? It takes four steps',
+  steps: ['Upload your reviewer', 'We check every case it cites', 'Read and edit your digest boxes', 'Download it as a Word file'],
+  guide: 'Read the full guide',
+  dismiss: 'Got it',
+  dismissLabel: 'Close this welcome card',
+}

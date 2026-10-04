@@ -30,6 +30,7 @@ CaseLens does the repeating work and keeps the law accurate:
 | **Edit everything** | Type, paste, pick paragraphs of the decision, put the original back, or write an answer again. |
 | **Word download** | The reviewer with the digest boxes inside, as a `.docx`. A Word upload keeps its own layout. A PDF is rebuilt as a new Word file. |
 | **Case library** | Saved cases with their footnotes, and facts read from each decision (ruling, justice, laws and cases cited). |
+| **Guide** | A "How to use it" page for first-time students, and a short welcome card on the start page. |
 
 ## How the AI is kept honest
 

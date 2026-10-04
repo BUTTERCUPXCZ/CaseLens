@@ -58,3 +58,10 @@ test('the finished reviewer fits the phone and stays usable', async ({ page }) =
   await expectNoHorizontalScroll(page)
   await expectAccessible(page)
 })
+
+test('the guide fits the phone and nothing scrolls sideways', async ({ page }) => {
+  await page.goto('/guide')
+  await expect(page.getByRole('heading', { name: 'How to use CaseLens', level: 1 })).toBeVisible()
+  await expectNoHorizontalScroll(page)
+  await expectAccessible(page)
+})

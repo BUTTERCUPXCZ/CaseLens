@@ -1,6 +1,7 @@
 import { Link, useRouterState } from '@tanstack/react-router'
-import { FileCheck2, Library, Scale, UploadCloud } from 'lucide-react'
+import { BookOpen, FileCheck2, Library, Scale, UploadCloud } from 'lucide-react'
 
+import { guideCopy } from '@/lib/copy'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import {
   Sidebar,
@@ -18,6 +19,7 @@ const NAV = [
   { to: '/', label: 'Check a reviewer', icon: UploadCloud, matches: (path: string) => path === '/' },
   { to: '/reviews', label: 'My reviews', icon: FileCheck2, matches: (path: string) => path.startsWith('/reviews') },
   { to: '/cases', label: 'Case library', icon: Library, matches: (path: string) => path.startsWith('/cases') },
+  { to: '/guide', label: guideCopy.navLabel, icon: BookOpen, matches: (path: string) => path.startsWith('/guide') },
 ] as const
 
 export function AppSidebar() {
