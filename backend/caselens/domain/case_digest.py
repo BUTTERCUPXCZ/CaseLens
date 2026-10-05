@@ -19,6 +19,7 @@ class FieldKind(str, Enum):
 class FieldOrigin(str, Enum):
     COURT_HEADING = "court_heading"  # found under the Court's own heading ("The Facts")
     COURT_RULING = "court_ruling"  # the paragraphs before the final SO ORDERED
+    COURT_SUGGESTED = "court_suggested"  # the Court's own paragraphs, found for the student (rules or an AI that only points): check them
     STUDENT_PICKED = "student_picked"  # paragraphs of the decision the student chose
     STUDENT_PASTED = "student_pasted"  # text the student pasted (not checked against the decision)
     AI_DRAFTED = "ai_drafted"  # sentences from the answerer that passed every check
@@ -73,6 +74,7 @@ class DigestField:
     note: str | None = None  # why a field is empty or unavailable, in plain words
     edited: bool = False
     original: "DigestField | None" = None  # what the system produced, for "reset to the Court's text"
+    reason: str | None = None  # for the audit log: why this passage was suggested ("cue: ...", "picked by the AI, confirmed by a second check")
 
     def edited_to(self, text: str, origin: FieldOrigin, passage: Passage | None = None) -> "DigestField":
         base = self.original or replace(self, original=None)

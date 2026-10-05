@@ -21,6 +21,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Access Status */
+        get: operations["access_status_access_get"];
+        put?: never;
+        /** Enter Access Code */
+        post: operations["enter_access_code_access_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/uploads": {
         parameters: {
             query?: never;
@@ -57,7 +75,11 @@ export interface paths {
         get: operations["get_upload_uploads__upload_id__get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Delete Upload
+         * @description Remove a reviewer and its digest boxes. The cases it cited stay in the library.
+         */
+        delete: operations["delete_upload_uploads__upload_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -144,6 +166,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/cases/{case_id}/subjects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Subjects
+         * @description Set a case's tags (several, or an empty list to clear them). Only students label cases; the system never guesses a tag.
+         */
+        put: operations["set_subjects_cases__case_id__subjects_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cases/{case_id}/document.docx": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download Case
+         * @description The whole decision as a Word file: text, footnotes and opinions exactly as the Court printed them.
+         */
+        get: operations["download_case_cases__case_id__document_docx_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/cases/{case_id}": {
         parameters: {
             query?: never;
@@ -170,9 +232,50 @@ export interface paths {
         };
         /**
          * Library Cases
-         * @description Every stored case, newest decision first. Lighter than GET /cases/{id}: no full text.
+         * @description One row per main case, newest decision first. Lighter than GET /cases/{id}: no full text. A Resolution or a repeat of the same
+         *     case is never listed on its own.
          */
         get: operations["library_cases_library_cases_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/library/subjects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Library Subjects
+         * @description The filter rail: every subject with the number of cases filed under it, and the cases with no subject yet.
+         */
+        get: operations["library_subjects_library_subjects_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/library/subject-list": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Subject List
+         * @description The subjects, for a picker.
+         */
+        get: operations["subject_list_library_subject_list_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -438,6 +541,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/digests/{digest_id}/fields/{key}/suggest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Suggest Passage
+         * @description Look again for the Court's own passage of an empty Facts, Issue or Doctrine (the "Suggest for me" button).
+         */
+        post: operations["suggest_passage_digests__digest_id__fields__key__suggest_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/digests/{digest_id}/regenerate": {
         parameters: {
             query?: never;
@@ -496,10 +619,249 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/uploads/{upload_id}/cases.docx": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download Review Cases
+         * @description Every case this reviewer cites (that we found), in full, as one Word file: the Court's own text, footnotes
+         *     and opinions. For a student who wants to write the digests by hand.
+         */
+        get: operations["download_review_cases_uploads__upload_id__cases_docx_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cases/{case_id}/case-digest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Case Digest
+         * @description The case digest in the client's format (Doctrine, Facts, Issue, Ruling, Ratio Decidendi, Dissents, Topic Explained, Why it matters)
+         *     for a topic scope, or state "none" if it has not been asked for yet.
+         */
+        get: operations["get_case_digest_cases__case_id__case_digest_get"];
+        put?: never;
+        /**
+         * Request Case Digest
+         * @description Ask for the digest (for a topic scope, if given). It is written once in the background (a few minutes) and kept; poll GET until ready.
+         */
+        post: operations["request_case_digest_cases__case_id__case_digest_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cases/{case_id}/case-digest.docx": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download Case Digest
+         * @description The digest as a Word file, laid out like the client's sample.
+         */
+        get: operations["download_case_digest_cases__case_id__case_digest_docx_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bulk/{batch_id}/digests/{digest_id}/sections/{section}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Edit Section
+         * @description The student rewrites one section of a digest, in their review only. The shared AI digest is not changed.
+         */
+        put: operations["edit_section_bulk__batch_id__digests__digest_id__sections__section__put"];
+        post?: never;
+        /**
+         * Put Back Section
+         * @description Put back the AI's text for this section in this review.
+         */
+        delete: operations["put_back_section_bulk__batch_id__digests__digest_id__sections__section__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cases/{case_id}/questions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Case Questions
+         * @description The questions asked about a case in one review, oldest first, with their answers.
+         */
+        get: operations["case_questions_cases__case_id__questions_get"];
+        put?: never;
+        /**
+         * Ask About Case
+         * @description Ask a question about a case. It is answered in the background from the decision (a few seconds); poll GET for the answer.
+         */
+        post: operations["ask_about_case_cases__case_id__questions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Recent Batches
+         * @description The uploads, newest first ("My reviews").
+         */
+        get: operations["recent_batches_bulk_get"];
+        put?: never;
+        /**
+         * Start Bulk
+         * @description Start a bulk upload. Pasted G.R. numbers are queued at once; send decision files next with POST /bulk/{id}/files. Each number or
+         *     file becomes ONE main case; the cases a decision only cites are never added.
+         */
+        post: operations["start_bulk_bulk_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bulk/{batch_id}/files": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add Bulk Files
+         * @description Add decision files (PDF or Word), a few at a time (the web host limits one request to about 4 MB).
+         */
+        post: operations["add_bulk_files_bulk__batch_id__files_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bulk/{batch_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Bulk
+         * @description Progress of a bulk upload: how each item ended so far, and how the digests are coming along. Poll until `finished`.
+         */
+        get: operations["get_bulk_bulk__batch_id__get"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete Bulk
+         * @description Remove an upload from "My reviews", with the questions asked in it. Its cases and their digests stay in the library.
+         */
+        delete: operations["delete_bulk_bulk__batch_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bulk/{batch_id}/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Bulk Items */
+        get: operations["bulk_items_bulk__batch_id__items_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bulk/{batch_id}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Retry Bulk
+         * @description Queue again the items Lawphil could not answer for.
+         */
+        post: operations["retry_bulk_bulk__batch_id__retry_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AccessIn */
+        AccessIn: {
+            /** Code */
+            code: string;
+        };
+        /** AnswerSentenceOut */
+        AnswerSentenceOut: {
+            /** Text */
+            text: string;
+            /** Cites */
+            cites: string[];
+        };
+        /** AskIn */
+        AskIn: {
+            /** Question */
+            question: string;
+            /** Batch Id */
+            batch_id?: number | null;
+        };
         /**
          * Attribution
          * @description Shown with every response that presents official text. Wording follows Lawphil's own
@@ -529,6 +891,11 @@ export interface components {
             /** Boxes */
             boxes: components["schemas"]["BoxRefOut"][];
         };
+        /** Body_add_bulk_files_bulk__batch_id__files_post */
+        Body_add_bulk_files_bulk__batch_id__files_post: {
+            /** Files */
+            files: string[];
+        };
         /** Body_create_upload_uploads_post */
         Body_create_upload_uploads_post: {
             /** File */
@@ -548,6 +915,104 @@ export interface components {
             heading: string;
             /** Ready */
             ready: boolean;
+        };
+        /** BulkCaseOut */
+        BulkCaseOut: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Gr No */
+            gr_no: string;
+            /** Subjects */
+            subjects: components["schemas"]["SubjectOut"][];
+        };
+        /** BulkCountsOut */
+        BulkCountsOut: {
+            /** Total */
+            total: number;
+            /** Queued */
+            queued: number;
+            /** Found */
+            found: number;
+            /** Duplicate */
+            duplicate: number;
+            /** Not Found */
+            not_found: number;
+            /** Unreadable */
+            unreadable: number;
+            /** Failed */
+            failed: number;
+            /** Digests Ready */
+            digests_ready: number;
+            /** Digests Pending */
+            digests_pending: number;
+            /** Digests Failed */
+            digests_failed: number;
+        };
+        /** BulkItemOut */
+        BulkItemOut: {
+            /** Id */
+            id: number;
+            /** Position */
+            position: number;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "gr_number" | "file";
+            /** Label */
+            label: string;
+            /** Gr No */
+            gr_no: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "queued" | "found" | "duplicate" | "not_found" | "unreadable" | "failed";
+            /** Message */
+            message: string | null;
+            case: components["schemas"]["BulkCaseOut"] | null;
+            /** Digest */
+            digest: ("none" | "pending" | "ready" | "failed") | null;
+        };
+        /** BulkItemsOut */
+        BulkItemsOut: {
+            /** Items */
+            items: components["schemas"]["BulkItemOut"][];
+            /** Total */
+            total: number;
+        };
+        /** BulkOut */
+        BulkOut: {
+            /** Id */
+            id: number;
+            /** Created At */
+            created_at: string | null;
+            /** Subjects */
+            subjects: components["schemas"]["SubjectOut"][];
+            /** Topic Scope */
+            topic_scope: string;
+            /** Labels */
+            labels: string[];
+            counts: components["schemas"]["BulkCountsOut"];
+            /** Finished */
+            finished: boolean;
+        };
+        /** BulkStartIn */
+        BulkStartIn: {
+            /**
+             * Text
+             * @default
+             */
+            text: string;
+            /** Subject Ids */
+            subject_ids?: number[];
+            /**
+             * Topic Scope
+             * @default
+             */
+            topic_scope: string;
         };
         /** CaseDetailOut */
         CaseDetailOut: {
@@ -575,6 +1040,27 @@ export interface components {
             disposition: "GRANTED" | "DENIED" | "PARTIALLY_GRANTED" | "DISMISSED" | "AFFIRMED" | "REVERSED" | "UNKNOWN";
             /** Source Url */
             source_url: string;
+            /**
+             * Numbers
+             * @default []
+             */
+            numbers: string[];
+            /**
+             * Subjects
+             * @default []
+             */
+            subjects: components["schemas"]["SubjectOut"][];
+            /**
+             * Digest Ready
+             * @default false
+             */
+            digest_ready: boolean;
+            /**
+             * Digest State
+             * @default none
+             * @enum {string}
+             */
+            digest_state: "none" | "pending" | "ready" | "failed";
             /** Full Text */
             full_text: string;
             /** Fetched At */
@@ -594,6 +1080,35 @@ export interface components {
             statutes: components["schemas"]["StatuteOut"][];
             /** Cited Cases */
             cited_cases: components["schemas"]["CitedCaseOut"][];
+        };
+        /** CaseDigestOut */
+        CaseDigestOut: {
+            /** Id */
+            id: number | null;
+            /** Case Id */
+            case_id: number;
+            /** Scope */
+            scope: string;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "none" | "pending" | "ready" | "failed";
+            /** Error */
+            error: string | null;
+            /** Written */
+            written: number;
+            /** Dropped */
+            dropped: number;
+            header: components["schemas"]["DigestHeaderOut"];
+            /** Sections */
+            sections: components["schemas"]["DigestSectionOut"][];
+            /** Levels */
+            levels: {
+                [key: string]: string[];
+            };
+            /** Updated At */
+            updated_at: string | null;
         };
         /** CasePageOut */
         CasePageOut: {
@@ -632,6 +1147,27 @@ export interface components {
             disposition: "GRANTED" | "DENIED" | "PARTIALLY_GRANTED" | "DISMISSED" | "AFFIRMED" | "REVERSED" | "UNKNOWN";
             /** Source Url */
             source_url: string;
+            /**
+             * Numbers
+             * @default []
+             */
+            numbers: string[];
+            /**
+             * Subjects
+             * @default []
+             */
+            subjects: components["schemas"]["SubjectOut"][];
+            /**
+             * Digest Ready
+             * @default false
+             */
+            digest_ready: boolean;
+            /**
+             * Digest State
+             * @default none
+             * @enum {string}
+             */
+            digest_state: "none" | "pending" | "ready" | "failed";
         };
         /** CatalogBuildOut */
         CatalogBuildOut: {
@@ -765,6 +1301,15 @@ export interface components {
             /** Reporter */
             reporter: string | null;
         };
+        /** DigestBlockOut */
+        DigestBlockOut: {
+            /** Heading */
+            heading: string | null;
+            /** As List */
+            as_list: boolean;
+            /** Sentences */
+            sentences: components["schemas"]["DigestSentenceOut"][];
+        };
         /** DigestFieldOut */
         DigestFieldOut: {
             /** Key */
@@ -782,7 +1327,7 @@ export interface components {
              * Origin
              * @enum {string}
              */
-            origin: "court_heading" | "court_ruling" | "student_picked" | "student_pasted" | "ai_drafted" | "student_written" | "empty";
+            origin: "court_heading" | "court_ruling" | "court_suggested" | "student_picked" | "student_pasted" | "ai_drafted" | "student_written" | "empty";
             /**
              * State
              * @enum {string}
@@ -799,6 +1344,17 @@ export interface components {
             edited: boolean;
             /** Can Reset */
             can_reset: boolean;
+        };
+        /** DigestHeaderOut */
+        DigestHeaderOut: {
+            /** Case Name */
+            case_name: string;
+            /** Citation */
+            citation: string;
+            /** Topic */
+            topic: string | null;
+            /** Ponente */
+            ponente: string | null;
         };
         /** DigestOut */
         DigestOut: {
@@ -854,6 +1410,34 @@ export interface components {
             template: "facts_and_doctrine" | "full";
             /** Questions */
             questions?: string[];
+        };
+        /** DigestSectionOut */
+        DigestSectionOut: {
+            /** Key */
+            key: string;
+            /** Title */
+            title: string;
+            /** Blocks */
+            blocks: components["schemas"]["DigestBlockOut"][];
+            /**
+             * Edited
+             * @default false
+             */
+            edited: boolean;
+            /** Text */
+            text: string;
+        };
+        /** DigestSentenceOut */
+        DigestSentenceOut: {
+            /** Text */
+            text: string;
+            /**
+             * Key
+             * @default false
+             */
+            key: boolean;
+            /** Cites */
+            cites: string[];
         };
         /** DispositionCountOut */
         DispositionCountOut: {
@@ -957,6 +1541,17 @@ export interface components {
             attribution: components["schemas"]["Attribution"];
         };
         /**
+         * ItemStatus
+         * @enum {string}
+         */
+        ItemStatus: "queued" | "found" | "duplicate" | "not_found" | "unreadable" | "failed";
+        /**
+         * Level
+         * @description What a student downloads. One digest is written once; a level only chooses which sections are printed.
+         * @enum {string}
+         */
+        Level: "short" | "standard" | "full";
+        /**
          * MismatchOut
          * @description One field where the student's citation differs from the official record.
          */
@@ -1010,6 +1605,28 @@ export interface components {
             /** Question */
             question: string;
         };
+        /** QuestionOut */
+        QuestionOut: {
+            /** Id */
+            id: number;
+            /** Case Id */
+            case_id: number;
+            /** Batch Id */
+            batch_id: number | null;
+            /** Question */
+            question: string;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "pending" | "ready" | "failed";
+            /** Sentences */
+            sentences: components["schemas"]["AnswerSentenceOut"][];
+            /** Error */
+            error: string | null;
+            /** Created At */
+            created_at: string | null;
+        };
         /** RegenerateIn */
         RegenerateIn: {
             /** Keys */
@@ -1024,6 +1641,16 @@ export interface components {
             status: "found" | "pending" | "needs_year";
             /** Cases */
             cases: components["schemas"]["CaseSummaryOut"][];
+        };
+        /**
+         * Section
+         * @enum {string}
+         */
+        Section: "doctrine" | "facts" | "arguments_petitioners" | "arguments_respondents" | "issue" | "ruling" | "ratio" | "dissents" | "topic" | "why";
+        /** SectionEditIn */
+        SectionEditIn: {
+            /** Text */
+            text: string;
         };
         /** StatuteCountOut */
         StatuteCountOut: {
@@ -1042,6 +1669,27 @@ export interface components {
             number: string;
             /** Raw */
             raw: string;
+        };
+        /** SubjectCountOut */
+        SubjectCountOut: {
+            /** Subject Id */
+            subject_id: number | null;
+            /** Name */
+            name: string;
+            /** Count */
+            count: number;
+        };
+        /** SubjectOut */
+        SubjectOut: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+        };
+        /** SubjectsIn */
+        SubjectsIn: {
+            /** Subject Ids */
+            subject_ids?: number[];
         };
         /** TextIn */
         TextIn: {
@@ -1160,6 +1808,61 @@ export interface operations {
             };
         };
     };
+    access_status_access_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    enter_access_code_access_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccessIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_uploads_uploads_get: {
         parameters: {
             query?: {
@@ -1243,6 +1946,35 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["UploadOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_upload_uploads__upload_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                upload_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
@@ -1387,6 +2119,72 @@ export interface operations {
             };
         };
     };
+    set_subjects_cases__case_id__subjects_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubjectsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaseSummaryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_case_cases__case_id__document_docx_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_case_cases__case_id__get: {
         parameters: {
             query?: never;
@@ -1423,6 +2221,12 @@ export interface operations {
             query?: {
                 /** @description Part of the case name, or the start of a G.R. number */
                 q?: string | null;
+                /** @description Only the cases filed under this subject */
+                subject_id?: number | null;
+                /** @description Only the cases with no subject yet */
+                no_subject?: boolean;
+                /** @description Only what this bulk upload gave: its main cases, each once */
+                batch_id?: number | null;
                 limit?: number;
                 offset?: number;
             };
@@ -1448,6 +2252,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    library_subjects_library_subjects_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubjectCountOut"][];
+                };
+            };
+        };
+    };
+    subject_list_library_subject_list_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubjectOut"][];
                 };
             };
         };
@@ -1894,6 +2738,38 @@ export interface operations {
             };
         };
     };
+    suggest_passage_digests__digest_id__fields__key__suggest_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                digest_id: number;
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DigestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     regenerate_digests__digest_id__regenerate_post: {
         parameters: {
             query?: never;
@@ -1978,6 +2854,513 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_review_cases_uploads__upload_id__cases_docx_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                upload_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_case_digest_cases__case_id__case_digest_get: {
+        parameters: {
+            query?: {
+                /** @description The topic scope the digest is focused on; empty = the standard digest */
+                scope?: string;
+                /** @description The review (upload) the digest is read in: its section edits and its file's reporter citation apply */
+                batch_id?: number | null;
+            };
+            header?: never;
+            path: {
+                case_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaseDigestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    request_case_digest_cases__case_id__case_digest_post: {
+        parameters: {
+            query?: {
+                regenerate?: boolean;
+                /** @description The topic scope the digest is focused on; empty = the standard digest */
+                scope?: string;
+                /** @description The review (upload) the digest is read in: its section edits and its file's reporter citation apply */
+                batch_id?: number | null;
+            };
+            header?: never;
+            path: {
+                case_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaseDigestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_case_digest_cases__case_id__case_digest_docx_get: {
+        parameters: {
+            query?: {
+                /** @description short: Facts and Doctrine; standard: Doctrine, Facts, Issue, Ruling; full: the whole digest */
+                level?: components["schemas"]["Level"];
+                /** @description Print the decision paragraphs each part rests on (the client's sample does not) */
+                sources?: boolean;
+                /** @description The topic scope the digest is focused on; empty = the standard digest */
+                scope?: string;
+                /** @description The review (upload) the digest is read in: its section edits and its file's reporter citation apply */
+                batch_id?: number | null;
+            };
+            header?: never;
+            path: {
+                case_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    edit_section_bulk__batch_id__digests__digest_id__sections__section__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batch_id: number;
+                digest_id: number;
+                section: components["schemas"]["Section"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SectionEditIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_back_section_bulk__batch_id__digests__digest_id__sections__section__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batch_id: number;
+                digest_id: number;
+                section: components["schemas"]["Section"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    case_questions_cases__case_id__questions_get: {
+        parameters: {
+            query?: {
+                /** @description The review the questions were asked in */
+                batch_id?: number | null;
+            };
+            header?: never;
+            path: {
+                case_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuestionOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ask_about_case_cases__case_id__questions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AskIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuestionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    recent_batches_bulk_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    start_bulk_bulk_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkStartIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_bulk_files_bulk__batch_id__files_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batch_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_add_bulk_files_bulk__batch_id__files_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkItemsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_bulk_bulk__batch_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batch_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_bulk_bulk__batch_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batch_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    bulk_items_bulk__batch_id__items_get: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["ItemStatus"] | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                batch_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkItemsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    retry_bulk_bulk__batch_id__retry_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batch_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
             /** @description Validation Error */

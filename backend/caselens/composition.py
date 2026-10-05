@@ -12,10 +12,16 @@ from sqlalchemy.orm import Session
 
 from caselens.application.ports.catalog import IndexFetcher, YearDiscovery
 from caselens.application.ports.gateways import CaseFetcher, CaseLocator, JobQueue
-from caselens.application.ports.ai import AnswerChecker, AnswerWriter
+from caselens.application.ports.ai import AnswerChecker, AnswerWriter, DigestWriter, PassageChecker, PassagePicker
 from caselens.application.use_cases.answer_case_question import AnswerCaseQuestion
 from caselens.application.use_cases.attach_case_to_citation import AttachCaseToCitation
 from caselens.application.use_cases.build_case_digest import BuildCaseDigest
+from caselens.application.use_cases.bulk import AddBulkFiles, GetBulkBatch, ResolveBulkItem, RetryBulkBatch, StartBulkBatch
+from caselens.application.use_cases.review_edits import EditDigestSection
+from caselens.application.use_cases.case_questions import AnswerQueuedQuestion, AskAboutCase, ListCaseQuestions
+from caselens.application.use_cases.case_digest_v2 import BuildCaseDigestV2, GetCaseDigestV2, RequestCaseDigestV2
+from caselens.application.use_cases.write_case_digest import WriteCaseDigest
+from caselens.application.use_cases.suggest_court_passages import SuggestCourtPassages
 from caselens.application.use_cases.build_finished_reviewer import BuildFinishedReviewer
 from caselens.application.use_cases.request_upload_digests import RequestUploadDigests
 from caselens.application.use_cases.delete_upload import DeleteUpload
@@ -34,7 +40,8 @@ from caselens.application.use_cases.start_catalog_build import StartCatalogBuild
 from caselens.application.use_cases.get_trends import GetTrends
 from caselens.application.use_cases.get_upload import GetUpload
 from caselens.application.use_cases.ingest_case import IngestCase
-from caselens.application.use_cases.list_cases import ListCases
+from caselens.application.use_cases.download_catalog_cases import DownloadCatalogCases
+from caselens.application.use_cases.list_cases import ListBatchCases, ListCases
 from caselens.application.use_cases.list_uploads import ListUploads
 from caselens.application.use_cases.process_upload import ProcessUpload
 from caselens.application.use_cases.resolve_upload_citations import ResolveUploadCitations
@@ -42,16 +49,25 @@ from caselens.application.use_cases.refetch_damaged_cases import RefetchDamagedC
 from caselens.application.use_cases.reparse_stored_cases import ReparseStoredCases
 from caselens.application.use_cases.retry_upload import RetryUpload
 from caselens.application.use_cases.search_case import SearchCaseByGrNumber
+from caselens.application.use_cases.subjects import GetSubjects, ListSubjects, SetCaseSubjects
 from caselens.domain.services.citation_extractor import GrCitationExtractor
+from caselens.domain.services.gr_list_parser import GrListParser
+from caselens.domain.services.main_case_identifier import MainCaseIdentifier
+from caselens.domain.services.digest_field_factory import DigestFieldFactory
 from caselens.domain.services.citation_matcher import CitationMatcher
 from caselens.domain.services.insight_builder import CaseInsightBuilder
 from caselens.infrastructure.config import Settings, get_settings
 from caselens.infrastructure.db.catalog_repository import SqlCatalogRepository
+from caselens.infrastructure.db.bulk_repository import SqlBulkRepository
+from caselens.infrastructure.db.case_question_repository import SqlCaseQuestionRepository
+from caselens.infrastructure.db.review_edit_repository import SqlReviewEditRepository
+from caselens.infrastructure.db.case_digest_repository import SqlCaseDigestRepository
 from caselens.infrastructure.db.digest_repository import SqlDigestRepository
 from caselens.infrastructure.db.insight_queries import SqlInsightQueries
 from caselens.infrastructure.db.repositories import (
     SqlCaseRepository,
     SqlMonthIndexRepository,
+    SqlSubjectRepository,
     SqlUnitOfWork,
     SqlUploadRepository,
 )
@@ -61,7 +77,10 @@ from caselens.infrastructure.ai.gemini_answerer import (
     GeminiAnswerWriter,
     _GeminiCall,
 )
+from caselens.infrastructure.ai.gemini_digest import DIGEST_PROMPT_VERSION, GeminiDigestWriter
+from caselens.infrastructure.ai.gemini_passages import PASSAGE_PROMPT_VERSION, GeminiPassageChecker, GeminiPassagePicker
 from caselens.infrastructure.docx_case_export import DocxCaseExporter
+from caselens.infrastructure.docx_digest_export import DocxCaseDigestExporter
 from caselens.infrastructure.docx_export import DocxDigestExporter
 from caselens.infrastructure.extraction.block_reader import CompositeBlockReader, DocxBlockReader, PdfBlockReader
 from caselens.infrastructure.extraction.composite_extractor import CompositeDocumentExtractor
@@ -121,6 +140,9 @@ class Services:
         build_probe: Callable[[], bool] | None = None,
         answer_writer: AnswerWriter | None = None,
         answer_checker: AnswerChecker | None = None,
+        passage_picker: PassagePicker | None = None,
+        passage_checker: PassageChecker | None = None,
+        digest_writer: DigestWriter | None = None,
         ai_enabled: bool | None = None,
     ) -> None:
         self._settings = settings or get_settings()
@@ -133,11 +155,19 @@ class Services:
         self._build_probe = build_probe
         self._answer_writer = answer_writer
         self._answer_checker = answer_checker
+        self._passage_picker = passage_picker
+        self._passage_checker = passage_checker
+        self._digest_writer = digest_writer
         self._ai_enabled = ai_enabled
 
         self._cases = SqlCaseRepository(session)
+        self._subjects = SqlSubjectRepository(session)
         self._uploads = SqlUploadRepository(session)
         self._digests = SqlDigestRepository(session)
+        self._case_digests = SqlCaseDigestRepository(session)
+        self._bulk = SqlBulkRepository(session)
+        self._questions = SqlCaseQuestionRepository(session)
+        self._review_edits = SqlReviewEditRepository(session)
         self._uow = SqlUnitOfWork(session)
         self._matcher = CitationMatcher()
 
@@ -215,8 +245,23 @@ class Services:
     def delete_upload(self) -> DeleteUpload:
         return DeleteUpload(self._uploads, self._uow)
 
+    def list_subjects(self) -> ListSubjects:
+        return ListSubjects(self._cases)
+
+    def get_subjects(self) -> GetSubjects:
+        return GetSubjects(self._subjects)
+
+    def set_case_subjects(self) -> SetCaseSubjects:
+        return SetCaseSubjects(self._cases, self._subjects, self._uow)
+
     def list_uploads(self) -> ListUploads:
         return ListUploads(self._uploads)
+
+    def download_catalog_cases(self) -> DownloadCatalogCases:
+        return DownloadCatalogCases(SqlCatalogRepository(self._session), self.ingest_case(), self._session.rollback)
+
+    def list_batch_cases(self) -> ListBatchCases:
+        return ListBatchCases(self._bulk, self._cases)
 
     def list_cases(self) -> ListCases:
         return ListCases(self._cases)
@@ -272,12 +317,105 @@ class Services:
             GeminiAnswerWriter(self._settings, call), GeminiAnswerChecker(self._settings, call)
         )
 
+    def _suggester(self) -> SuggestCourtPassages | None:
+        """The AI that only POINTS at where the Court states the Facts, Issue or Doctrine, or None when no key is set."""
+        if self._passage_picker is not None and self._passage_checker is not None:
+            return SuggestCourtPassages(self._passage_picker, self._passage_checker)
+        if self._answer_writer is not None or self._answer_checker is not None:
+            return None  # a caller that supplies its own answerer (a test) gets passage suggestions only by supplying a picker too
+        enabled = self._ai_enabled if self._ai_enabled is not None else bool(self._settings.gemini_api_key)
+        if not enabled:
+            return None
+        call = _GeminiCall(self._settings)
+        return SuggestCourtPassages(GeminiPassagePicker(self._settings, call), GeminiPassageChecker(self._settings, call))
+
+    def _case_digest_ai(self) -> tuple[WriteCaseDigest | None, "Callable[[], tuple[int, int]]"]:
+        """The AI that writes case digests, plus a probe of the tokens used so far; (None, ...) when no key is set."""
+        none_used = lambda: (0, 0)  # noqa: E731
+        if self._digest_writer is not None and self._answer_checker is not None:  # a test supplies its own
+            return WriteCaseDigest(self._digest_writer, self._answer_checker), none_used
+        enabled = self._ai_enabled if self._ai_enabled is not None else bool(self._settings.gemini_api_key)
+        if not enabled or self._answer_writer is not None:
+            return None, none_used
+        call = _GeminiCall(self._settings)
+        writer = WriteCaseDigest(GeminiDigestWriter(self._settings, call), GeminiAnswerChecker(self._settings, call))
+        return writer, lambda: (call.usage["input_tokens"], call.usage["output_tokens"])
+
+    def start_bulk_batch(self) -> StartBulkBatch:
+        return StartBulkBatch(GrListParser(), self._subjects, self._bulk, self._job_queue(), self._uow)
+
+    def add_bulk_files(self) -> AddBulkFiles:
+        reader = CompositeDocumentExtractor([PdfTextExtractor(), DocxTextExtractor()])
+        return AddBulkFiles(reader, MainCaseIdentifier(), self._bulk, self._job_queue(), self._uow)
+
+    def resolve_bulk_item(self) -> ResolveBulkItem:
+        return ResolveBulkItem(self._bulk, self.fetch_case_by_gr_number(), self._cases, self.request_case_digest_v2(), self._uow)
+
+    def get_bulk_batch(self) -> GetBulkBatch:
+        return GetBulkBatch(self._bulk)
+
+    def retry_bulk_batch(self) -> RetryBulkBatch:
+        return RetryBulkBatch(self._bulk, self._job_queue(), self._uow)
+
+    def case_digest_states(self, case_ids: list[int], scope_key: str = "") -> dict[int, str]:
+        return self._case_digests.states(case_ids, scope_key)
+
+    def case_summaries(self, case_ids: list[int]):
+        return self._cases.summaries(case_ids)
+
+    def ask_about_case(self) -> AskAboutCase:
+        return AskAboutCase(self._cases, self._questions, self._job_queue(), self._uow, self._settings.question_daily_limit)
+
+    def answer_case_question(self) -> AnswerQueuedQuestion:
+        return AnswerQueuedQuestion(self._cases, self._questions, self._answerer(), self._uow)
+
+    def list_case_questions(self) -> ListCaseQuestions:
+        return ListCaseQuestions(self._cases, self._questions)
+
+    def edit_digest_section(self) -> EditDigestSection:
+        return EditDigestSection(self._bulk, self._case_digests, self._review_edits, self._uow)
+
+    def review_edits(self, batch_id: int, digest_id: int):
+        """The sections a student rewrote in this review (section -> their text)."""
+        return self._review_edits.for_digest(batch_id, digest_id)
+
+    def review_reporter(self, batch_id: int, case_id: int) -> str | None:
+        """The reporter citation ("177 SCRA 668") the review's file printed for this case."""
+        return self._bulk.reporter_for(batch_id, case_id)
+
+    def subjects_named(self, subject_ids) -> list:
+        """These tags, in the list's order (unknown ids are left out)."""
+        wanted = set(subject_ids)
+        return [s for s in self._subjects.list() if s.id in wanted]
+
+    def unit_of_work(self):
+        return self._uow
+
+    def case_digest_exporter(self) -> DocxCaseDigestExporter:
+        return DocxCaseDigestExporter()
+
+    def request_case_digest_v2(self) -> RequestCaseDigestV2:
+        return RequestCaseDigestV2(self._cases, self._case_digests, self._job_queue(), self._uow)
+
+    def get_case_digest_v2(self) -> GetCaseDigestV2:
+        return GetCaseDigestV2(self._cases, self._case_digests)
+
+    def build_case_digest_v2(self) -> BuildCaseDigestV2:
+        writer, usage = self._case_digest_ai()
+        return BuildCaseDigestV2(
+            self._cases, self._case_digests, self._uow, writer,
+            model=self._settings.gemini_writer_model, prompt_version=DIGEST_PROMPT_VERSION,
+            monthly_limit=self._settings.case_digest_monthly_limit, usage=usage,
+        )
+
     def _ai_budget_left(self) -> bool:
         midnight = datetime.now(UTC).replace(hour=0, minute=0, second=0, microsecond=0)
         return self._digests.count_ai_since(midnight) < self._settings.digest_ai_daily_limit
 
     def request_case_digest(self) -> RequestCaseDigest:
-        return RequestCaseDigest(self._cases, self._digests, self._job_queue(), self._uow)
+        # Facts, Issue and Doctrine the rules cannot find start as "being looked for" only when the AI that points is available.
+        factory = DigestFieldFactory(look_for_passages=self._suggester() is not None)
+        return RequestCaseDigest(self._cases, self._digests, self._job_queue(), self._uow, factory)
 
     def build_case_digest(self) -> BuildCaseDigest:
         return BuildCaseDigest(
@@ -287,9 +425,10 @@ class Services:
             self._uow,
             self._answerer(),
             model=self._settings.gemini_writer_model,
-            prompt_version=PROMPT_VERSION,
+            prompt_version=f"{PROMPT_VERSION}+{PASSAGE_PROMPT_VERSION}",
             ai_allowed=self._ai_budget_left,
             parallel=self._settings.digest_parallel_answers,
+            suggester=self._suggester(),
         )
 
     def edit_digest_field(self) -> EditDigestField:

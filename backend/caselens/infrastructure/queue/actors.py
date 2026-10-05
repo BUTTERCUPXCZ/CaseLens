@@ -58,3 +58,23 @@ def refresh_catalog() -> None:
 def build_digest(digest_id: int, keys: list[str] | None = None) -> None:
     _setup_logging()
     jobs.build_digest(digest_id, keys)
+
+
+@dramatiq.actor(queue_name=DIGEST_QUEUE, time_limit=30 * _MINUTE, max_retries=1, min_backoff=_MINUTE)
+def build_case_digest(digest_id: int) -> None:
+    """One case digest (a case and its scope): about 3 to 5 minutes of AI work."""
+    _setup_logging()
+    jobs.build_case_digest(digest_id)
+
+
+@dramatiq.actor(queue_name=DIGEST_QUEUE, time_limit=5 * _MINUTE, max_retries=1, min_backoff=_MINUTE)
+def answer_case_question(question_id: int) -> None:
+    """A question about a case: a few seconds of AI work."""
+    _setup_logging()
+    jobs.answer_case_question(question_id)
+
+
+@dramatiq.actor(queue_name=LAWPHIL_QUEUE, time_limit=15 * _MINUTE, **_RETRIES)
+def resolve_bulk_item(item_id: int) -> None:
+    _setup_logging()
+    jobs.resolve_bulk_item(item_id)

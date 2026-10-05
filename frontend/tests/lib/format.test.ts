@@ -39,6 +39,32 @@ describe('shortCaseName', () => {
     expect(shortCaseName('Ople v. Torres')).toBe('Ople v. Torres')
   })
 
+  // Real captions from the library (GR 88211, 166620, 173081, 274778), cut to their shape.
+  it('shows the first party on each side of a long caption (Marcos v. Manglapus)', () => {
+    const title =
+      'FERDINAND E. MARCOS, IMELDA R. MARCOS, FERDINAND R. MARCOS, JR., IRENE M. ARANETA, PACIFICO E. MARCOS and PHILIPPINE CONSTITUTION ASSOCIATION (PHILCONSA), represented by its President, CONRADO F. ESTRELLA, petitioners, vs. HONORABLE RAUL MANGLAPUS, CATALINO MACARAIG, SEDFREY ORDOÑEZ, MIRIAM DEFENSOR SANTIAGO, respondents.'
+    expect(shortCaseName(title)).toBe('Ferdinand E. Marcos et al. v. Honorable Raul Manglapus et al.')
+  })
+
+  it('does not mistake a middle initial V. for "versus" (Banda v. Ermita)', () => {
+    const title =
+      'ATTY. SYLVIA BANDA, CONSORICIA O. PENSON, RADITO V. PADRIGANO, JEAN R. DE MESA, Petitioners, vs. EDUARDO R. ERMITA, in his capacity as Executive Secretary, The National Treasurer, Respondents.'
+    expect(shortCaseName(title)).toBe('Atty. Sylvia Banda et al. v. Eduardo R. Ermita et al.')
+  })
+
+  it('keeps a comma that belongs to a name, and cuts a lowercase "and" (Marcelo)', () => {
+    expect(shortCaseName('ERNESTO MARCELO, JR. and LAURO LLAMES, Petitioners, vs. RAFAEL R. VILLORDON, Respondent.')).toBe(
+      'Ernesto Marcelo, Jr. et al. v. Rafael R. Villordon',
+    )
+    expect(shortCaseName('ACME, INC., Petitioner, vs. BETA CORP., Respondent.')).toBe('Acme, Inc. v. Beta Corp.')
+  })
+
+  it('shows one name when the caption lists petitioners with no "vs" (a 2025 en banc decision)', () => {
+    expect(shortCaseName('AQUILINO PIMENTEL III; ERNESTO OFRACIO; JANICE LIRZA MELGAR; PHILIPPINE MEDICAL ASSOCIATION, PETITIONERS,')).toBe(
+      'Aquilino Pimentel III et al.',
+    )
+  })
+
   it('does not fail on a missing title', () => {
     expect(shortCaseName(null)).toBe('Untitled case')
   })

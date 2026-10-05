@@ -155,6 +155,18 @@ class SqlCatalogRepository(CatalogRepository):
         )
         return [self._entity(model) for model in models]
 
+    def unsaved(self, first_year: int, last_year: int, after_id: int, limit: int) -> list[tuple[int, str]]:
+        saved = select(CaseModel.id).where(CaseModel.source_url == CatalogEntryModel.source_url).exists()
+        rows = self._session.execute(
+            select(func.min(CatalogEntryModel.id).label("cursor"), CatalogEntryModel.source_url)
+            .where(CatalogEntryModel.year.between(first_year, last_year), ~saved)
+            .group_by(CatalogEntryModel.source_url)
+            .having(func.min(CatalogEntryModel.id) > after_id)
+            .order_by("cursor")
+            .limit(limit)
+        )
+        return [(r.cursor, r.source_url) for r in rows]
+
     def status(self, building: bool) -> CatalogStatus:
         entries = self._session.scalar(select(func.count()).select_from(CatalogEntryModel)) or 0
         known = self._session.scalar(select(func.count()).select_from(CatalogMonthModel)) or 0

@@ -1,23 +1,30 @@
 import re
 
-from sqlalchemy import any_, func, literal, or_, select
+from sqlalchemy import any_, delete, func, literal, or_, select, update
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
+
+from collections.abc import Sequence
 
 from caselens.application.ports.repositories import (
     CaseRepository,
     MonthIndexRepository,
+    SubjectRepository,
     UnitOfWork,
     UploadRepository,
 )
 from caselens.domain.entities import Case, CaseSummary, Upload, UploadSummary
 from caselens.domain.errors import DuplicateCaseError
+from caselens.domain.subjects import Subject, SubjectCount
 from caselens.domain.value_objects import Disposition, DocType, GrNumber, MatchStatus
 from caselens.infrastructure.db import mappers
 from caselens.infrastructure.db.orm_models import (
     CaseFootnoteModel,
     CaseModel,
+    CaseSubjectModel,
     MonthIndexModel,
+    SubjectModel,
     UploadCitationModel,
     UploadModel,
 )
@@ -32,10 +39,17 @@ _SUMMARY_COLUMNS = (
     CaseModel.division,
     CaseModel.disposition,
     CaseModel.source_url,
+    CaseModel.main_case_id,
+    CaseModel.numbers,
 )
 
 
-def _summary(row) -> CaseSummary:
+def _select_summaries():
+    """The columns of a case list; the large text and page are never loaded (the tags are added by `_with_tags`)."""
+    return select(*_SUMMARY_COLUMNS).select_from(CaseModel)
+
+
+def _summary(row, tags: dict[int, tuple[Subject, ...]]) -> CaseSummary:
     return CaseSummary(
         id=row.id,
         gr_no=GrNumber(row.gr_no),
@@ -46,6 +60,9 @@ def _summary(row) -> CaseSummary:
         division=row.division,
         disposition=Disposition(row.disposition) if row.disposition else Disposition.UNKNOWN,
         source_url=row.source_url,
+        subjects=tags.get(row.id, ()),
+        main_case_id=row.main_case_id,
+        numbers=tuple(row.numbers or ()),
     )
 
 
@@ -63,6 +80,28 @@ def _contains(text: str) -> str:
 
 def _starts_with(text: str) -> str:
     return f"{_escape_like(text)}%"
+
+
+def _tags_of(session: Session, case_ids: list[int]) -> dict[int, tuple[Subject, ...]]:
+    """The tags of these cases, each in the list's order."""
+    if not case_ids:
+        return {}
+    rows = session.execute(
+        select(CaseSubjectModel.case_id, SubjectModel.id, SubjectModel.name)
+        .join(SubjectModel, SubjectModel.id == CaseSubjectModel.subject_id)
+        .where(CaseSubjectModel.case_id.in_(case_ids))
+        .order_by(SubjectModel.sort_order)
+    )
+    tags: dict[int, list[Subject]] = {}
+    for case_id, subject_id, name in rows:
+        tags.setdefault(case_id, []).append(Subject(subject_id, name))
+    return {k: tuple(v) for k, v in tags.items()}
+
+
+def _with_tags(session: Session, rows) -> list[CaseSummary]:
+    rows = list(rows)
+    tags = _tags_of(session, [r.id for r in rows])
+    return [_summary(r, tags) for r in rows]
 
 
 class SqlMonthIndexRepository(MonthIndexRepository):
@@ -150,8 +189,10 @@ class SqlCaseRepository(CaseRepository):
         )
         return [mappers.case_to_entity(m) for m in models]
 
-    def search(self, query: str | None, limit: int, offset: int) -> tuple[list[CaseSummary], int]:
-        conditions = []
+    def search(
+        self, query: str | None, limit: int, offset: int, subject_id: int | None = None, no_subject: bool = False
+    ) -> tuple[list[CaseSummary], int]:
+        conditions = [CaseModel.main_case_id.is_(None)]  # one row per case: a related page (a Resolution, a repeat) is not listed
         if query:
             gr_part = _GR_LABEL.sub("", query).strip() or query  # "G.R. No. 1800" -> "1800"
             conditions.append(
@@ -160,22 +201,85 @@ class SqlCaseRepository(CaseRepository):
                     CaseModel.gr_no.ilike(_starts_with(gr_part), escape="\\"),
                 )
             )
+        tagged = select(CaseSubjectModel.case_id).where(CaseSubjectModel.case_id == CaseModel.id)
+        if subject_id is not None:
+            conditions.append(tagged.where(CaseSubjectModel.subject_id == subject_id).exists())
+        elif no_subject:
+            conditions.append(~tagged.exists())
         total = self._session.scalar(select(func.count()).select_from(CaseModel).where(*conditions)) or 0
         rows = self._session.execute(
-            select(*_SUMMARY_COLUMNS)
+            _select_summaries()
             .where(*conditions)
             .order_by(CaseModel.decision_date.desc().nulls_last(), CaseModel.id.desc())
             .limit(limit)
             .offset(offset)
         )
-        items = [_summary(r) for r in rows]
-        return items, total
+        return _with_tags(self._session, rows), total
 
     def summaries(self, case_ids: list[int]) -> dict[int, CaseSummary]:
         if not case_ids:
             return {}
-        rows = self._session.execute(select(*_SUMMARY_COLUMNS).where(CaseModel.id.in_(case_ids)))
-        return {r.id: _summary(r) for r in rows}
+        rows = self._session.execute(_select_summaries().where(CaseModel.id.in_(case_ids)))
+        return {s.id: s for s in _with_tags(self._session, rows)}
+
+    def find_overlapping(self, numbers: Sequence[str]) -> list[CaseSummary]:
+        wanted = list(dict.fromkeys(numbers))
+        if not wanted:
+            return []
+        rows = self._session.execute(
+            _select_summaries().where(or_(CaseModel.numbers.overlap(wanted), CaseModel.gr_no.in_(wanted))).order_by(CaseModel.id)
+        )
+        return _with_tags(self._session, rows)
+
+    def set_main_case(self, case_ids: Sequence[int], main_case_id: int | None) -> None:
+        ids = [i for i in case_ids if i != main_case_id]  # a case is never its own main case
+        if ids:
+            self._session.execute(update(CaseModel).where(CaseModel.id.in_(ids)).values(main_case_id=main_case_id))
+        if main_case_id is not None:
+            self._session.execute(update(CaseModel).where(CaseModel.id == main_case_id).values(main_case_id=None))
+        self._session.flush()
+
+    def add_subjects(self, case_id: int, subject_ids: Sequence[int], source: str) -> None:
+        if subject_ids:
+            self._session.execute(
+                pg_insert(CaseSubjectModel)
+                .values([{"case_id": case_id, "subject_id": i, "source": source} for i in dict.fromkeys(subject_ids)])
+                .on_conflict_do_nothing(index_elements=["case_id", "subject_id"])
+            )
+        self._session.flush()
+        self._session.expire_all()  # a loaded case shows its new tags
+
+    def set_subjects(self, case_id: int, subject_ids: Sequence[int], source: str) -> None:
+        self._session.execute(delete(CaseSubjectModel).where(CaseSubjectModel.case_id == case_id))
+        self.add_subjects(case_id, subject_ids, source)
+
+    def subject_counts(self) -> list[SubjectCount]:
+        main = CaseModel.main_case_id.is_(None)
+        counted = dict(
+            self._session.execute(
+                select(CaseSubjectModel.subject_id, func.count())
+                .join(CaseModel, CaseModel.id == CaseSubjectModel.case_id)
+                .where(main)
+                .group_by(CaseSubjectModel.subject_id)
+            ).all()
+        )
+        untagged = self._session.scalar(
+            select(func.count()).select_from(CaseModel).where(main, ~select(CaseSubjectModel.case_id).where(CaseSubjectModel.case_id == CaseModel.id).exists())
+        ) or 0
+        subjects = self._session.scalars(select(SubjectModel).order_by(SubjectModel.sort_order)).all()
+        return [SubjectCount(s.id, s.name, counted.get(s.id, 0)) for s in subjects] + [SubjectCount(None, "No subject yet", untagged)]
+
+
+class SqlSubjectRepository(SubjectRepository):
+    def __init__(self, session: Session) -> None:
+        self._session = session
+
+    def list(self) -> list[Subject]:
+        return [Subject(s.id, s.name) for s in self._session.scalars(select(SubjectModel).order_by(SubjectModel.sort_order))]
+
+    def get(self, subject_id: int) -> Subject | None:
+        model = self._session.get(SubjectModel, subject_id)
+        return Subject(model.id, model.name) if model else None
 
 
 class SqlUploadRepository(UploadRepository):

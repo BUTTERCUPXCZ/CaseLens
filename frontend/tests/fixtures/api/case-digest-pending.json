@@ -1,0 +1,45 @@
+{
+  "id": null,
+  "case_id": 23,
+  "state": "pending",
+  "error": null,
+  "written": 0,
+  "dropped": 0,
+  "header": {
+    "case_name": "Marcos v. Manglapus",
+    "citation": "G.R. No. 88211, September 15, 1989 (En Banc)",
+    "topic": "Constitutional Law",
+    "ponente": "Cortes, J."
+  },
+  "sections": [],
+  "levels": {
+    "short": [
+      "doctrine",
+      "facts",
+      "arguments_petitioners",
+      "arguments_respondents"
+    ],
+    "standard": [
+      "doctrine",
+      "facts",
+      "arguments_petitioners",
+      "arguments_respondents",
+      "issue",
+      "ruling"
+    ],
+    "full": [
+      "doctrine",
+      "facts",
+      "arguments_petitioners",
+      "arguments_respondents",
+      "issue",
+      "ruling",
+      "ratio",
+      "dissents",
+      "topic",
+      "why"
+    ]
+  },
+  "updated_at": "2026-10-05T13:20:00Z",
+  "scope": ""
+}

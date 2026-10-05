@@ -2,6 +2,7 @@
 from dataclasses import dataclass, field
 from datetime import date, datetime
 
+from caselens.domain.subjects import Subject
 from caselens.domain.value_objects import (
     ClaimedCitation,
     DocType,
@@ -68,6 +69,8 @@ class Case:
     fetched_at: datetime | None = None
     # Every G.R. number the page itself prints. A joint decision has several; `gr_no` is the first.
     numbers: tuple[str, ...] = ()
+    subjects: tuple["Subject", ...] = ()  # the tags the student gave it (Constitutional Law, ...), in the list's order; read from the database
+    main_case_id: int | None = None  # None: this is a main case; otherwise the main case this page belongs to
 
     @property
     def all_numbers(self) -> tuple[str, ...]:
@@ -124,6 +127,9 @@ class CaseSummary:
     division: str | None
     disposition: Disposition
     source_url: str
+    subjects: tuple["Subject", ...] = ()  # its tags, in the list's order
+    main_case_id: int | None = None
+    numbers: tuple[str, ...] = ()  # every G.R. number the page prints
 
 
 @dataclass(frozen=True)

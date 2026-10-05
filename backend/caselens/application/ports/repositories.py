@@ -2,7 +2,10 @@
 a class that only needs the month-index cache is never forced to know about cases."""
 from abc import ABC, abstractmethod
 
+from collections.abc import Sequence
+
 from caselens.domain.entities import Case, CaseSummary, Upload, UploadSummary
+from caselens.domain.subjects import Subject, SubjectCount
 from caselens.domain.value_objects import GrNumber
 
 
@@ -54,10 +57,42 @@ class CaseRepository(ABC):
         pointing at it stay valid."""
 
     @abstractmethod
-    def search(self, query: str | None, limit: int, offset: int) -> tuple[list[CaseSummary], int]:
-        """Stored cases, newest decision first, plus the total that match.
+    def search(
+        self, query: str | None, limit: int, offset: int, subject_id: int | None = None, no_subject: bool = False
+    ) -> tuple[list[CaseSummary], int]:
+        """MAIN cases (one row per case), newest decision first, plus the total that match.
 
-        `query` matches part of the case name or the start of the G.R. number."""
+        `query` matches part of the case name or the start of the G.R. number. `subject_id` keeps the cases carrying that tag;
+        `no_subject` keeps the cases with no tag yet."""
+
+    @abstractmethod
+    def find_overlapping(self, numbers: Sequence[str]) -> list[CaseSummary]:
+        """Every stored page (main or related) that prints any of these G.R. numbers, oldest first, with its numbers and main case."""
+
+    @abstractmethod
+    def set_main_case(self, case_ids: Sequence[int], main_case_id: int | None) -> None:
+        """Point these pages at a main case (None: make them main cases themselves)."""
+
+    @abstractmethod
+    def add_subjects(self, case_id: int, subject_ids: Sequence[int], source: str) -> None:
+        """Add these tags to a case; tags it already has stay as they are (never removed, never changed)."""
+
+    @abstractmethod
+    def set_subjects(self, case_id: int, subject_ids: Sequence[int], source: str) -> None:
+        """Make these exactly the case's tags (an empty list clears them)."""
+
+    @abstractmethod
+    def subject_counts(self) -> list[SubjectCount]:
+        """How many MAIN cases carry each tag (a case with two tags counts under both), plus those with none (subject_id None)."""
+
+
+class SubjectRepository(ABC):
+    @abstractmethod
+    def list(self) -> list[Subject]:
+        """Every subject, in the order the library shows them."""
+
+    @abstractmethod
+    def get(self, subject_id: int) -> Subject | None: ...
 
 
 class UploadRepository(ABC):

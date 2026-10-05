@@ -35,10 +35,15 @@ export async function renderApp(ui: ReactNode) {
   const router = createRouter({
     routeTree: root.addChildren([
       page('/', ui),
-      page('/reviews/$reviewId', <p>review page</p>),
       page('/cases', <p>library page</p>),
       page('/cases/$caseId', <p>case page</p>),
+      page('/cases/$caseId/digest', <p>digest page</p>),
+      page('/cases/$caseId/decision', <p>decision page</p>),
+      page('/library', <p>library page</p>),
       page('/search', <p>search page</p>),
+      page('/upload', <p>upload page</p>),
+      page('/reviews', <p>reviews page</p>),
+      page('/reviews/$batchId', <p>review page</p>),
     ]),
     history: createMemoryHistory({ initialEntries: ['/'] }),
   })

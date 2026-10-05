@@ -81,6 +81,12 @@ def ask_question(digest_id: int, body: QuestionIn, services: Services = Depends(
     return _out(services.edit_digest_field().ask(digest_id, body.question), services)
 
 
+@router.post("/digests/{digest_id}/fields/{key}/suggest", response_model=DigestOut, status_code=202)
+def suggest_passage(digest_id: int, key: str, services: Services = Depends(get_services)) -> DigestOut:
+    """Look again for the Court's own passage of an empty Facts, Issue or Doctrine (the "Suggest for me" button)."""
+    return _out(services.edit_digest_field().suggest(digest_id, key), services)
+
+
 @router.post("/digests/{digest_id}/regenerate", response_model=DigestOut, status_code=202)
 def regenerate(digest_id: int, body: RegenerateIn, services: Services = Depends(get_services)) -> DigestOut:
     return _out(services.edit_digest_field().regenerate(digest_id, body.keys), services)

@@ -1,12 +1,14 @@
 import logging
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import replace
 from datetime import UTC, datetime
 
 from caselens.application.ports.ai import AnswerRequest
 from caselens.application.ports.digests import DigestRepository
 from caselens.application.ports.repositories import CaseRepository, UnitOfWork, UploadRepository
 from caselens.application.use_cases.answer_case_question import AnswerCaseQuestion, decision_sources
+from caselens.application.use_cases.suggest_court_passages import PassageSuggestions, SuggestCourtPassages
 from caselens.domain.case_digest import (
     CaseDigest,
     DigestField,
@@ -15,8 +17,9 @@ from caselens.domain.case_digest import (
     FieldOrigin,
     FieldState,
 )
-from caselens.domain.digest import GroundedAnswer, SourcePassage
+from caselens.domain.digest import GroundedAnswer, ParagraphRange, SourcePassage
 from caselens.domain.errors import AiUnavailableError, CaseNotFoundError, DigestNotFoundError
+from caselens.domain.services.digest_field_factory import DigestFieldFactory
 from caselens.domain.services.heading_sections import HeadingSections
 from caselens.domain.services.reviewer_passage import ReviewerPassageFinder
 from caselens.domain.services.ruling_locator import RulingLocator
@@ -27,6 +30,8 @@ _NO_ANSWERER = "Written explanations are not set up on this server."
 _OVER_LIMIT = "The limit for written explanations today has been reached. Try again tomorrow."
 _SERVICE_DOWN = "The explanation service did not answer. Try again in a moment."
 _NOT_ENOUGH = "The decision does not say enough to answer this, so we left it empty."
+_LOOK_FAILED = "We could not look for it just now. Press “Suggest for me” to try again, or pick the paragraphs yourself."
+_LOOK_OVER_LIMIT = "The limit for suggestions today has been reached. Pick the paragraphs yourself, or try again tomorrow."
 
 
 class BuildCaseDigest:
@@ -53,7 +58,9 @@ class BuildCaseDigest:
         rulings: RulingLocator | None = None,
         passages: ReviewerPassageFinder | None = None,
         parallel: int = 3,
+        suggester: SuggestCourtPassages | None = None,
     ) -> None:
+        self._suggester = suggester
         self._cases = cases
         self._digests = digests
         self._uploads = uploads
@@ -78,7 +85,8 @@ class BuildCaseDigest:
 
         waiting = [
             f for f in digest.fields
-            if f.kind is FieldKind.ANSWER and ((keys is None and f.state is FieldState.PENDING) or (keys is not None and f.key in keys))
+            if (f.kind is FieldKind.ANSWER and ((keys is None and f.state is FieldState.PENDING) or (keys is not None and f.key in keys)))
+            or (f.kind is FieldKind.VERBATIM and f.state is FieldState.PENDING and (keys is None or f.key in keys))  # a passage being looked for
         ]
         try:
             if waiting:
@@ -103,23 +111,62 @@ class BuildCaseDigest:
 
         # Fields that cannot be answered at all (no key, no text, over the daily limit) are settled here, in this thread.
         asks: list[DigestField] = []
+        looking: list[DigestField] = []
         for item in waiting:
+            if item.kind is FieldKind.VERBATIM:
+                looking.append(item)
+                continue
             refusal = self._refusal(item, sources)
             if refusal is not None:
                 self._store(digest, refusal)
             else:
                 asks.append(item)
-        if not asks:
+        if looking and (self._suggester is None or not self._ai_allowed()):
+            for item in looking:  # nothing to look with: settle at once with the plain way forward
+                note = _LOOK_OVER_LIMIT if self._suggester is not None else None
+                missing = DigestFieldFactory.missing(item.key)
+                self._store(digest, replace(missing, note=note or missing.note))
+            looking = []
+        if not asks and not looking:
             return
 
         # The AI calls (each is a writer call, then a checker call) wait on the network and do not touch the database, so
         # they run side by side: two answers take as long as one. Saving stays in THIS thread (a database session is not
-        # safe to share), and each answer is saved as soon as it is ready so the student sees it appear.
-        with ThreadPoolExecutor(max_workers=min(len(asks), self._parallel)) as pool:
-            futures = {pool.submit(self._ask, item, sources): item for item in asks}
+        # safe to share), and each answer is saved as soon as it is ready so the student sees it appear. Looking for the
+        # Court's own passages (Facts, Issue, Doctrine) is one more such call, run beside the answers.
+        with ThreadPoolExecutor(max_workers=max(1, min(len(asks) + (1 if looking else 0), self._parallel + 1))) as pool:
+            futures: dict = {pool.submit(self._ask, item, sources): item for item in asks}
+            if looking:
+                keys = [item.key for item in looking]
+                futures[pool.submit(self._look, keys, paragraphs, start, ruling)] = looking
             for future in as_completed(futures):
                 item = futures[future]
-                self._store(digest, self._field_from(item, future.result(), digest))
+                if isinstance(item, list):
+                    self._settle_passages(digest, item, future.result(), paragraphs)
+                else:
+                    self._store(digest, self._field_from(item, future.result(), digest))
+
+    def _look(self, keys: list[str], paragraphs: list[str], start: int | None, ruling: ParagraphRange | None) -> PassageSuggestions | None:
+        """Ask for the Court's own passages. Runs in a worker thread: no database. None = the service is down."""
+        assert self._suggester is not None
+        try:
+            return self._suggester.execute(keys, paragraphs, start, ruling)
+        except AiUnavailableError:
+            return None
+
+    def _settle_passages(self, digest: CaseDigest, looking: list[DigestField], result: PassageSuggestions | None, paragraphs: list[str]) -> None:
+        digest.ai_answered_at = self._clock()  # the look cost a call: it counts toward today's limit
+        digest.model, digest.prompt_version = self._model, self._prompt_version
+        for item in looking:
+            if result is None:
+                missing = DigestFieldFactory.missing(item.key)
+                self._store(digest, replace(missing, note=_LOOK_FAILED))
+                continue
+            found = result.found.get(item.key)
+            if found is None:
+                self._store(digest, DigestFieldFactory.missing(item.key, searched=True))
+            else:
+                self._store(digest, DigestFieldFactory.suggested(item.key, item.label, found.range, paragraphs, found.reason))
 
     def _store(self, digest: CaseDigest, field: DigestField) -> None:
         digest.replace_field(field)

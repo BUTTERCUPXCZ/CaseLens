@@ -28,6 +28,7 @@ from caselens.domain.services.dispositive_extractor import DispositiveExtractor
 from caselens.domain.services.statute_extractor import StatuteExtractor
 from caselens.domain.services.text_normalizer import LawphilWatermarkRule
 from caselens.domain.value_objects import DocType, GrNumber
+from caselens.infrastructure.lawphil.separate_opinions import parse_separate_opinions
 
 # Bump whenever the parser's OUTPUT changes, so `manage reparse` knows which stored cases are stale.
 # 2: reads the justices' signature table; empty footnotes kept; multi-paragraph rulings
@@ -35,7 +36,8 @@ from caselens.domain.value_objects import DocType, GrNumber
 # 4: every G.R. number of a joint decision (extra numbers sit on their own caption lines)
 # 5: the layout used from about 2016 (bracketed "[ G.R. No. N. date ]" header, `<a class="nt">` footnotes)
 # 6: the ruling is the paragraphs before the LAST "SO ORDERED" (a quoted lower-court WHEREFORE no longer wins)
-PARSER_VERSION = 6
+# 7: separate opinions on older pages (`<p class="cb">Separate Opinion</p>` blocks) are read too
+PARSER_VERSION = 7
 
 _SECTION_FOOTER = re.compile(r'<a class="id">\s*The Lawphil Project[^<]*</a>', re.I)
 _MARKER = re.compile(r'<a name="rnt(\d+)b?"[^>]*>\s*<sup>\s*\d+\s*</sup>\s*</a>', re.I)
@@ -65,6 +67,17 @@ class _Section:
     footnotes: list[Footnote]
 
 
+
+def _older_kind(kind: str) -> str:
+    """"concurring and dissenting" -> "concurring_dissenting" (the form the reader of newer pages gives)."""
+    return "concurring_dissenting" if "concurring" in kind and "dissenting" in kind else kind.replace(" ", "_")
+
+
+def _older_author(author: str) -> str:
+    """"GUTIERREZ, JR., J." -> "GUTIERREZ, JR." (no "J.", like the reader of newer pages)."""
+    return re.sub(r",\s*(?:C\.?\s?J\.?|J\.?|JJ\.?)\s*$", "", author).strip()
+
+
 class LawphilCaseParser(CaseParser):
     def __init__(
         self,
@@ -88,6 +101,12 @@ class LawphilCaseParser(CaseParser):
             for fragment in fragments[1:]
             if (opinion := self._read_opinion(self._read_section(fragment)))
         ]
+
+        if not opinions:  # older pages print <p class="cb">Separate Opinion</p> blocks that the reader above does not recognise
+            opinions = [
+                Opinion(kind=_older_kind(o.kind), author=_older_author(o.author), text="\n".join(o.paragraphs), footnotes=[])
+                for o in parse_separate_opinions(html)
+            ]
 
         header = self._parse_header(decision.paragraphs)
         full_text = "\n".join(decision.paragraphs)

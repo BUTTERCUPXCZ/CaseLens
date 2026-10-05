@@ -93,15 +93,18 @@ Law needs **accuracy**. That is why the design has three rules:
 
 ## 2. Main features
 
+> **Check a reviewer** and **My reviews** were removed from the app (the client does not need them). The backend routes for uploads and the old digests still exist but no page uses them; Flows B to D below describe that older path.
+
 | Feature | What it does |
 |---|---|
+| **Case library** (`/library`) | The main page. A left rail of subjects (Civil Code, Constitutional Law, Remedial, Philosophy of Law, and more) and a table with three columns: Case, G.R. No. with date and ponente, View / Download. One row per **main case**: a later Resolution, a repeat, or a decision filed under several G.R. numbers is never a second row. |
+| **Search finds unsaved decisions too** | In the library search box, saved cases come first. Below them, "Also on Lawphil, not saved yet" lists matches from Lawphil's own list (the catalog), each with "Open this case". Pressing it fetches the decision and saves it, then opens it. So the library only holds cases someone used, and no case needs to be downloaded in advance. |
+| **Individual** | On the library page: type a case name or G.R. No., answer "What subject?", and the case opens with its full text. The subject is suggested by the AI and the student can change it. |
+| **Bulk** | On the library page: paste G.R. numbers and/or add PDF or Word files, answer "What subject?" (or let the system decide). One main case per file or number; cases a file only cites are never added. After Start, the page becomes the **result of that upload**: only the main cases the student gave, one row each (a repeat, a Resolution or a cited case is never a row), each with its digest state, and a separate "Not added" list with the reason (not found, unreadable, Lawphil did not answer; Retry). Safe to leave. Files go up a few at a time (Vercel limits one request to about 4.5 MB). |
+| **Case digest** (`/cases/{id}/digest`) | The client's format, written from the decision: Doctrine, Facts (story and the parties' arguments), Issue (YES/NO question), Ruling, Ratio Decidendi, Dissents, Topic Explained, Why this case matters. Every sentence cites the Court's paragraphs, is checked by code and by a second model, and is dropped if not supported. Marked "Drafted from the decision. Check it." Three Word downloads: *Facts and Doctrine*, *Doctrine, Facts, Issue, Ruling* (1 to 2 pages), *Full case digest* (about 6 pages). |
 | **Search** | Find a case by name or G.R. number. Works in 1 to 37 milliseconds. |
-| **Check a reviewer** | Upload a PDF or Word file. The app checks each cited case. |
-| **Finished reviewer** | One digest box for each cited case. A switch shows the full reviewer text with the boxes in place. |
-| **Edit** | Type, paste, pick paragraphs of the decision, or put back the original. |
-| **Ask your own question** | Add any question. The AI answers from the decision. |
-| **Word download** | Get the finished reviewer as a `.docx` file. |
 | **Case library** | Saved cases with footnotes and facts read from each decision. |
+| **Suggested Facts, Issue, Doctrine** | When the Court did not label a part, the box is filled with the Court's own paragraphs, marked "Suggested for you: check it". Order: the Court's heading, then rules (cue words such as "The issue is", "raises the following issues"; Issue only), then an AI that **only returns paragraph numbers**. Code copies the text from the stored decision and a second model must say "supported"; otherwise the box stays empty. The AI never writes the text. "Suggest for me" asks again. |
 | **Download the full case** | `GET /cases/{id}/document.docx` (one decision) and `GET /uploads/{id}/cases.docx` (every found case a review cites, in cited order, at most 40). Text, footnotes (listed at the end of each decision, numbers raised in the text) and opinions as the Court printed them. No AI text. |
 | **Guide** | `/guide`: steps, what each label means, a few questions and answers. A welcome card on the start page shows once (closed with "Got it", remembered in the browser). The wording is in `frontend/src/lib/copy.ts` (`guideCopy`). |
 
@@ -310,13 +313,35 @@ scraper/
 
 **Clean Architecture rule:** code points inward. The domain does not know about the database, the queue, or the AI. Tools can be swapped in one file (`composition.py`). Example: we changed Redis to RabbitMQ and no use case changed.
 
+### Flow E: Case library, Bulk and case digest
+
+```
+Individual (name or G.R. No.)  ─┐
+Bulk (G.R. numbers / PDFs)     ─┤  MainCaseIdentifier reads only the caption (first lines): the G.R. No. and date
+                                │  -> the official decision is fetched from Lawphil (a PDF is only used to read the number)
+                                v
+                      CaseFamily: same numbers as a saved case?  yes -> duplicate / related (hidden, linked to the main case)
+                                                                  no  -> a new main case, listed in the library
+                                v
+                      subject: AI suggests one name from the fixed list (or "unsure"); the student's choice always wins
+                                v
+                      case digest job (queue `digests`): writer -> code checks -> checker -> one repair pass -> saved once
+                                v
+                      Library row: Case digest | Full text | Download (3 levels)
+```
+
+The three levels only choose which sections print; the digest is written once with every section. Related cases a decision merely *cites* are never opened.
+
 ---
 
 ## 8. Database tables
 
 | Table | What it stores |
 |---|---|
-| `cases` | Full decision text and original page |
+| `cases` | Full decision text and original page; `subject_id`, `subject_source` (ai, student or batch), `main_case_id` (set on a related page) |
+| `subjects` | The fixed list of subjects (seeded, ordered) |
+| `case_digests_v2` | The case digest of one main case: sections as JSON, state (pending, ready, failed), model, prompt version, tokens |
+| `bulk_batches`, `bulk_items` | A bulk upload and each of its items with status and message (PDFs are not stored) |
 | `case_footnotes`, `case_opinions`, `case_statutes`, `case_citations` | Parts read from a decision |
 | `uploads` | Uploaded reviewer (text and original file) |
 | `upload_citations` | Each citation found, its status, and what differs |
@@ -332,11 +357,15 @@ scraper/
 | Queue | Jobs | Worker |
 |---|---|---|
 | `lawphil` | check an upload, fetch a case, build or refresh the catalog | 1 thread (keeps Lawphil to 1 request per second) |
-| `digests` | write the AI answers | 4 threads (they only wait for Gemini) |
+| `digests` | write the AI answers and the case digests (3 to 5 minutes of AI work each) | 4 threads (they only wait for Gemini) |
+| `lawphil` (bulk) | resolve one bulk item: read the number, find or fetch the main case | same 1 thread |
 
 - **Retries:** a failed job retries 3 times (after 15 s, 1 min, 4 min). Then it goes to a dead-letter queue (`<queue>.XQ`).
 - **Worker dies:** the job is given to a worker again. All jobs are safe to run twice.
 - **RabbitMQ is down:** the API answers `503` with a clear message. Reading and searching still work.
+- **Monthly limit:** `CASE_DIGEST_MONTHLY_LIMIT` (default 2,500) counts case digests started this month. Over it, a digest stops with a plain message instead of spending more. When the month turns, or the limit is raised, `python -m caselens.manage resume-digests` (also run at every restart) starts the waiting ones again, oldest first, as far as the limit allows.
+- **Gemini limits:** a "rate limited" answer (429) is retried after 20 s, 40 s, ... The thinking budget (`CASE_DIGEST_THINKING_BUDGET`, default -1 = the model decides) was measured at 1024 on one case: 16% faster, 14% fewer output tokens, 3 fewer sentences kept; the default stays at -1.
+- **Restart:** queued bulk items and pending case digests are queued again.
 - **Locks:** RabbitMQ cannot do "only one at a time", so we use the `job_locks` table. Locks expire by time, so a crashed worker cannot block work forever.
 
 ---
@@ -357,7 +386,17 @@ scraper/
 | `POST /digests/{id}/fields/{key}/paste` | Paste text |
 | `POST /digests/{id}/fields/{key}/reset` | Put back the original |
 | `POST /digests/{id}/questions` | Add your own question |
-| `GET /cases/{id}`, `GET /library/cases` | Case and library |
+| `GET /cases/{id}` | One case |
+| `GET /library/cases?q=&subject_id=&batch_id=&limit=&offset=` | The library: main cases only, one row each. With `batch_id`: only what that bulk upload gave, each main case once, in the order given. Each row carries `digest_state` (none, pending, ready, failed). |
+| `GET /library/subjects`, `GET /library/subject-list` | Subjects with counts; the plain list |
+| `PUT /cases/{id}/subject` | File a case under a subject (the student's choice wins) |
+| `POST /cases/{id}/case-digest` | Ask for the case digest (202; written in the background) |
+| `GET /cases/{id}/case-digest` | Read it (poll while pending) |
+| `GET /cases/{id}/case-digest.docx?level=short\|standard\|full` | Word download of one level |
+| `POST /bulk` | Start a bulk upload (G.R. numbers, subject) |
+| `POST /bulk/{id}/files` | Add PDF or Word files, a few at a time |
+| `GET /bulk`, `GET /bulk/{id}`, `GET /bulk/{id}/items` | Progress |
+| `POST /bulk/{id}/retry` | Try the failed items again |
 
 Full list with examples: open `http://localhost:8000/docs`.
 
@@ -425,6 +464,9 @@ cd frontend && npm run e2e                                     # browser tests (
 - If the uploaded file **already has digests** written by the student, the app cannot tell them from the other text. It keeps them, adds its own box, and shows a notice that says to upload the reviewer without the digests for a cleaner result.
 - The AI explanation can be thin or incomplete. That is why it is marked as a draft.
 - Lawphil gives **no warranty** about its text. The app shows this notice. Ask the Arellano Law Foundation for written permission before real use.
+- The **case digest** is AI-written. It can still miss a point or word a holding too loosely; each sentence is checked and unsupported ones are dropped, so a section can be short (the vote count, for example, is dropped when the checker cannot tie it to a paragraph). Always read it against the decision.
+- The digest only knows the stored Lawphil text: events after the decision, and the SCRA citation, appear only if the decision says so.
+- At about 2,000 digests a month the free hosting is not enough; see `DEPLOYMENT_PLAN.md` section 13.
 - Not built yet: A.M. and A.C. cases, the Supreme Court E-Library, user accounts, a two-column box layout like the student's own file.
 
 ---

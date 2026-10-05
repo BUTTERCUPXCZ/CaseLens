@@ -1,1 +1,177 @@
-{"items":[{"id":1,"gr_no":"180046","title":"REVIEW CENTER ASSOCIATION OF THE PHILIPPINES, Petitioner, vs. EXECUTIVE SECRETARY EDUARDO ERMITA and COMMISSION ON HIGHER EDUCATION represented by its Chairman ROMULO L. NERI, Respondents.","decision_date":"2009-04-02","doc_type":"decision","ponente":"CARPIO","division":"EN BANC","disposition":"GRANTED","source_url":"https://lawphil.net/judjuris/juri2009/apr2009/gr_180046_2009.html"}],"total":1,"limit":20,"offset":0}
+{
+  "items": [
+    {
+      "id": 7,
+      "gr_no": "274778",
+      "title": "AQUILINO PIMENTEL III; ERNESTO OFRACIO; JANICE LIRZA MELGAR; MARIA CIELO MAGNO; MA. DOMINGA CECILIA B. PADILLA; DANTE B. GATMAYTAN; IBARRA M. GUTIERREZ; SENTRO NG MGA NAGKAKAISA AT PROGRESIBONG MANGGAGAWA; PUBLIC SERVICES LABOR INDEPENDENT CONFEDERATION FOUNDATION, INC.; AND PHILIPPINE MEDICAL ASSOCIATION, PETITIONERS,",
+      "decision_date": "2025-12-03",
+      "doc_type": "decision",
+      "ponente": "LAZARO-JAVIER",
+      "division": "EN BANC",
+      "disposition": "PARTIALLY_GRANTED",
+      "source_url": "https://lawphil.net/judjuris/juri2025/dec2025/gr_274778_2025.html",
+      "numbers": [
+        "274778"
+      ],
+      "digest_ready": false,
+      "digest_state": "none",
+      "subjects": [
+        {
+          "id": 4,
+          "name": "Constitutional Law"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "gr_no": "173081",
+      "title": "ERNESTO MARCELO, JR. and LAURO LLAMES, Petitioners, vs. RAFAEL R. VILLORDON, Assistant City Prosecutor of Quezon City, Respondent.",
+      "decision_date": "2010-12-15",
+      "doc_type": "decision",
+      "ponente": "CARPIO",
+      "division": "SECOND DIVISION",
+      "disposition": "DENIED",
+      "source_url": "https://lawphil.net/judjuris/juri2010/dec2010/gr_173081_2010.html",
+      "numbers": [
+        "173081"
+      ],
+      "digest_ready": false,
+      "digest_state": "none",
+      "subjects": [
+        {
+          "id": 3,
+          "name": "Remedial Law"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "gr_no": "191998",
+      "title": "WALDEN F. BELLO and LORETTA ANN P. ROSALES, Petitioners, vs. COMMISSION ON ELECTIONS, Respondent.",
+      "decision_date": "2010-12-07",
+      "doc_type": "resolution",
+      "ponente": "BRION",
+      "division": "EN BANC",
+      "disposition": "DISMISSED",
+      "source_url": "https://lawphil.net/judjuris/juri2010/dec2010/gr_191998_2010.html",
+      "numbers": [
+        "191998",
+        "192769",
+        "192832"
+      ],
+      "digest_ready": false,
+      "digest_state": "none",
+      "subjects": []
+    },
+    {
+      "id": 6,
+      "gr_no": "166620",
+      "title": "ATTY. SYLVIA BANDA, CONSORICIA O. PENSON, RADITO V. PADRIGANO, JEAN R. DE MESA, LEAH P. DELA CRUZ, ANDY V. MACASAQUIT, SENEN B. CORDOBA, ALBERT BRILLANTES, GLORIA BISDA, JOVITA V. CONCEPCION, TERESITA G. CARVAJAL, ROSANNA T. MALIWANAG, RICHARD ODERON, CECILIA ESTERNON, BENEDICTO CABRAL, MA. VICTORIA E. LAROCO, CESAR ANDRA, FELICISIMO GALACIO, ELSA R. CALMA, FILOMENA A. GALANG, JEAN PAUL MELEGRITO, CLARO G. SANTIAGO, JR., EDUARDO FRIAS, REYNALDO O. ANDAL, NEPHTALIE IMPERIO, RUEL BALAGTAS, VICTOR R. ORTIZ, FRANCISCO P. REYES, JR., ELISEO M. BALAGOT, JR., JOSE C. MONSALVE, JR., ARTURO ADSUARA, F.C. LADRERO, JR., NELSON PADUA, MARCELA C. SAYAO, ANGELITO MALAKAS, GLORIA RAMENTO, JULIANA SUPLEO, MANUEL MENDRIQUE, E. TAYLAN, CARMELA BOBIS, DANILO VARGAS, ROY-LEO C. PABLO, ALLAN VILLANUEVA, VICENTE R. VELASCO, JR., IMELDA ERENO, FLORIZA M. CATIIS, RANIEL R. BASCO, E. JALIJALI, MARIO C. CARAAN, DOLORES M. AVIADO, MICHAEL P. LAPLANA, GUILLERMO G. SORIANO, ALICE E. SOJO, ARTHUR G. NARNE, LETICIA SORIANO, FEDERICO RAMOS, JR., PETERSON CAAMPUED, RODELIO L. GOMEZ, ANTONIO D. GARCIA, JR., ANTONIO GALO, A. SANCHEZ, SOL E. TAMAYO, JOSEPHINE A.M. COCJIN, DAMIAN QUINTO, JR., EDLYN MARIANO, M.A. MALANUM, ALFREDO S. ESTRELLA, and JESUS MEL SAYO, Petitioners, vs. EDUARDO R. ERMITA, in his capacity as Executive Secretary, The Director General of the Philippine Information Agency and The National Treasurer, Respondents.",
+      "decision_date": "2010-04-20",
+      "doc_type": "decision",
+      "ponente": "LEONARDO-DE CASTRO",
+      "division": "EN BANC",
+      "disposition": "DENIED",
+      "source_url": "https://lawphil.net/judjuris/juri2010/apr2010/gr_166620_2010.html",
+      "numbers": [
+        "166620"
+      ],
+      "digest_ready": false,
+      "digest_state": "none",
+      "subjects": []
+    },
+    {
+      "id": 4,
+      "gr_no": "165678",
+      "title": "ROSARIO S. PANUNCIO, Petitioner, vs. PEOPLE OF THE PHILIPPINES, Respondent.",
+      "decision_date": "2009-07-17",
+      "doc_type": "decision",
+      "ponente": "CARPIO",
+      "division": "FIRST DIVISION",
+      "disposition": "DENIED",
+      "source_url": "https://lawphil.net/judjuris/juri2009/jul2009/gr_165678_2009.html",
+      "numbers": [
+        "165678"
+      ],
+      "digest_ready": false,
+      "digest_state": "none",
+      "subjects": [
+        {
+          "id": 2,
+          "name": "Criminal Law"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "gr_no": "148263",
+      "title": "ARMANDO DAVID, Petitioner, vs. NATIONAL FEDERATION OF LABOR UNION and MARIVELES APPAREL CORPORATION, Respondents.",
+      "decision_date": "2009-04-21",
+      "doc_type": "decision",
+      "ponente": "CARPIO",
+      "division": "FIRST DIVISION",
+      "disposition": "GRANTED",
+      "source_url": "https://lawphil.net/judjuris/juri2009/apr2009/gr_148263_2009.html",
+      "numbers": [
+        "148263",
+        "148271",
+        "148272"
+      ],
+      "digest_ready": false,
+      "digest_state": "none",
+      "subjects": [
+        {
+          "id": 5,
+          "name": "Labor Law"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "gr_no": "173931",
+      "title": "ALICIA D. TAGARO, Petitioner, vs. ESTER A. GARCIA, Chairperson of the Commission on Higher Education (CHED), represented by the present chair CARLITO G. PUNO, Respondent.",
+      "decision_date": "2009-04-02",
+      "doc_type": "decision",
+      "ponente": "TINGA",
+      "division": "EN BANC",
+      "disposition": "DENIED",
+      "source_url": "https://lawphil.net/judjuris/juri2009/apr2009/gr_173931_2009.html",
+      "numbers": [
+        "173931"
+      ],
+      "digest_ready": false,
+      "digest_state": "none",
+      "subjects": [
+        {
+          "id": 5,
+          "name": "Labor Law"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "gr_no": "180046",
+      "title": "REVIEW CENTER ASSOCIATION OF THE PHILIPPINES, Petitioner, vs. EXECUTIVE SECRETARY EDUARDO ERMITA and COMMISSION ON HIGHER EDUCATION represented by its Chairman ROMULO L. NERI, Respondents.",
+      "decision_date": "2009-04-02",
+      "doc_type": "decision",
+      "ponente": "CARPIO",
+      "division": "EN BANC",
+      "disposition": "GRANTED",
+      "source_url": "https://lawphil.net/judjuris/juri2009/apr2009/gr_180046_2009.html",
+      "numbers": [
+        "180046"
+      ],
+      "digest_ready": false,
+      "digest_state": "none",
+      "subjects": [
+        {
+          "id": 4,
+          "name": "Constitutional Law"
+        }
+      ]
+    }
+  ],
+  "total": 8,
+  "limit": 20,
+  "offset": 0
+}

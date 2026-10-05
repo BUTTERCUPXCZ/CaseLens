@@ -18,6 +18,9 @@ class Actors(Protocol):
     build_catalog: dramatiq.Actor
     refresh_catalog: dramatiq.Actor
     build_digest: dramatiq.Actor
+    build_case_digest: dramatiq.Actor
+    answer_case_question: dramatiq.Actor
+    resolve_bulk_item: dramatiq.Actor
 
 
 class RabbitJobQueue(JobQueue):
@@ -41,6 +44,17 @@ class RabbitJobQueue(JobQueue):
         key = lock_keys.build_digest_key(digest_id, keys)
         if self._locks.acquire(key, lock_keys.DIGEST_LOCK_SECONDS):
             self._send(self._actors.build_digest, digest_id, keys, lock=key)  # else: the AI is already working on it
+
+    def enqueue_bulk_item(self, item_id: int) -> None:
+        self._send(self._actors.resolve_bulk_item, item_id)  # the job settles an item once, so a message delivered twice is harmless
+
+    def enqueue_case_digest(self, digest_id: int) -> None:
+        key = lock_keys.case_digest_key(digest_id)
+        if self._locks.acquire(key, lock_keys.CASE_DIGEST_LOCK_SECONDS):
+            self._send(self._actors.build_case_digest, digest_id, lock=key)  # else: it is already being written
+
+    def enqueue_case_question(self, question_id: int) -> None:
+        self._send(self._actors.answer_case_question, question_id)  # the job answers a pending question once
 
     def enqueue_refresh_catalog(self) -> bool:
         if not self._locks.acquire(lock_keys.CATALOG_REFRESH_KEY, lock_keys.CATALOG_REFRESH_LOCK_SECONDS):

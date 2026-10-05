@@ -1,7 +1,9 @@
 from caselens.application.ports.digests import DigestRepository
 from caselens.application.ports.gateways import JobQueue
 from caselens.application.ports.repositories import CaseRepository, UnitOfWork
-from caselens.domain.case_digest import CaseDigest, DigestField, FieldKind, FieldOrigin, Passage
+from dataclasses import replace
+
+from caselens.domain.case_digest import CaseDigest, DigestField, FieldKind, FieldOrigin, FieldState, Passage
 from caselens.domain.errors import CaseNotFoundError, DigestNotFoundError, InvalidDigestEditError
 from caselens.domain.services.digest_field_factory import DigestFieldFactory
 from caselens.domain.services.heading_sections import HeadingSections
@@ -86,6 +88,17 @@ class EditDigestField:
         self._digests.save(digest)
         self._uow.commit()  # commit first so the worker sees the new field
         self._jobs.enqueue_build_digest(digest_id, [added.key])
+        return digest
+
+    def suggest(self, digest_id: int, key: str) -> CaseDigest:
+        """Look again for the Court's own passage of an empty Facts, Issue or Doctrine. The student's own text is never replaced."""
+        digest, current = self._load(digest_id, key)
+        if current.kind is not FieldKind.VERBATIM or key not in ("facts", "issues", "doctrine"):
+            raise InvalidDigestEditError(f"'{current.label}' is not a part of the Court's text we can look for.")
+        if current.origin is not FieldOrigin.EMPTY or current.state is FieldState.PENDING:
+            raise InvalidDigestEditError(f"'{current.label}' already has text, or is being looked for.")
+        self._store(digest, replace(current, state=FieldState.PENDING, note=None))  # committed before the worker looks
+        self._jobs.enqueue_build_digest(digest_id, [key])
         return digest
 
     def regenerate(self, digest_id: int, keys: list[str]) -> CaseDigest:

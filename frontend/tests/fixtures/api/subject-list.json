@@ -1,0 +1,46 @@
+[
+  {
+    "id": 1,
+    "name": "Civil Law"
+  },
+  {
+    "id": 2,
+    "name": "Criminal Law"
+  },
+  {
+    "id": 3,
+    "name": "Remedial Law"
+  },
+  {
+    "id": 4,
+    "name": "Constitutional Law"
+  },
+  {
+    "id": 5,
+    "name": "Labor Law"
+  },
+  {
+    "id": 6,
+    "name": "Commercial Law"
+  },
+  {
+    "id": 7,
+    "name": "Taxation Law"
+  },
+  {
+    "id": 8,
+    "name": "Legal Ethics"
+  },
+  {
+    "id": 9,
+    "name": "Political Law"
+  },
+  {
+    "id": 10,
+    "name": "Litigation"
+  },
+  {
+    "id": 11,
+    "name": "Administrative Law"
+  }
+]

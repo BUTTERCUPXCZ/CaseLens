@@ -96,6 +96,18 @@ class JobQueue(ABC):
         the work to those answer fields; None means everything still pending."""
 
     @abstractmethod
+    def enqueue_bulk_item(self, item_id: int) -> None:
+        """Resolve one item of a bulk upload (read Lawphil, find its main case) in the background. Runs once per item."""
+
+    @abstractmethod
+    def enqueue_case_digest(self, digest_id: int) -> None:
+        """Write one case digest (a case and its topic scope) in the background (a few minutes of AI work). Asking twice runs it once."""
+
+    @abstractmethod
+    def enqueue_case_question(self, question_id: int) -> None:
+        """Answer a question asked about a case, in the background (a few seconds of AI work)."""
+
+    @abstractmethod
     def enqueue_refresh_catalog(self) -> bool:
         """Re-read the newest monthly lists. False if one was already queued today."""
 

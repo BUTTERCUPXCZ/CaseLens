@@ -1,7 +1,7 @@
 from caselens.application.ports.digests import DigestRepository
 from caselens.application.ports.gateways import JobQueue
 from caselens.application.ports.repositories import CaseRepository, UnitOfWork
-from caselens.domain.case_digest import CaseDigest, DigestStatus, DigestTemplate, FieldKind, FieldState
+from caselens.domain.case_digest import CaseDigest, DigestStatus, DigestTemplate, FieldState
 from caselens.domain.errors import CaseNotFoundError
 from caselens.domain.services.digest_field_factory import DigestFieldFactory
 
@@ -55,7 +55,7 @@ class RequestCaseDigest:
             fields=self._factory.build(template, case.full_text, [q.strip() for q in (questions or []) if q.strip()]),
             parser_version=case.parser_version,
         )
-        waiting = any(f.kind is FieldKind.ANSWER and f.state is FieldState.PENDING for f in digest.fields)
+        waiting = any(f.state is FieldState.PENDING for f in digest.fields)  # an answer to write, or a passage to look for
         digest.status = DigestStatus.PENDING if waiting else DigestStatus.READY
         digest = self._digests.add(digest)
         self._uow.commit()  # commit first so the worker can see it

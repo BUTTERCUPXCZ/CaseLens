@@ -28,5 +28,3 @@ export const findCaseSchema = z.object({
     .trim()
     .refine((value) => value === '' || isValidYear(value), 'Use a four-digit year, for example 2009.'),
 })
-
-export type FindCaseValues = z.infer<typeof findCaseSchema>

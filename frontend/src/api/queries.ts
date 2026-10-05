@@ -1,14 +1,17 @@
 import { queryOptions } from '@tanstack/react-query'
 
 import {
+  getBulk,
+  getBulkItems,
   getCase,
-  getCatalogStatus,
-  getDigest,
-  getFinishedReviewer,
+  getCaseDigest,
+  getCaseQuestions,
+  getRecentBulk,
+  getSubjectCounts,
+  getSubjectList,
   getInsights,
   getLibrary,
   getUpload,
-  getUploads,
   searchCases,
   searchCatalog,
 } from './endpoints'
@@ -22,7 +25,16 @@ export const MAX_SEARCH_POLLS = 40
 export const keys = {
   uploads: ['uploads'] as const,
   upload: (id: number) => ['upload', id] as const,
-  library: (q: string, page: number) => ['library', q, page] as const,
+  library: (q: string, page: number, subject: SubjectFilter) => ['library', q, page, subject] as const,
+  batchCases: (id: number, page: number) => ['library', 'batch', id, page] as const,
+  subjects: ['subjects'] as const,
+  subjectList: ['subject-list'] as const,
+  caseDigest: (id: number, scope = '', batchId: number | null = null) => ['case-digest', id, scope.trim().toLowerCase(), batchId] as const,
+  caseQuestions: (id: number, batchId: number | null) => ['case-questions', id, batchId] as const,
+  bulk: (id: number) => ['bulk', id] as const,
+  bulkItems: (id: number, status: string | undefined, page: number) => ['bulk-items', id, status ?? null, page] as const,
+  recentBulk: ['bulk-recent'] as const,
+  reviews: (page: number) => ['bulk-recent', page] as const,
   case: (id: number) => ['case', id] as const,
   insights: (id: number) => ['insights', id] as const,
   search: (grNo: string, year: number | undefined) => ['search', grNo, year ?? null] as const,
@@ -31,9 +43,6 @@ export const keys = {
   finishedReviewer: (uploadId: number) => ['finished-reviewer', uploadId] as const,
   digest: (id: number) => ['digest', id] as const,
 }
-
-export const uploadsQuery = (limit = 20) =>
-  queryOptions({ queryKey: [...keys.uploads, limit], queryFn: () => getUploads(limit) })
 
 /** Polls while any citation is still being checked, and stops by itself when it is done. */
 export const uploadQuery = (id: number) =>
@@ -45,11 +54,44 @@ export const uploadQuery = (id: number) =>
 
 export const PAGE_SIZE = 20
 
-export const libraryQuery = (q: string, page: number) =>
+/** Which subject the library shows: every case, the cases with no subject yet ("none"), or one subject by its id. */
+export type SubjectFilter = number | 'none' | undefined
+
+export const libraryQuery = (q: string, page: number, subject: SubjectFilter = undefined) =>
   queryOptions({
-    queryKey: keys.library(q, page),
-    queryFn: () => getLibrary({ q, limit: PAGE_SIZE, offset: page * PAGE_SIZE }),
+    queryKey: keys.library(q, page, subject),
+    queryFn: () =>
+      getLibrary({
+        q,
+        limit: PAGE_SIZE,
+        offset: page * PAGE_SIZE,
+        subject_id: typeof subject === 'number' ? subject : undefined,
+        no_subject: subject === 'none' ? true : undefined,
+      }),
     placeholderData: (previous) => previous, // keep the old rows on screen while the next page loads
+  })
+
+/** The filter rail's subjects with their counts. */
+export const subjectCountsQuery = () => queryOptions({ queryKey: keys.subjects, queryFn: getSubjectCounts, staleTime: 15_000 })
+/** The subjects for a picker (they hardly ever change). */
+export const subjectListQuery = () => queryOptions({ queryKey: keys.subjectList, queryFn: getSubjectList, staleTime: Infinity })
+
+/** The case digest. While it is being written, ask again every few seconds; it stops by itself when it is ready or has failed. */
+export const CASE_DIGEST_POLL_MS = 4000
+export const caseDigestQuery = (id: number, scope = '', batchId: number | null = null) =>
+  queryOptions({
+    queryKey: keys.caseDigest(id, scope, batchId),
+    queryFn: () => getCaseDigest(id, scope, batchId),
+    refetchInterval: (query) => (query.state.data?.state === 'pending' ? CASE_DIGEST_POLL_MS : false),
+  })
+
+/** The questions asked about a case in one review; asked again every few seconds while one is being answered. */
+export const QUESTION_POLL_MS = 2500
+export const caseQuestionsQuery = (id: number, batchId: number | null) =>
+  queryOptions({
+    queryKey: keys.caseQuestions(id, batchId),
+    queryFn: () => getCaseQuestions(id, batchId),
+    refetchInterval: (query) => (query.state.data?.some((q) => q.state === 'pending') ? QUESTION_POLL_MS : false),
   })
 
 export const caseQuery = (id: number) =>
@@ -83,28 +125,42 @@ export const catalogSearchQuery = (q: string, year: number | undefined, page: nu
     refetchInterval: (query) => (query.state.data?.catalog.state === 'building' ? CATALOG_POLL_MS : false),
   })
 
-export const catalogStatusQuery = () =>
+/** A bulk upload's progress: asked again while anything is waiting for Lawphil or its digest is being written. */
+export const BULK_POLL_MS = 3000
+export const bulkQuery = (id: number) =>
   queryOptions({
-    queryKey: keys.catalogStatus,
-    queryFn: getCatalogStatus,
-    refetchInterval: (query) => (query.state.data?.state === 'building' ? CATALOG_POLL_MS : false),
-  })
-
-/** The reviewer with its digest boxes in place. Asks again while any box is still being written. */
-export const finishedReviewerQuery = (uploadId: number) =>
-  queryOptions({
-    queryKey: keys.finishedReviewer(uploadId),
-    queryFn: () => getFinishedReviewer(uploadId),
-    refetchInterval: (query) => (query.state.data && !query.state.data.all_ready ? POLL_MS : false),
-  })
-
-/** One digest box. Asks again while its Court text is final but an explanation is still being written. */
-export const digestQuery = (id: number) =>
-  queryOptions({
-    queryKey: keys.digest(id),
-    queryFn: () => getDigest(id),
+    queryKey: keys.bulk(id),
+    queryFn: () => getBulk(id),
     refetchInterval: (query) => {
-      const digest = query.state.data
-      return digest && (digest.status === 'pending' || digest.fields.some((f) => f.state === 'pending')) ? POLL_MS : false
+      const bulk = query.state.data
+      return !bulk || !bulk.finished || bulk.counts.digests_pending > 0 ? BULK_POLL_MS : false
     },
+  })
+
+export const BULK_PAGE_SIZE = 25
+export const bulkItemsQuery = (id: number, status: string | undefined, page: number, live: boolean) =>
+  queryOptions({
+    queryKey: keys.bulkItems(id, status, page),
+    queryFn: () => getBulkItems(id, { status: status as never, limit: BULK_PAGE_SIZE, offset: page * BULK_PAGE_SIZE }),
+    refetchInterval: live ? BULK_POLL_MS : false,
+    placeholderData: (previous) => previous,
+  })
+
+/** What a bulk upload gave: its main cases, each once. Asked again while the upload or its digests are still being worked on. */
+export const batchCasesQuery = (id: number, page: number, live: boolean) =>
+  queryOptions({
+    queryKey: keys.batchCases(id, page),
+    queryFn: () => getLibrary({ batch_id: id, limit: PAGE_SIZE, offset: page * PAGE_SIZE }),
+    refetchInterval: live ? BULK_POLL_MS : false,
+    placeholderData: (previous) => previous,
+  })
+
+/** "My reviews": the uploads, newest first, a page at a time. Asked again while any is still being worked on. */
+export const REVIEWS_PAGE_SIZE = 20
+export const reviewsQuery = (page: number) =>
+  queryOptions({
+    queryKey: keys.reviews(page),
+    queryFn: () => getRecentBulk(REVIEWS_PAGE_SIZE, page * REVIEWS_PAGE_SIZE),
+    placeholderData: (previous) => previous,
+    refetchInterval: (query) => (query.state.data?.some((b) => !b.finished || b.counts.digests_pending > 0) ? BULK_POLL_MS : false),
   })

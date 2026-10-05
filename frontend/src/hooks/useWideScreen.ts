@@ -1,20 +1,14 @@
 import { useSyncExternalStore } from 'react'
 
-const QUERY = '(min-width: 1024px)'
+/** The width at which the AI assistant docks on the right of the page (the layout's `xl`); below it, it opens as a sheet. */
+const WIDE = '(min-width: 1280px)'
 
 function subscribe(onChange: () => void) {
-  if (typeof window === 'undefined' || !window.matchMedia) return () => undefined
-  const media = window.matchMedia(QUERY)
-  media.addEventListener('change', onChange)
-  return () => media.removeEventListener('change', onChange)
+  const query = window.matchMedia(WIDE)
+  query.addEventListener('change', onChange)
+  return () => query.removeEventListener('change', onChange)
 }
 
-/** True when the window is wide enough to dock a panel on the right edge (a laptop or bigger).
- *  Where the browser cannot tell (an old browser, a test), a wide screen is assumed. */
 export function useWideScreen(): boolean {
-  return useSyncExternalStore(
-    subscribe,
-    () => (typeof window !== 'undefined' && window.matchMedia ? window.matchMedia(QUERY).matches : true),
-    () => true,
-  )
+  return useSyncExternalStore(subscribe, () => window.matchMedia(WIDE).matches, () => false)
 }

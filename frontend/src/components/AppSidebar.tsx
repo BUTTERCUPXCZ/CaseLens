@@ -1,7 +1,7 @@
 import { Link, useRouterState } from '@tanstack/react-router'
-import { BookOpen, FileCheck2, Library, Scale, UploadCloud } from 'lucide-react'
+import { BookOpen, FilePlus2, FileStack, Library, Scale } from 'lucide-react'
 
-import { guideCopy } from '@/lib/copy'
+import { guideCopy, libraryCopy, reviewsCopy, uploadCopy } from '@/lib/copy'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import {
   Sidebar,
@@ -16,9 +16,9 @@ import {
 } from '@/components/ui/sidebar'
 
 const NAV = [
-  { to: '/', label: 'Check a reviewer', icon: UploadCloud, matches: (path: string) => path === '/' },
-  { to: '/reviews', label: 'My reviews', icon: FileCheck2, matches: (path: string) => path.startsWith('/reviews') },
-  { to: '/cases', label: 'Case library', icon: Library, matches: (path: string) => path.startsWith('/cases') },
+  { to: '/upload', label: uploadCopy.title, icon: FilePlus2, matches: (path: string) => path.startsWith('/upload') },
+  { to: '/reviews', label: reviewsCopy.title, icon: FileStack, matches: (path: string) => path.startsWith('/reviews') },
+  { to: '/library', label: libraryCopy.title, icon: Library, matches: (path: string) => path === '/library' || path.startsWith('/cases') || path.startsWith('/search') },
   { to: '/guide', label: guideCopy.navLabel, icon: BookOpen, matches: (path: string) => path.startsWith('/guide') },
 ] as const
 
@@ -28,7 +28,7 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="px-4 pt-5 pb-3">
-        <Link to="/" className="flex items-center gap-2.5 rounded-md text-sidebar-foreground">
+        <Link to="/library" search={{}} className="flex items-center gap-2.5 rounded-md text-sidebar-foreground">
           <Scale className="size-6 text-gilt" aria-hidden />
           <span className="text-lg font-semibold tracking-tight">CaseLens</span>
         </Link>
@@ -42,7 +42,7 @@ export function AppSidebar() {
                 {NAV.map((item) => {
                   const active = item.matches(path)
                   return (
-                    <SidebarMenuItem key={item.to}>
+                    <SidebarMenuItem key={item.label}>
                       <SidebarMenuButton asChild isActive={active} size="lg" className="text-base">
                         <Link to={item.to} aria-current={active ? 'page' : undefined}>
                           <item.icon className={active ? 'text-gilt' : undefined} />

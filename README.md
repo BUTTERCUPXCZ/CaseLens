@@ -1,8 +1,8 @@
 # CaseLens
 
-**A web app that turns a law student's reviewer into a finished, checked, case-by-case digest.**
+**A web app that keeps Philippine Supreme Court cases by subject and writes a checked digest of each one.**
 
-Upload a reviewer (PDF or Word). CaseLens finds every Philippine Supreme Court case it cites, gets the real decision from [Lawphil](https://lawphil.net), checks the student's citations against the Court's record, and builds a **digest box** for each case: Facts, Issue, Ruling, Doctrine, and short explanations. The student edits anything and downloads a Word file.
+Look up one case, or upload many (PDF, Word or G.R. numbers). CaseLens gets the real decision from [Lawphil](https://lawphil.net), files it under a subject, shows each main case once in the Case library, and writes a digest in the client's format (Doctrine, Facts, Issue, Ruling and more), every sentence tied to the Court's paragraphs and checked. Download it as Word in three sizes.
 
 > For information only. CaseLens gives no legal advice. Lawphil gives no warranty that its text is complete or correct: confirm with the Supreme Court.
 
@@ -23,14 +23,10 @@ CaseLens does the repeating work and keeps the law accurate:
 | | |
 |---|---|
 | **Search** | Find a decision by case name or G.R. number (1987 onward) in about 1 to 37 ms. |
-| **Check a reviewer** | Finds each cited case and compares it with the Court's record (for example: "You wrote 2010; the Court's record says 2009"). |
-| **Finished reviewer** | One digest box per cited case. A switch shows the whole reviewer text with each box after its paragraph. |
-| **Court's own words** | Facts and Issue come from the Court's own headings. The Ruling is the paragraphs before the last `SO ORDERED`. The Doctrine is picked or pasted by the student. Nothing is reworded. |
-| **Explanations in plain words** | "Topic explained", "Why this case matters" and any question the student adds. Written by Gemini from the decision, then checked twice. Marked "Drafted from the decision. Check it." |
-| **Edit everything** | Type, paste, pick paragraphs of the decision, put the original back, or write an answer again. |
-| **Word download** | The reviewer with the digest boxes inside, as a `.docx`. A Word upload keeps its own layout. A PDF is rebuilt as a new Word file. |
-| **Download the full case** | For a student who is not happy with a digest: one Word file per case, or every case a review cites in one file. The Court's own text, footnotes and opinions, nothing reworded, with the official link. |
-| **Case library** | Saved cases with their footnotes, and facts read from each decision (ruling, justice, laws and cases cited). |
+| **Download the full case** | For a student who is not happy with a digest: one Word file per case. The Court's own text, footnotes and opinions, nothing reworded, with the official link. |
+| **Case library** | The main page: a subject filter on the left and a table (Case, G.R. No. with date and ponente, View / Download). One row per main case; related and repeated cases are never listed twice. |
+| **Individual and Bulk** | Look up one case, or upload many (PDF, Word or G.R. numbers) and answer "What subject?". After a bulk upload the student sees only what they gave: one main case per file or number, no related or cited cases, plus a list of what could not be added. |
+| **Case digest** | The client's format (Doctrine, Facts, Issue, Ruling, Ratio Decidendi, Dissents, Topic Explained, Why this case matters), written from the decision, every sentence cited and checked, in three Word sizes. |
 | **Guide** | A "How to use it" page for first-time students, and a short welcome card on the start page. |
 
 ## How the AI is kept honest

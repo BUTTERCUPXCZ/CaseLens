@@ -254,3 +254,32 @@ Share the address and the access code. Watch the first days.
 - [ ] Google AI Studio: free-tier limits and the data-use terms.
 - [ ] Does a `/health` call that queries the database count as activity for the Supabase pause?
 - [ ] CloudAMQP (Mode B only): the free plan's connection and message limits.
+
+## 13. Paid mode for about 2,000 case digests a month
+
+The free setup (sections 1 to 12) is for a few students. The library with Bulk is meant for about 2,000 digests a month, which needs paid plans. Numbers below come from one measured run unless marked *estimate*.
+
+**Measured (Marcos v. Manglapus, one run):** 7 AI calls, about 87K input and 56K output tokens, 208 s per digest, 89 of 94 sentences kept. A long decision with long dissents costs more.
+
+| Part | Needs | Why |
+|---|---|---|
+| Gemini key | **Paid** (billing on) | The free tier allows only a few digests a day. *Estimate:* with current prices checked on the Google AI pricing page, 2,000 digests is on the order of a few hundred US dollars a month (about 87K input and 56K output tokens each; the output tokens, including thinking, cost most). Measure the real bill on the first 20 digests before promising a number. |
+| Render | API + `worker-lawphil` + `worker-digests` (paid background workers) | Mode B of section 2. `QUEUE_BACKEND=rabbitmq`. |
+| RabbitMQ | CloudAMQP (small paid plan) or a Render private service | The free plan's limits are enough for messages, but check connections. |
+| Supabase | **Pro** (8 GB) | *Estimate:* about 150 KB per saved decision plus its digest, roughly 300 MB a month, 3 to 4 GB a year. Free is 500 MB. To grow slower, drop `raw_html` after parsing (it is the largest column) once `reparse` is not needed. |
+| Vercel | Hobby is fine for the pages | Bulk files go up a few at a time (the 4.5 MB request limit). Hobby terms are non-commercial; use Pro if the client sells access. |
+
+**Time.** One digest takes about 3 to 4 minutes of waiting on Gemini. The `digests` worker runs 4 threads, so about 70 to 80 digests an hour; 2,000 take about 26 to 29 hours of worker time spread over the month, and a 300-item bulk upload about 4 hours. More threads (`--threads 8`) is a one-line change if the Gemini quota allows it. Resolving a bulk item (Lawphil) is limited to 1 request per second by design: 2,000 cases is about 35 minutes of fetching.
+
+**Budget guard.** `CASE_DIGEST_MONTHLY_LIMIT` (default 2,500) stops new digests with a plain message instead of overspending. When the month turns or the limit is raised, `python -m caselens.manage resume-digests` (also run at every restart) starts the waiting ones again. Set it from the budget: limit = budget / measured cost per digest.
+
+**Gemini limits.** A rate-limited call (429) is retried after 20 s, 40 s and so on; if it still fails, the digest says the writing service did not answer and "Write it again" retries. Keep the worker threads within the paid tier's requests-per-minute.
+
+**Other changes for paid mode**
+- Run `alembic upgrade head` on the live database first (migrations 0010 to 0012 add subjects, main case, bulk and case digests). Take a backup first.
+- Set `ACCESS_CODE`, `GEMINI_API_KEY`, `QUEUE_BACKEND=rabbitmq`, `RABBITMQ_URL`, `CASE_DIGEST_MONTHLY_LIMIT` on Render.
+- `python -m caselens.manage reparse` once, so stored pages are read with the current parser.
+- Shared library with no accounts: everyone with the access code sees every saved digest.
+- Ask the Arellano Law Foundation for written permission before bulk reading of Lawphil; at this scale it matters more.
+
+**Not yet measured:** a 50 to 300 item dry run with real timing and cost. Do that on the paid key before the client relies on the numbers.

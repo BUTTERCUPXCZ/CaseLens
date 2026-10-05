@@ -120,11 +120,13 @@ def _check_note(citation: UploadedCitation) -> str | None:
 def _box_field(item: DigestField) -> BoxField:
     text = _MARKER.sub("", item.text)
     if item.state is FieldState.PENDING:
-        return BoxField(item.label, "", "Still being written.")
+        return BoxField(item.label, "", "Still looking for the Court's passage." if item.kind is FieldKind.VERBATIM else "Still being written.")
     if item.state is FieldState.UNAVAILABLE:
         return BoxField(item.label, "", item.note)
     if item.origin is FieldOrigin.AI_DRAFTED:
         return BoxField(item.label, text, f"Drafted from the decision{_sources(item)}. Check it.")
+    if item.origin is FieldOrigin.COURT_SUGGESTED:
+        return BoxField(item.label, text, "The Court's own words, suggested from the decision: check it.")
     if item.origin is FieldOrigin.STUDENT_PASTED:
         return BoxField(item.label, text, "Pasted by you.")
     return BoxField(item.label, text, None)  # the Court's own text, or the student's own writing: no label needed

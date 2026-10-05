@@ -3,7 +3,7 @@ change without touching the domain."""
 from datetime import date, datetime
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from caselens.application.use_cases.get_upload import UploadReport
 from caselens.application.use_cases.list_cases import CasePage
@@ -82,6 +82,11 @@ class CitedCaseOut(BaseModel):
         )
 
 
+class SubjectOut(BaseModel):
+    id: int
+    name: str
+
+
 class CaseSummaryOut(BaseModel):
     id: int
     gr_no: str
@@ -92,9 +97,13 @@ class CaseSummaryOut(BaseModel):
     division: str | None
     disposition: DispositionName
     source_url: str
+    numbers: list[str] = []  # every G.R. number the page prints (a joint decision has several)
+    subjects: list[SubjectOut] = []  # the tags the student gave it, in the list's order
+    digest_ready: bool = False  # a case digest has been written for it
+    digest_state: Literal["none", "pending", "ready", "failed"] = "none"  # and how it is coming along
 
     @classmethod
-    def from_entity(cls, case: Case | CaseSummary) -> "CaseSummaryOut":
+    def from_entity(cls, case: Case | CaseSummary, digest_ready: bool = False, digest_state: str = "none") -> "CaseSummaryOut":
         """Works for a full `Case` and for the lighter `CaseSummary` (same fields)."""
         return cls(
             id=case.id,
@@ -106,7 +115,21 @@ class CaseSummaryOut(BaseModel):
             division=case.division,
             disposition=case.disposition.value,
             source_url=case.source_url,
+            numbers=list(case.all_numbers if isinstance(case, Case) else (case.numbers or (case.gr_no.value,))),
+            subjects=[SubjectOut(id=s.id, name=s.name) for s in case.subjects],
+            digest_ready=digest_ready,
+            digest_state=digest_state,  # type: ignore[arg-type]
         )
+
+
+class SubjectCountOut(BaseModel):
+    subject_id: int | None  # None: cases with no subject yet
+    name: str
+    count: int
+
+
+class SubjectsIn(BaseModel):
+    subject_ids: list[int] = Field(default_factory=list, max_length=20)  # an empty list clears the tags
 
 
 class CaseDetailOut(CaseSummaryOut):
@@ -166,9 +189,10 @@ class CasePageOut(BaseModel):
     offset: int
 
     @classmethod
-    def from_page(cls, page: CasePage) -> "CasePageOut":
+    def from_page(cls, page: CasePage, digest_states: dict[int, str] | None = None) -> "CasePageOut":
+        states = digest_states or {}
         return cls(
-            items=[CaseSummaryOut.from_entity(c) for c in page.items],
+            items=[CaseSummaryOut.from_entity(c, digest_ready=states.get(c.id) == "ready", digest_state=states.get(c.id, "none")) for c in page.items],
             total=page.total,
             limit=page.limit,
             offset=page.offset,

@@ -27,6 +27,8 @@ export function formatWhen(iso: string | null | undefined, now: Date = new Date(
 export const plural = (count: number, one: string, many = `${one}s`) => `${count} ${count === 1 ? one : many}`
 
 const SMALL_WORDS = new Set(['of', 'the', 'and', 'on', 'for', 'in', 'a', 'an', 'to', 'at', 'by', 'vs', 'v'])
+const ROMAN_NUMERALS = new Set(['II', 'III', 'IV', 'VI', 'VII', 'VIII', 'IX']) // "PIMENTEL III" stays "Pimentel III"
+
 // Short all-caps words that are acronyms, not shouted words.
 const ACRONYMS = new Set(['COMELEC', 'CHED', 'PRC', 'DOJ', 'NLRC', 'GSIS', 'SSS', 'DENR', 'DAR', 'PNB', 'BIR', 'LTO', 'MWSS', 'NAPOCOR', 'ABS-CBN', 'COA', 'CSC', 'CA', 'RTC'])
 
@@ -38,7 +40,7 @@ export function toTitleCase(text: string): string {
     .map((word, index) => {
       if (/^\s+$/.test(word) || word === '') return word
       const bare = word.replace(/[^A-Za-z-]/g, '')
-      if (ACRONYMS.has(bare)) return word
+      if (ACRONYMS.has(bare) || ROMAN_NUMERALS.has(bare)) return word
       if (/^[^AEIOUaeiou]{2,4}$/.test(bare) && bare.length <= 4 && bare === bare.toUpperCase() && !/^(MR|MS|JR|SR|DR|ST)$/.test(bare)) {
         return word // PNB-style consonant clusters are acronyms
       }
@@ -69,17 +71,28 @@ function trimEnd(text: string): string {
  *  Philippines v. Executive Secretary Eduardo Ermita et al." The full text stays on the case page. */
 export function shortCaseName(title: string | null | undefined): string {
   if (!title) return 'Untitled case'
-  const parts = title.split(/\s+vs?\.?\s+/i)
-  if (parts.length < 2) return toTitleCase(title.replace(/,\s*(Petitioners?|Respondents?).*$/i, '').trim())
+  // A long caption lists many parties: "A, B, C, petitioners, vs. D, E, ...". Show the first on each side. A comma that
+  // belongs to a name ("Marcelo, Jr.", "Acme, Inc.") does not end it.
+  const lead = (side: string) => {
+    const [head = '', ...others] = side.split(/(?:,|;)\s+(?!(?:Jr|Sr|Inc|Co|Corp|Ltd|II|III|IV)\b)/i)
+    const [name = head, ...joined] = head.split(/\s+and\s+/) // the Court writes the joining "and" in lowercase
+    return { name, more: others.length > 0 || joined.length > 0 }
+  }
+  // "vs" is the divider when the caption has one; a lone "V." can be a middle initial ("RADITO V. PADRIGANO").
+  const parts = /\s+vs\.?\s+/i.test(title) ? title.split(/\s+vs\.?\s+/i) : title.split(/\s+v\.?\s+/i)
+  if (parts.length < 2) {
+    const only = lead(title.replace(/,\s*(Petitioners?|Respondents?).*$/i, '').trim())
+    return `${toTitleCase(only.name)}${only.more ? ' et al.' : ''}`
+  }
 
   const clean = (side: string) =>
     trimEnd(side.replace(/,?\s*(Petitioners?|Respondents?|Appellants?|Appellees?|Plaintiffs?|Defendants?)\b.*$/i, ''))
 
-  const first = clean(parts[0])
+  const first = lead(clean(parts[0]))
   const secondFull = clean(parts.slice(1).join(' vs. '))
-  const second = secondFull.split(/\s+and\s+/i)[0]
-  const hasMoreParties = secondFull.length > second.length
-  return `${toTitleCase(first)} v. ${toTitleCase(second)}${hasMoreParties ? ' et al.' : ''}`
+  const second = lead(secondFull)
+  const hasMoreParties = second.more
+  return `${toTitleCase(first.name)}${first.more ? ' et al.' : ''} v. ${toTitleCase(second.name)}${hasMoreParties ? ' et al.' : ''}`
 }
 
 /** "REYNATO S. PUNO" -> "Reynato S. Puno", "VELASCO, JR." -> "Velasco, Jr." */

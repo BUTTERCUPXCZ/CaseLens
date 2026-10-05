@@ -1,0 +1,697 @@
+{
+ "prompt": "digest-v2",
+ "writer": "gemini-2.5-flash",
+ "checker": "gemini-3.5-flash",
+ "seconds": 224,
+ "usage": {
+  "calls": 6,
+  "input_tokens": 83979,
+  "output_tokens": 58330
+ },
+ "written": 74,
+ "repaired": 18,
+ "kept": 73,
+ "sections": {
+  "doctrine": [
+   {
+    "heading": null,
+    "list": false,
+    "sentences": [
+     {
+      "text": "The President's executive power is not limited to those specifically enumerated in the Constitution but includes residual powers necessary to protect the general welfare of the people, especially as the protector of peace and steward of the nation.",
+      "cites": [
+       "P74",
+       "P86",
+       "P87"
+      ]
+     },
+     {
+      "text": "The right to return to one's country is a generally accepted principle of international law and part of the law of the land, but constitutional guarantees are not absolute and must be adjusted to public interests. The President has a residual power to protect the general welfare and national interest, and the Court determines if there are factual bases for the President's conclusion that barring the Marcoses' return is in the national interest, and if there was no grave abuse of discretion.",
+      "cites": [
+       "P58",
+       "P85",
+       "P86",
+       "P95"
+      ]
+     }
+    ]
+   }
+  ],
+  "facts": [
+   {
+    "heading": null,
+    "list": false,
+    "sentences": [
+     {
+      "text": "In February 1986, Ferdinand E. Marcos was deposed from the presidency through a non-violent \"people power\" revolution and subsequently forced into exile.",
+      "cites": [
+       "P6"
+      ]
+     },
+     {
+      "text": "Corazon C. Aquino was declared President under a revolutionary government, and her presidency was later reinforced by the ratification of the 1987 Constitution.",
+      "cites": [
+       "P6"
+      ]
+     }
+    ]
+   },
+   {
+    "heading": null,
+    "list": false,
+    "sentences": [
+     {
+      "text": "Despite the change in leadership, Mrs. Aquino's government faced numerous challenges, including a failed Manila Hotel coup in 1986, a takeover of television station Channel 7 by rebel troops with the support of \"Marcos loyalists,\" and an unsuccessful plot by the Marcos spouses to return surreptitiously from Hawaii with mercenaries.",
+      "cites": [
+       "P6"
+      ]
+     },
+     {
+      "text": "These incidents, along with a bloody coup attempt on August 28, 1987, led by Col. Gregorio Honasan, highlighted the capacity of the Marcoses to incite trouble and the fanaticism of their followers, as well as a split within the military.",
+      "cites": [
+       "P6"
+      ]
+     }
+    ]
+   },
+   {
+    "heading": null,
+    "list": false,
+    "sentences": [
+     {
+      "text": "Beyond these armed threats, the government also contended with a communist insurgency and a secessionist movement in Mindanao, which had gained strength during Mr. Marcos's rule.",
+      "cites": [
+       "P7"
+      ]
+     },
+     {
+      "text": "The nation also suffered from severe economic problems, including accumulated foreign debt and alleged plunder by Mr. Marcos and his cronies, with efforts at economic recovery and the retrieval of ill-gotten wealth proving difficult.",
+      "cites": [
+       "P8"
+      ]
+     }
+    ]
+   },
+   {
+    "heading": null,
+    "list": false,
+    "sentences": [
+     {
+      "text": "In his deathbed, Mr. Marcos expressed a wish to return to the Philippines to die.",
+      "cites": [
+       "P9"
+      ]
+     },
+     {
+      "text": "However, President Aquino firmly decided to bar the return of Mr. Marcos and his family, citing the dire consequences to the nation's stability and economy, which was just beginning to recover.",
+      "cites": [
+       "P9"
+      ]
+     },
+     {
+      "text": "Consequently, Ferdinand E. Marcos, Imelda R. Marcos, and other family members, along with the Philippine Constitution Association, filed a petition for mandamus and prohibition.",
+      "cites": [
+       "C1",
+       "P12"
+      ]
+     },
+     {
+      "text": "The petitioners asked the Court to order the respondents to issue travel documents to Mr. Marcos and his immediate family and to enjoin the implementation of the President's decision to bar their return to the Philippines.",
+      "cites": [
+       "P12"
+      ]
+     }
+    ]
+   }
+  ],
+  "arguments_petitioners": [
+   {
+    "heading": null,
+    "list": true,
+    "sentences": [
+     {
+      "text": "The petitioners contended that the President is without power to impair the liberty of abode of the Marcoses because only a court may do so \"within the limits prescribed by law.\"",
+      "cites": [
+       "P32"
+      ]
+     },
+     {
+      "text": "The petitioners contended that the President may not impair their right to travel because no law has authorized her to do so, arguing that legislation is required before the right to travel can be impaired by any government authority.",
+      "cites": [
+       "P32"
+      ]
+     },
+     {
+      "text": "The petitioners asserted that under international law, the right of Mr. Marcos and his family to return to the Philippines is guaranteed, citing Article 13 of the Universal Declaration of Human Rights and Article 12 of the International Covenant on Civil and Political Rights.",
+      "cites": [
+       "P33",
+       "P34",
+       "P35",
+       "P36",
+       "P37",
+       "P38",
+       "P39",
+       "P40",
+       "P41",
+       "P42"
+      ]
+     },
+     {
+      "text": "The petitioners advanced the view that the President's powers are limited to those specifically enumerated in the 1987 Constitution, following the principle of \"inclusion unius est exclusio alterius.\"",
+      "cites": [
+       "P65"
+      ]
+     }
+    ]
+   }
+  ],
+  "arguments_respondents": [
+   {
+    "heading": null,
+    "list": true,
+    "sentences": [
+     {
+      "text": "The respondents' principal argument was that the issue in this case involves a political question which is non-justiciable, particularly whether the Marcoses' right to return impinges on the State's primordial right to security and safety of its nationals.",
+      "cites": [
+       "P43",
+       "P46"
+      ]
+     },
+     {
+      "text": "The respondents argued that the determination of whether there is danger to national security and public safety if the Marcoses return is a political question that falls within the exclusive authority and competence of the President.",
+      "cites": [
+       "P50"
+      ]
+     },
+     {
+      "text": "The respondents argued for the primacy of the State's right to national security over individual rights, citing Article II, Section 4, which states that the prime duty of the Government is to serve and protect the people, and Section 5, which states that the maintenance of peace and order is essential for the enjoyment of democracy.",
+      "cites": [
+       "P51",
+       "P52",
+       "P53"
+      ]
+     },
+     {
+      "text": "The respondents pointed out that the decision to ban Mr. Marcos and his family from returning to the Philippines for reasons of national security and public safety has international precedents, citing examples of deposed dictators whose return to their homelands was prevented by their governments.",
+      "cites": [
+       "P54"
+      ]
+     }
+    ]
+   }
+  ],
+  "issue": [
+   {
+    "heading": null,
+    "list": false,
+    "sentences": [
+     {
+      "text": "Main issue: May the President, in the exercise of constitutional powers, prohibit the Marcoses from returning to the Philippines? YES.",
+      "cites": [
+       "P14",
+       "P61",
+       "P102"
+      ]
+     }
+    ]
+   },
+   {
+    "heading": null,
+    "list": true,
+    "sentences": [
+     {
+      "text": "Does the President have the power under the Constitution to bar the Marcoses from returning to the Philippines? YES.",
+      "cites": [
+       "P61",
+       "P74",
+       "P89"
+      ]
+     },
+     {
+      "text": "Did the President act arbitrarily or with grave abuse of discretion amounting to lack or excess of jurisdiction when she determined that the return of the Marcoses poses a serious threat to national interest and welfare and decided to bar their return? NO.",
+      "cites": [
+       "P61",
+       "P95",
+       "P102"
+      ]
+     }
+    ]
+   }
+  ],
+  "ruling": [
+   {
+    "heading": null,
+    "list": false,
+    "sentences": [
+     {
+      "text": "The instant petition was DISMISSED.",
+      "cites": [
+       "P102"
+      ]
+     },
+     {
+      "text": "The Supreme Court held that the President did not act arbitrarily or with grave abuse of discretion in determining that the return of former President Marcos and his family, at the present time and under present circumstances, poses a serious threat to national interest and welfare, and in prohibiting their return to the Philippines.",
+      "cites": [
+       "P102"
+      ]
+     },
+     {
+      "text": "The decision was reached by a vote of 8-5, with Justices Cortes (ponente), Fernan, Narvasa, Melencio-Herrera, Gancayco, Griño-Aquino, Medialdea, and Regalado concurring, and Justices Gutierrez, Jr., Cruz, Paras, Padilla, and Sarmiento dissenting.",
+      "cites": [
+       "O1.0",
+       "O2.5",
+       "O3.0",
+       "O4.0",
+       "O5.0",
+       "O6.0",
+       "O6.35",
+       "O6.36"
+      ]
+     }
+    ]
+   }
+  ],
+  "ratio": [
+   {
+    "heading": "1. The right involved is the right to return to one's country, distinct from the right to travel.",
+    "list": false,
+    "sentences": [
+     {
+      "text": "The Court clarified that the individual right at issue is the right to return to one's country, which is a distinct right under international law, separate from the liberty of abode or the right to travel within or outside the Philippines.",
+      "cites": [
+       "P57"
+      ]
+     },
+     {
+      "text": "While not specifically guaranteed in the Bill of Rights, the right to return is considered a generally accepted principle of international law and, under the Constitution, is part of the law of the land.",
+      "cites": [
+       "P58"
+      ]
+     },
+     {
+      "text": "This right is protected against arbitrary deprivation under Article 12(4) of the International Covenant on Civil and Political Rights.",
+      "cites": [
+       "P58"
+      ]
+     },
+     {
+      "text": "Therefore, the limitations on the right to return are not necessarily the same as those pertaining to the liberty of abode and the right to travel.",
+      "cites": [
+       "P57"
+      ]
+     }
+    ]
+   },
+   {
+    "heading": "2. The President possesses residual executive powers beyond those specifically enumerated in the Constitution.",
+    "list": false,
+    "sentences": [
+     {
+      "text": "The Court held that the 1987 Constitution, while restoring the separation of powers, maintains intact what is traditionally considered within the scope of \"executive power,\" meaning the President's powers are not limited only to those specifically enumerated.",
+      "cites": [
+       "P63",
+       "P74"
+      ]
+     },
+     {
+      "text": "The Court held the view that executive power is more than the sum of specific enumerated powers, and it has been advanced that whatever power inherent in the government that is neither legislative nor judicial has to be executive.",
+      "cites": [
+       "P74",
+       "P75",
+       "P76"
+      ]
+     },
+     {
+      "text": "This residual power is founded on the President's duty as the steward of the people and protector of the peace, obligating her to do anything not forbidden by the Constitution or laws that the needs of the nation demand.",
+      "cites": [
+       "P86",
+       "P87"
+      ]
+     },
+     {
+      "text": "The President's duty to preserve and defend the Constitution and faithfully execute the laws implies a discretionary power to protect the general welfare.",
+      "cites": [
+       "P86"
+      ]
+     }
+    ]
+   },
+   {
+    "heading": "3. The President's decision to bar the Marcoses' return was a valid exercise of this residual power, supported by factual bases.",
+    "list": false,
+    "sentences": [
+     {
+      "text": "The Court found that the President's decision to bar the Marcoses' return was an exercise of her residual power to protect the general welfare, considering the constitutional principles of serving and protecting the people, maintaining peace and order, and promoting general welfare.",
+      "cites": [
+       "P82",
+       "P84",
+       "P86",
+       "P89"
+      ]
+     },
+     {
+      "text": "The Court determined that there existed factual bases for the President's conclusion that the return of the Marcoses at that time and under those circumstances posed a serious threat to national interest and welfare.",
+      "cites": [
+       "P95",
+       "P96",
+       "P102"
+      ]
+     },
+     {
+      "text": "These factual bases included the ongoing communist insurgency, a separatist movement in Mindanao, rightist conspiracies, urban terrorism, and the documented history of the Marcoses' efforts to destabilize the country.",
+      "cites": [
+       "P97"
+      ]
+     },
+     {
+      "text": "The Court acknowledged that while individual threats might be contained, the return of the Marcoses could have a \"catalytic effect\" that would exacerbate violence and chaos, potentially leading to total economic collapse.",
+      "cites": [
+       "P98",
+       "P100",
+       "P101"
+      ]
+     },
+     {
+      "text": "The State is not precluded from taking pre-emptive action against threats to its existence, even if nascent, to fulfill the President's duty to preserve and defend the Constitution.",
+      "cites": [
+       "P99"
+      ]
+     }
+    ]
+   },
+   {
+    "heading": "4. The Court's power of judicial review extends to determining grave abuse of discretion, but it will not substitute its judgment for the Executive's where factual bases exist.",
+    "list": false,
+    "sentences": [
+     {
+      "text": "The Court asserted its power of judicial review, which includes the duty to determine whether there has been grave abuse of discretion amounting to lack or excess of jurisdiction on the part of any government branch, thereby limiting the political question doctrine.",
+      "cites": [
+       "P91",
+       "P92",
+       "P93"
+      ]
+     },
+     {
+      "text": "However, the Court's function is to check, not to supplant, the Executive, and to ascertain if the Executive has gone beyond constitutional limits, not to determine the wisdom of the act.",
+      "cites": [
+       "P94"
+      ]
+     },
+     {
+      "text": "Since factual bases for the President's decision were found, the Court concluded that she did not act arbitrarily or with grave abuse of discretion.",
+      "cites": [
+       "P96",
+       "P98",
+       "P102"
+      ]
+     }
+    ]
+   }
+  ],
+  "dissents": [
+   {
+    "heading": null,
+    "list": true,
+    "sentences": [
+     {
+      "text": "Gutierrez, Jr., J.: The issue is one of rights, not power, and the Constitution's Bill of Rights guarantees liberty of abode and the right to travel, which can only be impaired \"as may be provided by law,\" a law that does not exist in this case.",
+      "cites": [
+       "O2.4",
+       "O2.7",
+       "O2.8"
+      ]
+     },
+     {
+      "text": "Gutierrez, Jr., J.: The political question doctrine is inapplicable because there is no textual constitutional commitment of this issue solely to the President, and the military itself assured the Court that it could contain any disturbances.",
+      "cites": [
+       "O2.9",
+       "O2.19",
+       "O2.22",
+       "O2.51"
+      ]
+     },
+     {
+      "text": "Gutierrez, Jr., J.: The President's stated reasons of \"national welfare and interest\" or \"preserving economic and political gains\" are too generic and cannot override a constitutional right, and the \"confluence theory\" of danger is speculative and sets a perilous precedent.",
+      "cites": [
+       "O2.47",
+       "O2.49",
+       "O2.50"
+      ]
+     },
+     {
+      "text": "Cruz, J., dissented, stating that the government failed to prove in the closed-door hearing that Marcos's return would pose a threat to national security, basing its fears on mere conjectures without concrete evidence.",
+      "cites": [
+       "O3.3",
+       "O3.4"
+      ]
+     },
+     {
+      "text": "Cruz, J.: The majority's reliance on \"residual powers\" is a step backward, reinstating a discredited doctrine contrary to the Constitutional Commission's intent to limit presidential powers, and the Bill of Rights should apply to all, including those detested.",
+      "cites": [
+       "O3.6",
+       "O3.7",
+       "O3.11"
+      ]
+     },
+     {
+      "text": "Paras, J.: Marcos, as a Filipino citizen, has the right to return to his own country under the Universal Declaration of Human Rights and the 1987 Constitution, and the Armed Forces failed to prove the extent of any danger, relying on sheer speculation.",
+      "cites": [
+       "O4.2",
+       "O4.3"
+      ]
+     },
+     {
+      "text": "Paras, J.: Allowing Marcos to return under house arrest would maintain regard for fundamental human rights, national discipline, and human compassion.",
+      "cites": [
+       "O4.5",
+       "O4.6"
+      ]
+     },
+     {
+      "text": "Padilla, J.: The issue is justiciable, involving colliding assertions of individual right and governmental power, and the Court's duty under the 1987 Constitution's expanded judicial power is to determine grave abuse of discretion.",
+      "cites": [
+       "O5.0",
+       "O5.1"
+      ]
+     },
+     {
+      "text": "Padilla, J.: While the State's police power can restrict travel, the respondents failed to present sufficient factual bases to justify negating Marcos's specific constitutional right to return, as their apprehensions were speculative and the military admitted threats would be \"under control.\"",
+      "cites": [
+       "O5.3",
+       "O5.4",
+       "O5.5",
+       "O5.6"
+      ]
+     },
+     {
+      "text": "Padilla, J., dissented, stating that the denial of the right to return would be an arbitrary deprivation under international law, and that the Court should not use the political question doctrine to evade its duty to uphold constitutional rights.",
+      "cites": [
+       "O5.8",
+       "O5.9"
+      ]
+     },
+     {
+      "text": "Sarmiento, J.: There is only one right involved, the right to travel and return, and the Constitution makes no distinctions, nor does it allow the President to override the direct mandate of the Bill of Rights without a specific law or court order.",
+      "cites": [
+       "O6.2",
+       "O6.3",
+       "O6.4",
+       "O6.14",
+       "O6.15"
+      ]
+     },
+     {
+      "text": "Sarmiento, J., dissented, stating that the 1987 Constitution divested the Executive of implied power to moderate movement, unlike the 1973 Constitution, and that the military's assurance that the government \"will not fall\" contradicts claims of a clear and present danger.",
+      "cites": [
+       "O6.17",
+       "O6.18",
+       "O6.19",
+       "O6.21",
+       "O6.22"
+      ]
+     },
+     {
+      "text": "Sarmiento, J., dissented, stating that the arguments of \"residual power\" and the President as \"protector of peace\" are reminiscent of justifications for authoritarian rule and are inconsistent with the reduced powers of the Executive under the 1987 Charter.",
+      "cites": [
+       "O6.6",
+       "O6.10",
+       "O6.13",
+       "O6.14",
+       "O6.26",
+       "O6.27",
+       "O6.28"
+      ]
+     },
+     {
+      "text": "Sarmiento, J.: Despite personal suffering under the Marcos regime, the human right of travel and movement and liberty of abode must be upheld for all, as there is no such thing as getting even in a democratic framework.",
+      "cites": [
+       "O6.30",
+       "O6.31",
+       "O6.33"
+      ]
+     }
+    ]
+   }
+  ],
+  "topic": [
+   {
+    "heading": null,
+    "list": false,
+    "sentences": [
+     {
+      "text": "The underlying issue in this case is the scope of presidential power and its limits under the Constitution.",
+      "cites": [
+       "P14",
+       "P55"
+      ]
+     }
+    ]
+   },
+   {
+    "heading": "1. What is Executive Power?",
+    "list": false,
+    "sentences": [
+     {
+      "text": "Executive power is vested in the President of the Philippines by Article VII, Section 1 of the 1987 Constitution.",
+      "cites": [
+       "P64"
+      ]
+     },
+     {
+      "text": "While the Constitution enumerates certain presidential powers, it does not explicitly define \"executive power.\"",
+      "cites": [
+       "P64"
+      ]
+     },
+     {
+      "text": "The Court clarified that executive power is not limited to these enumerated powers; rather, it encompasses what is traditionally considered within the scope of executive power, meaning it is more than the sum of specific powers listed.",
+      "cites": [
+       "P74"
+      ]
+     },
+     {
+      "text": "This includes powers inherent in the President's role as both head of state and head of government, unless specifically withheld by the Constitution.",
+      "cites": [
+       "P73"
+      ]
+     }
+    ]
+   },
+   {
+    "heading": "2. The concept of Residual Powers.",
+    "list": false,
+    "sentences": [
+     {
+      "text": "The Court recognized the concept of \"residual powers\" of the President, which are implicit in and correlative to the paramount duty of the office to safeguard and protect the general welfare of the people.",
+      "cites": [
+       "P86",
+       "P89"
+      ]
+     },
+     {
+      "text": "These powers are founded on the President's duty to preserve and defend the Constitution and to ensure that laws are faithfully executed.",
+      "cites": [
+       "P86"
+      ]
+     },
+     {
+      "text": "This includes the power to act as the protector of the peace, which is not limited to emergency situations but extends to the day-to-day maintenance of peace and order and ensuring domestic tranquility.",
+      "cites": [
+       "P87"
+      ]
+     },
+     {
+      "text": "The President has wide discretion, within the bounds of law, to take pre-emptive action against threats to the State's existence.",
+      "cites": [
+       "P87",
+       "P99"
+      ]
+     }
+    ]
+   },
+   {
+    "heading": "3. How this case demonstrates Executive Power.",
+    "list": false,
+    "sentences": [
+     {
+      "text": "In Marcos v. Manglapus, the Court affirmed that President Aquino's decision to bar the return of former President Marcos and his family was a valid exercise of the President's residual power.",
+      "cites": [
+       "C1",
+       "P9",
+       "P86",
+       "P102"
+      ]
+     },
+     {
+      "text": "The President's action was justified by her duty to protect the national interest and welfare, given the existing threats to national security and the fragile state of the economy, which could be exacerbated by the Marcoses' return.",
+      "cites": [
+       "P9",
+       "P97",
+       "P98",
+       "P100",
+       "P101"
+      ]
+     },
+     {
+      "text": "The Court found that there were sufficient factual bases for the President's determination, thus concluding that she did not act arbitrarily or with grave abuse of discretion.",
+      "cites": [
+       "P96",
+       "P102"
+      ]
+     }
+    ]
+   }
+  ],
+  "why": [
+   {
+    "heading": null,
+    "list": true,
+    "sentences": [
+     {
+      "text": "The Court recognized the broad scope of the President's executive power, including \"residual power\" beyond those explicitly enumerated in the Constitution, particularly in matters of general welfare.",
+      "cites": [
+       "P74",
+       "P86"
+      ]
+     },
+     {
+      "text": "It distinguishes the \"right to return to one's country\" from the general \"right to travel,\" classifying the former as a generally accepted principle of international law that is part of the law of the land, but not absolute.",
+      "cites": [
+       "P57",
+       "P58"
+      ]
+     },
+     {
+      "text": "The decision highlights the Court's role in judicial review, emphasizing that while it can inquire into grave abuse of discretion, it will not substitute its judgment for the Executive's when factual bases for the President's actions exist.",
+      "cites": [
+       "P91",
+       "P94",
+       "P95"
+      ]
+     },
+     {
+      "text": "The Court upheld the President's power to take pre-emptive action against perceived threats to national security and economic stability, even if nascent, to fulfill the duty to preserve the State.",
+      "cites": [
+       "P99",
+       "P101"
+      ]
+     },
+     {
+      "text": "The case demonstrates the balancing act between individual rights and the paramount interest of national security and public welfare, especially in unique circumstances involving a deposed leader.",
+      "cites": [
+       "P85",
+       "P89"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "dropped": [
+  {
+   "section": "why",
+   "text": "The ruling was decided by a vote of 8-5, indicating a significant division within the Court on the interpretation of executive power and individual rights in this context.",
+   "reason": "checker: not_supported (The cited passages do not mention that the ruling was decided by a vote of 8-5.)"
+  }
+ ]
+}

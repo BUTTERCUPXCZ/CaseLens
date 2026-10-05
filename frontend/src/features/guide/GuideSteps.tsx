@@ -1,32 +1,4 @@
-import type { CitationStatus } from '@/api/types'
-import { StatusBadge } from '@/features/reviews/StatusBadge'
-import { guideCopy, type GuideExample, type GuideStep } from '@/lib/copy'
-
-const LABEL_ORDER: CitationStatus[] = ['match', 'mismatch', 'not_found', 'error', 'pending']
-
-function Example({ kind }: { kind: GuideExample }) {
-  if (kind === 'redpen') {
-    return (
-      <p className="mt-3 max-w-prose rounded-lg bg-muted px-4 py-3 text-base">
-        <del className="tabular text-redpen decoration-2">April 2, 2010</del>{' '}
-        <ins className="tabular rounded-sm bg-look-wash px-1 font-semibold text-foreground no-underline">April 2, 2009</ins>
-        <span className="mt-1 block text-sm text-muted-foreground">{guideCopy.redpenCaption}</span>
-      </p>
-    )
-  }
-  return (
-    <div className="mt-3">
-      <ul className="flex flex-wrap gap-2">
-        {LABEL_ORDER.map((status) => (
-          <li key={status}>
-            <StatusBadge status={status} />
-          </li>
-        ))}
-      </ul>
-      <p className="mt-2 text-sm text-muted-foreground">{guideCopy.labelsCaption}</p>
-    </div>
-  )
-}
+import type { GuideStep } from '@/lib/copy'
 
 /** The numbered steps. Each is a list item with its own heading, so a screen reader can jump between them. */
 export function GuideSteps({ steps }: { steps: GuideStep[] }) {
@@ -50,7 +22,6 @@ export function GuideSteps({ steps }: { steps: GuideStep[] }) {
                 {paragraph}
               </p>
             ))}
-            {step.example ? <Example kind={step.example} /> : null}
           </div>
         </li>
       ))}

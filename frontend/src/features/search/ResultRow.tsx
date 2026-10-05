@@ -42,7 +42,9 @@ export function ResultRow({ item }: { item: CatalogItem }) {
               disabled={open.isPending}
               onClick={() =>
                 open.mutate(item.source_url, {
-                  onSuccess: (saved) => void navigate({ to: '/cases/$caseId', params: { caseId: String(saved.id) } }),
+                  onSuccess: (saved) => {
+                    void navigate({ to: '/cases/$caseId', params: { caseId: String(saved.id) } })
+                  },
                 })
               }
             >

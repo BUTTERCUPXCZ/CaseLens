@@ -1,10 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, Navigate, notFound } from '@tanstack/react-router'
-import { Download, ExternalLink, FileQuestion, FileText } from 'lucide-react'
+import { BookOpenText, Download, ExternalLink, FileQuestion, FileText } from 'lucide-react'
 import { z } from 'zod'
 
 import { orNotFound } from '@/api/orNotFound'
 import { caseDownloadUrl } from '@/api/endpoints'
+import { useSetSubjects } from '@/api/mutations'
 import { caseQuery, insightsQuery } from '@/api/queries'
 import { Disclaimer } from '@/components/Disclaimer'
 import { EmptyState, ErrorState } from '@/components/States'
@@ -12,8 +13,9 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { FootnoteList } from '@/features/cases/FootnoteList'
+import { SubjectTags } from '@/features/upload/SubjectTags'
 import { SummaryPanel } from '@/features/cases/SummaryPanel'
-import { caseDownloadCopy, decisionCopy, dispositionLabel } from '@/lib/copy'
+import { caseDownloadCopy, decisionCopy, dispositionLabel, libraryCopy } from '@/lib/copy'
 import { divisionName, formatDate, justiceName, shortCaseName } from '@/lib/format'
 
 const searchSchema = z.object({ tab: z.enum(['summary', 'text', 'footnotes']).optional().catch(undefined) })
@@ -33,7 +35,7 @@ export const Route = createFileRoute('/cases/$caseId')({
   pendingComponent: CaseSkeleton,
   errorComponent: ({ error, reset }) => <ErrorState error={error} onRetry={reset} title="This case didn't open" />,
   notFoundComponent: () => (
-    <EmptyState icon={FileQuestion} title="We can't find that case" action={<Link to="/cases" className="underline">Browse the case library</Link>}>
+    <EmptyState icon={FileQuestion} title="We can't find that case" action={<Link to="/library" search={{}} className="underline">Browse the case library</Link>}>
       The link may be old, or the case may not be saved yet.
     </EmptyState>
   ),
@@ -56,6 +58,7 @@ function CasePage() {
   const navigate = Route.useNavigate()
   const { data: detail } = useQuery(caseQuery(caseId))
   const { data: insights } = useQuery(insightsQuery(caseId))
+  const setSubjects = useSetSubjects(caseId)
   if (tab === 'text') return <Navigate to="/cases/$caseId/decision" params={{ caseId: String(caseId) }} replace /> // an old link
   if (!detail || !insights) return <CaseSkeleton />
 
@@ -77,6 +80,12 @@ function CasePage() {
             {dispositionLabel[detail.disposition]}
           </span>
           <Button size="sm" asChild>
+            <Link to="/cases/$caseId/digest" params={{ caseId: String(caseId) }}>
+              <BookOpenText data-icon="inline-start" aria-hidden />
+              {libraryCopy.caseDigest}
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" asChild>
             <Link to="/cases/$caseId/decision" params={{ caseId: String(caseId) }}>
               <FileText data-icon="inline-start" aria-hidden />
               {decisionCopy.read}
@@ -97,6 +106,10 @@ function CasePage() {
           </Button>
         </div>
 
+        <div className="mt-5 max-w-3xl">
+          <SubjectTags id="case-tags" value={detail.subjects.map((s) => s.id)} disabled={setSubjects.isPending} onChange={(ids) => setSubjects.mutate(ids)} />
+          {setSubjects.isError ? <p role="alert" className="mt-1 text-sm text-problem">{libraryCopy.subjectFailed}</p> : null}
+        </div>
       </header>
 
       <Tabs value={tab} onValueChange={(next) => void navigate({ search: { tab: next as typeof tab }, replace: true })}>

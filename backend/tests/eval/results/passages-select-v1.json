@@ -1,0 +1,643 @@
+{
+ "prompt": "select-v1",
+ "picker": "gemini-2.5-flash",
+ "checker": "gemini-3.5-flash",
+ "cases": {
+  "gr_71464_1988.html": {
+   "facts": {
+    "verdict": "right",
+    "picked": [
+     21,
+     26
+    ],
+    "gold": [
+     [
+      5,
+      14
+     ],
+     [
+      21,
+      26
+     ]
+    ],
+    "all_inside_gold": true,
+    "starts": "From the testimonies of the witnesses for the prosecution Dr. Erlinda Marfil, Dr. Maximo Reyes, Fernando Alcala and Wilfredo Davan, the foll"
+   },
+   "issues": {
+    "verdict": "abstained",
+    "why": "the second check did not agree (not_supported: The passage presents the appellant's assignments of error rather than the Court's own statement of the issues to be resolved.)"
+   },
+   "doctrine": {
+    "abstained": "the second check did not agree (partly_supported: While the passage contains the legal doctrine regarding rape of a mentally retarded woman, it is mixed with the Court's application of the law)"
+   }
+  },
+  "gr_71681_1989.html": {
+   "facts": {
+    "verdict": "abstained",
+    "why": "the picked paragraphs are too long to be one passage"
+   },
+   "issues": {
+    "verdict": "right",
+    "picked": [
+     27,
+     27
+    ],
+    "gold": [
+     [
+      27,
+      27
+     ]
+    ],
+    "all_inside_gold": null,
+    "starts": "In this appeal, Cornelio Marilao submits that the court a quo erred in convicting him because of the insufficiency of the prosecution's evid"
+   },
+   "doctrine": {
+    "abstained": "4 paragraphs is more than a doctrine passage should be (3)"
+   }
+  },
+  "gr_84272_1991.html": {
+   "facts": {
+    "verdict": "right",
+    "picked": [
+     8,
+     10
+    ],
+    "gold": [
+     [
+      8,
+      10
+     ]
+    ],
+    "all_inside_gold": true,
+    "starts": "In her complaint against petitioner Company for underpayment of retirement benefits and moral damages, Canete alleged that on October 14, 19"
+   },
+   "issues": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "doctrine": {
+    "picked": [
+     56,
+     57
+    ],
+    "text": "While under prevailing jurisprudence,[^3] Canete may be considered as in regular employment even during those years when she was merely a seasonal worker, that legal conclusion will hold true only in cases involving the determination of an employer-employee relationship or security of tenure. But for retirement purposes, the distinction between a seasonal and a regular worker must be drawn in view of the materiality of the length of service being rendered by the employee in a year. To equate the seasonable worker with a regular employee grant him the same retirement benefits is grossly unfair to the regular employee who has rendered service throughout the entire year. Indeed, by the very nat"
+   }
+  },
+  "gr_37012_1992.html": {
+   "facts": {
+    "verdict": "abstained",
+    "why": "the picked paragraphs are too long to be one passage"
+   },
+   "issues": {
+    "verdict": "abstained",
+    "why": "the decision does not state it, or the AI could not tell"
+   },
+   "doctrine": {
+    "abstained": "the second check did not agree (partly_supported: The passage contains the legal doctrine regarding the burden of proof and elements of self-defense, but it is framed as an application to the )"
+   }
+  },
+  "gr_89967_1994.html": {
+   "facts": {
+    "verdict": "abstained",
+    "why": "the second check did not agree (partly_supported: The passage only presents the victim's testimony ('Her story follows') which is just a piece of the overall facts, rather than the Court's com)"
+   },
+   "issues": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "doctrine": {
+    "abstained": "4 paragraphs is more than a doctrine passage should be (3)"
+   }
+  },
+  "gr_117246_1995.html": {
+   "facts": {
+    "verdict": "right",
+    "picked": [
+     5,
+     12
+    ],
+    "gold": [
+     [
+      5,
+      12
+     ]
+    ],
+    "all_inside_gold": true,
+    "starts": "The property involved in this petition for review on certiorari is the inheritance left by an illegitimate child who died intestate without "
+   },
+   "issues": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "doctrine": {
+    "abstained": "6 paragraphs is more than a doctrine passage should be (3)"
+   }
+  },
+  "gr_119935_1997.html": {
+   "facts": {
+    "verdict": "right",
+    "picked": [
+     6,
+     22
+    ],
+    "gold": [
+     [
+      5,
+      22
+     ]
+    ],
+    "all_inside_gold": true,
+    "starts": "USDI provides arrastre, stevedoring and other related cargo-handling services to all domestic vessels berthed at the government-owned Port o"
+   },
+   "issues": {
+    "verdict": "abstained",
+    "why": "the second check did not agree (not_supported: The passage describes the petitioner's objective in seeking to reverse the NLRC decision, rather than the Court's statement of the legal issue or)"
+   },
+   "doctrine": {
+    "picked": [
+     29,
+     31
+    ],
+    "text": "We hold that henceforth separation pay shall be allowed as a measure of social justice only in those instances where the employee is validly dismissed for causes other than serious misconduct or those reflecting on his moral character. Where the reason for the valid dismissal is, for example, habitual intoxication or an offense involving moral turpitude, like theft or illicit sexual relations with a fellow worker, the employer may not be required to give the dismissed employee separation pay, or financial assistance, or whatever other name it is called, on the ground of social justice. A contrary rule would, as the petitioner argues, have the effect of rewarding rather than punishing the err"
+   }
+  },
+  "gr_125548_1998.html": {
+   "facts": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "issues": {
+    "verdict": "right",
+    "picked": [
+     32,
+     33
+    ],
+    "gold": [
+     [
+      32,
+      34
+     ]
+    ],
+    "all_inside_gold": null,
+    "starts": "In its Memorandum, petitioner raises a single issue:"
+   },
+   "doctrine": {
+    "picked": [
+     45,
+     45
+    ],
+    "text": "In so ruling, we reiterate that an employer's power to discipline its workers must be exercised with caution, lest it erode the constitutional guarantee of security of tenure.12 This is especially true when the penalty being imposed is dismissal, which leads to severance of employment ties and the economic dislocation of the employee. Because of the serious implications of this penalty, \"our Labor Code decrees that an employee cannot be dismissed, except for the most serious causes. The overly concern of our laws for the welfare of employees is in accord with the social justice philosophy of our Constitution.\"13"
+   }
+  },
+  "gr_130969_2000.html": {
+   "facts": {
+    "verdict": "abstained",
+    "why": "the picked paragraphs are too long to be one passage"
+   },
+   "issues": {
+    "verdict": "abstained",
+    "why": "the second check did not agree (not_supported: The passage outlines the arguments and defenses of the accused-appellant rather than the Court's statement of the issue to be decided.)"
+   },
+   "doctrine": {
+    "picked": [
+     80,
+     80
+    ],
+    "text": "Enshrined in the Bill of Rights is the right of the accused to be presumed innocent until the contrary is proved, and to overcome the presumption nothing but proof beyond reasonable doubt must be established by the prosecution. If the prosecution fails to discharge its burden, as in the present case, then it is not only the accused's right to be freed; it is, even more, the court's constitutional duty to acquit him.21"
+   }
+  },
+  "gr_133922_2001.html": {
+   "facts": {
+    "verdict": "abstained",
+    "why": "the picked paragraphs are too long to be one passage"
+   },
+   "issues": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "doctrine": {
+    "abstained": "the decision does not state it, or the AI could not tell"
+   }
+  },
+  "gr_127152_2003.html": {
+   "facts": {
+    "verdict": "right",
+    "picked": [
+     5,
+     18
+    ],
+    "gold": [
+     [
+      5,
+      18
+     ]
+    ],
+    "all_inside_gold": true,
+    "starts": "Geralyn R. Udarbe, a thirteen (13)-year old barrio lass, was walking home midday of 10 June 1994. She just came from the TTFA cooperative st"
+   },
+   "issues": {
+    "verdict": "right",
+    "picked": [
+     19,
+     19
+    ],
+    "gold": [
+     [
+      19,
+      19
+     ]
+    ],
+    "all_inside_gold": null,
+    "starts": "The case is now before us on automatic review. Accused Filomeno Avergonzado contends that the court a quo erred in its findings and urges th"
+   },
+   "doctrine": {
+    "abstained": "the second check did not agree (partly_supported: While the first paragraph states a general legal rule regarding inconsistencies between affidavits and testimonies, the second paragraph appli)"
+   }
+  },
+  "gr_160890_2004.html": {
+   "facts": {
+    "verdict": "right",
+    "picked": [
+     6,
+     20
+    ],
+    "gold": [
+     [
+      6,
+      20
+     ]
+    ],
+    "all_inside_gold": true,
+    "starts": "On April 15, 1996, private respondent National Power Corporation (NAPOCOR) filed a Complaint for Eminent Domain, seeking to expropriate a po"
+   },
+   "issues": {
+    "verdict": "right",
+    "picked": [
+     21,
+     21
+    ],
+    "gold": [
+     [
+      21,
+      21
+     ]
+    ],
+    "all_inside_gold": null,
+    "starts": "Hence, this petition for review based on the sole issue of whether the Court of Appeals gravely abused its discretion and seriously erred in"
+   },
+   "doctrine": {
+    "picked": [
+     26,
+     27
+    ],
+    "text": "Just compensation is defined as the full and fair equivalent of the property taken from its owner by the expropriator. The measure is not the taker's gain, but the owner's loss.14 To compensate is to render something which is equal in value to that taken or received. The word \"just\" is used to intensify the meaning of the word \"compensation\"; to convey the idea that the equivalent to be rendered for the property taken shall be real, substantial, full, ample.15 In eminent domain or expropriation proceedings, the general rule is that the just compensation which the owner of condemned property is entitled to is the market value. Market value is \"that sum of money which a person desirous but not"
+   }
+  },
+  "gr_161811_2006.html": {
+   "facts": {
+    "verdict": "right",
+    "picked": [
+     5,
+     36
+    ],
+    "gold": [
+     [
+      5,
+      22
+     ]
+    ],
+    "all_inside_gold": false,
+    "starts": "The Bureau of Lands awarded on May 13, 1966 to Narcisa A. Placino (Narcisa) a parcel of land identified as Lot No. 10 (the lot) located at S"
+   },
+   "issues": {
+    "verdict": "right",
+    "picked": [
+     37,
+     40
+    ],
+    "gold": [
+     [
+      37,
+      40
+     ]
+    ],
+    "all_inside_gold": null,
+    "starts": "Hence, the present petition of the City of Baguio, Mayor Domogan (now a Congressman), and Orlando Genove, faulting the appellate court:"
+   },
+   "doctrine": {
+    "abstained": "9 paragraphs is more than a doctrine passage should be (3)"
+   }
+  },
+  "gr_173256_2007.html": {
+   "facts": {
+    "verdict": "right",
+    "picked": [
+     7,
+     18
+    ],
+    "gold": [
+     [
+      7,
+      18
+     ]
+    ],
+    "all_inside_gold": true,
+    "starts": "Petitioner AFI International Trading Corporation (or AFI) is a corporation engaged in buying and manufacturing marine and seafood products. "
+   },
+   "issues": {
+    "verdict": "right",
+    "picked": [
+     19,
+     20
+    ],
+    "gold": [
+     [
+      19,
+      20
+     ]
+    ],
+    "all_inside_gold": null,
+    "starts": "Hence, this appeal by petitioners, positing that:"
+   },
+   "doctrine": {
+    "picked": [
+     22,
+     22
+    ],
+    "text": "As stated at the outset, in illegal dismissal cases, the employer is burdened to prove just cause for terminating the employment of its employees with clear and convincing evidence. Article 277(b) of the Labor Code[^9] of the Philippines puts on the employer the burden of proving that the dismissal of an employee was for a valid or authorized cause, whether the latter admits or does not admit the dismissal.[^10] Thus, petitioners must not only rely on the weakness of respondents’ evidence, but must stand on the merits of their own defense.[^11]"
+   }
+  },
+  "gr_148263_2009.html": {
+   "facts": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "issues": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "doctrine": {
+    "picked": [
+     49,
+     49
+    ],
+    "text": "However, Article 212(e) of the Labor Code, by itself, does not make a corporate officer personally liable for the debts of the corporation because Section 31 of the Corporation Code is still the governing law on personal liability of officers for the debts of the corporation. Section 31 of the Corporation Code provides:"
+   }
+  },
+  "gr_165678_2009.html": {
+   "facts": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "issues": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "doctrine": {
+    "abstained": "5 paragraphs is more than a doctrine passage should be (3)"
+   }
+  },
+  "gr_173931_2009.html": {
+   "facts": {
+    "verdict": "abstained",
+    "why": "the picked paragraphs are too long to be one passage"
+   },
+   "issues": {
+    "verdict": "right",
+    "picked": [
+     23,
+     23
+    ],
+    "gold": [
+     [
+      23,
+      23
+     ]
+    ],
+    "all_inside_gold": null,
+    "starts": "In this petition for review under Rule 45,[^36] petitioner insists that the 7 June 2001 Memorandum Order was issued without legal basis, and"
+   },
+   "doctrine": {
+    "abstained": "the second check did not agree (partly_supported: The passage begins with a statement of a general legal rule regarding appointments for reclassified positions, but the latter half of the pass)"
+   }
+  },
+  "gr_180046_2009.html": {
+   "facts": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "issues": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "doctrine": {
+    "abstained": "4 paragraphs is more than a doctrine passage should be (3)"
+   }
+  },
+  "gr_183905_2009.html": {
+   "facts": {
+    "verdict": "abstained",
+    "why": "the picked paragraphs are too long to be one passage"
+   },
+   "issues": {
+    "verdict": "right",
+    "picked": [
+     42,
+     42
+    ],
+    "gold": [
+     [
+      42,
+      42
+     ]
+    ],
+    "all_inside_gold": null,
+    "starts": "At this point, only one petition remains—the petition for certiorari filed by GSIS in G.R. No. 183905. Casting off the uncritical and unimpo"
+   },
+   "doctrine": {
+    "abstained": "17 paragraphs is more than a doctrine passage should be (3)"
+   }
+  },
+  "gr_173081_2010.html": {
+   "facts": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "issues": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "doctrine": {
+    "abstained": "the second check did not agree (partly_supported: The passage contains a clear statement of the legal rule regarding mandamus and prosecutorial discretion, but it begins with the Court's speci)"
+   }
+  },
+  "gr_174941_2012.html": {
+   "facts": {
+    "verdict": "abstained",
+    "why": "83 paragraphs is more than a facts passage should be (60)"
+   },
+   "issues": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "doctrine": {
+    "abstained": "32 paragraphs is more than a doctrine passage should be (3)"
+   }
+  },
+  "gr_172846_2013.html": {
+   "facts": {
+    "verdict": "right",
+    "picked": [
+     7,
+     22
+    ],
+    "gold": [
+     [
+      7,
+      22
+     ]
+    ],
+    "all_inside_gold": true,
+    "starts": "The facts are uncomplicated."
+   },
+   "issues": {
+    "verdict": "abstained",
+    "why": "the second check did not agree (not_supported: The passage describes the procedural history and the issue submitted by the parties to the Voluntary Arbitrator, rather than the Supreme Court's )"
+   },
+   "doctrine": {
+    "abstained": "6 paragraphs is more than a doctrine passage should be (3)"
+   }
+  },
+  "gr_175483_2015.html": {
+   "facts": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "issues": {
+    "verdict": "right",
+    "picked": [
+     28,
+     28
+    ],
+    "gold": [
+     [
+      28,
+      28
+     ]
+    ],
+    "all_inside_gold": null,
+    "starts": "Hence, this petition. The petition raises the principal issue of whether or not the CA erred in affirming the decision of the trial court, t"
+   },
+   "doctrine": {
+    "abstained": "10 paragraphs is more than a doctrine passage should be (3)"
+   }
+  },
+  "gr_211972_2015.html": {
+   "facts": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "issues": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "doctrine": {
+    "picked": [
+     42,
+     44
+    ],
+    "text": "Trust is the right to the beneficial enjoyment of property, the legal title to which is vested in another. It is a fiduciary relationship that obliges the trustee to deal with the property for the benefit of the beneficiary.1âwphi1 Trust relations between parties may either be express or implied. An express trust is created by the intention of the trustor or of the parties, while an implied trust comes into being by operation of law.41 Express trusts are created by direct and positive acts of the parties, by some writing or deed, or will, or by words either expressly or impliedly evincing an intention to create a trust. Under Article 1444 of the Civil Code, \"[n]o particular words are require"
+   }
+  },
+  "gr_161425_2016.html": {
+   "facts": {
+    "verdict": "abstained",
+    "why": "the picked paragraphs are too long to be one passage"
+   },
+   "issues": {
+    "verdict": "abstained",
+    "why": "the second check did not agree (not_supported: The passage describes the arguments and assertions of the petitioner (the Ombudsman) rather than the Court's formulation of the legal issue to be)"
+   },
+   "doctrine": {
+    "picked": [
+     62,
+     62
+    ],
+    "text": "The use of the word \"may\" clearly. shows that it is directory in nature and not mandatory as petitioner contends. When used in a statute, it is permissive only and operates to confer discretion; while the word \"shall\" is imperative, operating to impose a duty which may be enforced. Applying Section 20(5), therefore, it is discretionary upon the Ombudsman whether or not to conduct an investigation on a complaint even if it was filed after one year from the occurrence of the act or omission complained of. In fine, the complaint is not barred by prescription."
+   }
+  },
+  "gr_196510_2018.html": {
+   "facts": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "issues": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "doctrine": {
+    "picked": [
+     6,
+     7
+    ],
+    "text": "Competent proof of a legal relationship is not limited to documentary evidence. Object and testimonial evidence may be admitted for the same purpose. Indeed, the relationship may be established by all the relevant facts and circumstances that constitute a preponderance of evidence. A person constituting a mortgage should be the owner of the property, or should have the right of free disposal of it, or, in the absence of the right of free disposal, such person should be legally authorized for the purpose. Otherwise, the mortgage is null and void."
+   }
+  },
+  "gr_233850_2019.html": {
+   "facts": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "issues": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "doctrine": {
+    "abstained": "4 paragraphs is more than a doctrine passage should be (3)"
+   }
+  },
+  "gr_240774_2021.html": {
+   "facts": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "issues": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "doctrine": {
+    "abstained": "18 paragraphs is more than a doctrine passage should be (3)"
+   }
+  },
+  "gr_221664_2022.html": {
+   "facts": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "issues": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "doctrine": {
+    "abstained": "the second check did not agree (partly_supported: The passage contains a clear statement of legal doctrine regarding the burden of proof in illegal dismissal cases, but it also includes the Co)"
+   }
+  },
+  "gr_272689_2024.html": {
+   "facts": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "issues": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "doctrine": {
+    "picked": [
+     57,
+     58
+    ],
+    "text": "However, guided by the provisions and policy behind [Presidential Decree No. 957], this Court deems it proper to modify the rule disqualifying all transferees of successors of the judgment debtor from being considered as third­-party adverse possessors. Individual buyers of condominium units or subdivision lots, while having privity with developer-mortgagors, should be excluded from the issuance or implementation of a writ of possession if they are actually occupying the unit or lot. As clearly demonstrated by this case, these small property buyers would suffer deleterious consequences if they continue to be treated as ordinary transferees or successors-in-interest of property developers. Ar"
+   }
+  },
+  "gr_260071_2025.html": {
+   "facts": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "issues": {
+    "verdict": "not asked (the Court's heading or a rule found it)"
+   },
+   "doctrine": {
+    "picked": [
+     41,
+     43
+    ],
+    "text": "By the contract of agency, a person binds himself to render some service or to do something in representation or on behalf of another, with the consent or authority of the latter.36 The relationship of agency is one where a party, called the \"principal\", authorizes another, called the \"agent\", to act for and in his [or her] behalf in transactions with third persons.37 The essential elements of agency are: (1) there is consent, express or implied, of the parties to establish the relationship; (2) the object is the execution of a juridical act in relation to a third person; (3) the agent acts as a representative and not for himself [or herself]; and (4) the agent acts within the scope of his ["
+   }
+  }
+ },
+ "tally_right_wrong_abstained": {
+  "facts": [
+   9,
+   0,
+   9
+  ],
+  "issues": [
+   9,
+   0,
+   6
+  ]
+ }
+}

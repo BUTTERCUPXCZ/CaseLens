@@ -35,7 +35,12 @@ class Settings(BaseSettings):
     gemini_max_retries: int = 3
     auto_digest_on_upload: bool = True  # start a digest for every case a reviewer cites as soon as it is checked
     digest_parallel_answers: int = 3  # how many answers of one digest are written at the same time
+    question_daily_limit: int = 500  # questions the AI assistant may answer per day (a cost guard)
     digest_ai_daily_limit: int = 200  # digests that may get written explanations per day (a cost guard)
+    # Case digests (the client's format) started per month: a cost guard for the queue. A month of 2,000 digests needs room above that.
+    case_digest_monthly_limit: int = 2500
+    # Tokens the model may spend thinking before it writes a case digest (billed as output). -1 = the model's own default (dynamic).
+    case_digest_thinking_budget: int = -1
 
     @field_validator("database_url")
     @classmethod

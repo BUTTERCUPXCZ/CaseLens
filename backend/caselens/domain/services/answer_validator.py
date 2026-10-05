@@ -5,7 +5,7 @@ from caselens.domain.digest import AnswerSentence, SourcePassage
 _NUMBER = re.compile(r"\d[\d,.]*\d|\d")
 _CAPITALISED = re.compile(r"\b[A-Z][a-z]{3,}\b")
 # Words that are normal in any answer about a Philippine decision, so they need not appear in the cited text.
-_ALWAYS_ALLOWED = {"Court", "Supreme", "Philippines", "Philippine", "Filipino", "Constitution", "Section", "Article"}
+_ALWAYS_ALLOWED = {"Court", "Supreme", "Philippines", "Philippine", "Filipino", "Constitution", "Section", "Article", "Justice", "Justices", "Chief"}
 
 
 class AnswerValidator:
@@ -19,8 +19,12 @@ class AnswerValidator:
     Whether the cited text really backs the sentence is the checker's job.
     """
 
-    def check(self, sentence: AnswerSentence, sources: dict[str, SourcePassage], question: str = "") -> str | None:
-        """Why the sentence cannot be shown, or None if it passes."""
+    def check(
+        self, sentence: AnswerSentence, sources: dict[str, SourcePassage], question: str = "", *, numbers_anywhere: bool = False
+    ) -> str | None:
+        """Why the sentence cannot be shown, or None if it passes. A long digest may use a number from another paragraph of the
+        same decision ("the 1987 Constitution"): `numbers_anywhere` accepts a number found anywhere in the sources; whether the cited
+        paragraphs back the sentence is then the checker's job."""
         if not sentence.text.strip():
             return "empty sentence"
         if not sentence.cites:
@@ -31,9 +35,10 @@ class AnswerValidator:
 
         cited = " ".join(sources[cite].text for cite in sentence.cites) + " " + question
         everything = (" ".join(source.text for source in sources.values()) + " " + question).lower()
+        searched = everything if numbers_anywhere else cited
         for number in _NUMBER.findall(sentence.text):
-            if number.rstrip(".,") not in cited:
-                return f"number {number} is not in the cited text"
+            if number.rstrip(".,") not in searched:
+                return f"number {number} is not in the {'decision' if numbers_anywhere else 'cited text'}"
         for name in self._names(sentence.text):
             if name not in _ALWAYS_ALLOWED and name.lower() not in everything:
                 return f"name '{name}' is not in the decision"

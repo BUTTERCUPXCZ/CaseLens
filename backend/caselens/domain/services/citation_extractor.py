@@ -103,3 +103,8 @@ class GrCitationExtractor:
             return date(int(year), _MONTHS[month[:3].lower()], int(day)), int(year)
         except ValueError:  # e.g. "February 31, 2010": keep the year, drop the bad date
             return None, int(year)
+
+
+# Public names for the two patterns other readers of a G.R. line need (the main-case identifier reads a decision's caption with them).
+GR_LINE_PATTERN = _GR
+GR_NUMBER_ITEM = _NUM_ITEM

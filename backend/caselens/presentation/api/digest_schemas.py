@@ -10,7 +10,7 @@ from caselens.presentation.api.schemas import Attribution
 
 FieldKindName = Literal["verbatim", "answer", "note"]
 FieldOriginName = Literal[
-    "court_heading", "court_ruling", "student_picked", "student_pasted", "ai_drafted", "student_written", "empty"
+    "court_heading", "court_ruling", "court_suggested", "student_picked", "student_pasted", "ai_drafted", "student_written", "empty"
 ]
 FieldStateName = Literal["ready", "pending", "unavailable"]
 DigestStatusName = Literal["pending", "ready", "failed"]

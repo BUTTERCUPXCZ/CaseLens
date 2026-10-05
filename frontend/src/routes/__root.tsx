@@ -42,7 +42,7 @@ function RootLayout() {
           </SidebarInset>
           {/* A panel docked to the right edge of the window, full height. A page puts its panel in here (see `RIGHT_DOCK_ID`);
               while nothing is in it, it is hidden and takes no room. */}
-          <aside id={RIGHT_DOCK_ID} className="sticky top-0 hidden h-svh w-[24rem] shrink-0 border-l border-border bg-card empty:hidden lg:block" />
+          <aside id={RIGHT_DOCK_ID} className="sticky top-0 hidden h-svh w-[24rem] shrink-0 border-l border-border bg-card empty:hidden xl:block" />
         </SidebarProvider>
       </TooltipProvider>
   )

@@ -1,0 +1,90 @@
+{
+  "items": [
+    {
+      "id": 1,
+      "position": 1,
+      "kind": "gr_number",
+      "label": "180046",
+      "gr_no": "180046",
+      "status": "found",
+      "message": "Already in your library.",
+      "case": {
+        "id": 1,
+        "name": "Review Center Association of the Philippines v. Executive Secretary Eduardo Ermita et al.",
+        "gr_no": "180046",
+        "subjects": [
+          {
+            "id": 4,
+            "name": "Constitutional Law"
+          }
+        ]
+      },
+      "digest": "pending"
+    },
+    {
+      "id": 2,
+      "position": 2,
+      "kind": "gr_number",
+      "label": "999999",
+      "gr_no": "999999",
+      "status": "not_found",
+      "message": "G.R. No. 999999 is not on Lawphil's list of decisions, which starts in 1987. If it is older, write it with its year, like 999999 (1969), and try again.",
+      "case": null,
+      "digest": null
+    },
+    {
+      "id": 3,
+      "position": 3,
+      "kind": "gr_number",
+      "label": "banana",
+      "gr_no": null,
+      "status": "unreadable",
+      "message": "This is not a G.R. number, so it was skipped.",
+      "case": null,
+      "digest": null
+    },
+    {
+      "id": 4,
+      "position": 4,
+      "kind": "gr_number",
+      "label": "G.R. No. 180046",
+      "gr_no": "180046",
+      "status": "duplicate",
+      "message": "The same case as “180046”: it is shown once.",
+      "case": {
+        "id": 1,
+        "name": "Review Center Association of the Philippines v. Executive Secretary Eduardo Ermita et al.",
+        "gr_no": "180046",
+        "subjects": [
+          {
+            "id": 4,
+            "name": "Constitutional Law"
+          }
+        ]
+      },
+      "digest": null
+    },
+    {
+      "id": 5,
+      "position": 5,
+      "kind": "gr_number",
+      "label": "173931",
+      "gr_no": "173931",
+      "status": "found",
+      "message": "Already in your library.",
+      "case": {
+        "id": 2,
+        "name": "Alicia D. Tagaro v. Ester A. Garcia et al.",
+        "gr_no": "173931",
+        "subjects": [
+          {
+            "id": 5,
+            "name": "Labor Law"
+          }
+        ]
+      },
+      "digest": "pending"
+    }
+  ],
+  "total": 5
+}

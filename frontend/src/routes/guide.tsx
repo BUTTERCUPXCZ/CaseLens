@@ -15,9 +15,16 @@ function Guide() {
       <PageHeader title={guideCopy.title} description={guideCopy.description} />
       <p className="mb-10 max-w-prose text-base leading-relaxed">{guideCopy.promise}</p>
 
+      <section aria-labelledby="library-title" className="mb-12">
+        <h2 id="library-title" className="mb-6 text-xl font-semibold">
+          {guideCopy.libraryTitle}
+        </h2>
+        <GuideSteps steps={guideCopy.librarySteps} />
+      </section>
+
       <section aria-labelledby="steps-title">
         <h2 id="steps-title" className="mb-6 text-xl font-semibold">
-          {guideCopy.stepsTitle}
+          {guideCopy.extraTitle}
         </h2>
         <GuideSteps steps={guideCopy.steps} />
       </section>
@@ -49,7 +56,7 @@ function Guide() {
 
       <div className="mt-12">
         <Button asChild size="lg">
-          <Link to="/">{guideCopy.start}</Link>
+          <Link to="/library" search={{}}>{guideCopy.start}</Link>
         </Button>
       </div>
     </>

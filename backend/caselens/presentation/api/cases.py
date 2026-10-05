@@ -8,6 +8,7 @@ from caselens.presentation.api.schemas import (
     CaseSummaryOut,
     FetchByUrlIn,
     SearchOut,
+    SubjectsIn,
 )
 from caselens.presentation.dependencies import get_services
 
@@ -37,6 +38,12 @@ def search_cases(
 def fetch_case_by_url(body: FetchByUrlIn, services: Services = Depends(get_services)) -> CaseDetailOut:
     """Manual fallback: fetch and store one official Lawphil page by its URL."""
     return CaseDetailOut.from_entity(services.ingest_case().execute(body.url))
+
+
+@router.put("/{case_id}/subjects", response_model=CaseSummaryOut)
+def set_subjects(case_id: int, body: SubjectsIn, services: Services = Depends(get_services)) -> CaseSummaryOut:
+    """Set a case's tags (several, or an empty list to clear them). Only students label cases; the system never guesses a tag."""
+    return CaseSummaryOut.from_entity(services.set_case_subjects().execute(case_id, body.subject_ids))
 
 
 @router.get("/{case_id}/document.docx")

@@ -50,6 +50,7 @@ class SourcePassage:
 class AnswerSentence:
     text: str
     cites: tuple[str, ...]
+    key: bool = False  # a controlling sentence (the doctrine, the main issue, the ruling, a point to remember): printed in bold
 
 
 class Verdict(str, Enum):

@@ -58,3 +58,24 @@ def build_digest(digest_id: int, keys: list[str] | None = None) -> None:
                 logger.info("build_digest %s: %s", digest_id, exc)
     finally:
         SqlJobLockRepository(engine).release(lock_keys.build_digest_key(digest_id, keys))
+
+
+def build_case_digest(digest_id: int) -> None:
+    """Write one case digest (the client's format, for a case and its scope). Frees its lock when it ends."""
+    try:
+        with SessionLocal() as session:
+            Services(session).build_case_digest_v2().execute(digest_id)
+    finally:
+        SqlJobLockRepository(engine).release(lock_keys.case_digest_key(digest_id))
+
+
+def answer_case_question(question_id: int) -> None:
+    """Answer one question about a case from the decision's paragraphs (checked, like every written answer)."""
+    with SessionLocal() as session:
+        Services(session).answer_case_question().execute(question_id)
+
+
+def resolve_bulk_item(item_id: int) -> None:
+    """One item of a bulk upload: its main case from Lawphil. Reads Lawphil, so it runs on the one-thread lawphil queue."""
+    with SessionLocal() as session:
+        Services(session).resolve_bulk_item().execute(item_id)

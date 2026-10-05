@@ -9,7 +9,7 @@ from caselens.domain import errors
 from caselens.infrastructure.config import get_settings
 from caselens.infrastructure.db.upload_cleanup import keep_uploads_trimmed
 from caselens.presentation import access_gate
-from caselens.presentation.api import catalog, cases, digests, health, insights, library, reviewer, uploads
+from caselens.presentation.api import bulk, case_digests, case_questions, catalog, cases, digests, health, insights, library, reviewer, uploads
 
 # Domain error -> HTTP status. One table, so no router needs try/except.
 _STATUS_BY_ERROR: list[tuple[type[errors.DomainError], int]] = [
@@ -46,7 +46,7 @@ def create_app() -> FastAPI:
     app = FastAPI(title="CaseLens", version="0.1.0", lifespan=_lifespan)
     app.middleware("http")(access_gate.require_access_code)
     app.add_exception_handler(errors.DomainError, _handle_domain_error)
-    for router in (health.router, access_gate.router, uploads.router, cases.router, library.router, catalog.router, insights.router, digests.router, reviewer.router):
+    for router in (health.router, access_gate.router, uploads.router, cases.router, library.router, catalog.router, insights.router, digests.router, reviewer.router, case_digests.router, case_questions.router, bulk.router):
         app.include_router(router)
     return app
 

@@ -85,18 +85,23 @@ class _GeminiCall:
         self._client = genai.Client(api_key=settings.gemini_api_key, http_options=types.HttpOptions(timeout=timeout_ms))
         self._max_retries = settings.gemini_max_retries
         self._sleep = sleep
+        self.usage = {"calls": 0, "input_tokens": 0, "output_tokens": 0}  # for measuring what a digest costs
 
-    def json(self, model: str, system: str, prompt: str, schema: dict) -> dict:
+    def json(self, model: str, system: str, prompt: str, schema: dict, *, thinking_budget: int | None = None) -> dict:
+        """`thinking_budget` caps the tokens the model may spend thinking before it answers (0 = none). Thinking is billed as output: a long digest
+        with the default can spend more on thinking than on the digest. None keeps the model's own default."""
         config = types.GenerateContentConfig(
             system_instruction=system,
             temperature=0,
             response_mime_type="application/json",
             response_json_schema=schema,
+            thinking_config=None if thinking_budget is None else types.ThinkingConfig(thinking_budget=thinking_budget),
         )
         last_problem = "no attempt made"
         for attempt in range(self._max_retries + 1):
             try:
                 response = self._client.models.generate_content(model=model, contents=prompt, config=config)
+                self._count(response)
                 return json.loads(response.text)
             except genai_errors.ClientError as exc:
                 if exc.code != 429:
@@ -112,6 +117,13 @@ class _GeminiCall:
             if attempt < self._max_retries:
                 self._sleep(2 ** (attempt + 1))
         raise AiUnavailableError(f"Gemini failed after {self._max_retries + 1} attempts ({last_problem}).")
+
+
+    def _count(self, response) -> None:
+        meta = getattr(response, "usage_metadata", None)
+        self.usage["calls"] += 1
+        self.usage["input_tokens"] += (getattr(meta, "prompt_token_count", 0) or 0)
+        self.usage["output_tokens"] += (getattr(meta, "candidates_token_count", 0) or 0) + (getattr(meta, "thoughts_token_count", 0) or 0)
 
 
 _INLINE_CITE = re.compile(r"\s*[\[(]\s*((?:[PSR]\d+)(?:\s*[,;]\s*[PSR]\d+)*)\s*[\])]")

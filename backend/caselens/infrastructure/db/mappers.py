@@ -19,6 +19,7 @@ from caselens.domain.value_objects import (
     MatchStatus,
     StatuteType,
 )
+from caselens.domain.subjects import Subject
 from caselens.infrastructure.db.orm_models import (
     CaseCitationModel,
     CaseFootnoteModel,
@@ -55,6 +56,8 @@ def case_to_entity(model: CaseModel) -> Case:
         full_text=model.full_text,
         parser_version=model.parser_version,
         numbers=tuple(model.numbers or ()),
+        subjects=tuple(Subject(s.id, s.name) for s in model.subjects),
+        main_case_id=model.main_case_id,
         fetched_at=model.fetched_at,
         footnotes=_footnotes(own_footnotes),
         opinions=opinions,
@@ -75,6 +78,8 @@ def _footnotes(models: list[CaseFootnoteModel]) -> list[Footnote]:
 
 def case_to_model(case: Case) -> tuple[CaseModel, list[tuple[CaseOpinionModel, Opinion]]]:
     model = CaseModel()
+    # Only a NEW case takes this from the entity: re-reading a stored page (`fill_case_model` alone) must not move it out of its family.
+    model.main_case_id = case.main_case_id
     return model, fill_case_model(model, case)
 
 

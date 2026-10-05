@@ -29,6 +29,7 @@ def field_to_json(item: DigestField) -> dict:
         "passage": None if item.passage is None else [item.passage.first, item.passage.last],
         "question": item.question,
         "note": item.note,
+        "reason": item.reason,
         "edited": item.edited,
         "original": None if item.original is None else field_to_json(item.original),
     }
@@ -48,6 +49,7 @@ def field_from_json(data: dict) -> DigestField:
         passage=None if passage is None else Passage(passage[0], passage[1]),
         question=data.get("question"),
         note=data.get("note"),
+        reason=data.get("reason"),
         edited=data.get("edited", False),
         original=None if original is None else field_from_json(original),
     )

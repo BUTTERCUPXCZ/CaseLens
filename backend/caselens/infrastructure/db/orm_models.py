@@ -12,6 +12,27 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from caselens.infrastructure.db.base import Base
 
 
+class SubjectModel(Base):
+    """A subject tag (Civil Law, Constitutional Law, ...). Seeded by migration 0010, made the client's list by 0013."""
+
+    __tablename__ = "subjects"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(64), unique=True)
+    sort_order: Mapped[int] = mapped_column(Integer)
+
+
+class CaseSubjectModel(Base):
+    """One tag on one case. A case can have several; `source` says who gave it ("student" or "batch")."""
+
+    __tablename__ = "case_subjects"
+
+    case_id: Mapped[int] = mapped_column(ForeignKey("cases.id", ondelete="CASCADE"), primary_key=True)
+    subject_id: Mapped[int] = mapped_column(ForeignKey("subjects.id", ondelete="CASCADE"), primary_key=True, index=True)
+    source: Mapped[str] = mapped_column(String(16), server_default="student")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
 class CaseModel(Base):
     """One official Lawphil document. Keyed on source_url, never on gr_no alone:
     a G.R. number can have a decision, resolutions and separate-opinion files."""
@@ -35,6 +56,11 @@ class CaseModel(Base):
     parser_version: Mapped[int] = mapped_column(Integer)
     # Every G.R. number the page prints (a joint decision has several); empty on older rows.
     numbers: Mapped[list[str]] = mapped_column(ARRAY(String(32)), server_default=text("'{}'"))
+    subjects: Mapped[list[SubjectModel]] = relationship(
+        secondary="case_subjects", viewonly=True, order_by=SubjectModel.sort_order, lazy="selectin"
+    )  # the tags; written through CaseSubjectModel
+    # A page that only belongs to another case (a Resolution, the same decision under another G.R. number) points at its main case.
+    main_case_id: Mapped[int | None] = mapped_column(ForeignKey("cases.id", ondelete="SET NULL"), index=True)
 
     footnotes: Mapped[list["CaseFootnoteModel"]] = relationship(
         back_populates="case", cascade="all, delete-orphan"
@@ -262,3 +288,89 @@ class JobLockModel(Base):
     key: Mapped[str] = mapped_column(Text, primary_key=True)
     locked_until: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class CaseDigestV2Model(Base):
+    """The case digest of one main case for one topic scope (the client's format): its sections as JSON, written once and kept.
+    `scope_key` '' is the standard digest; a scope ("Presidential powers") gets its own focused digest."""
+
+    __tablename__ = "case_digests_v2"
+    __table_args__ = (UniqueConstraint("case_id", "scope_key", name="uq_case_digests_v2_case_scope"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    case_id: Mapped[int] = mapped_column(ForeignKey("cases.id", ondelete="CASCADE"))
+    scope: Mapped[str] = mapped_column(String(300), server_default="")  # as the student wrote it
+    scope_key: Mapped[str] = mapped_column(String(300), server_default="")  # the same, lower-cased with spaces collapsed: finds a repeat
+    state: Mapped[str] = mapped_column(String(16), server_default="pending")
+    sections: Mapped[dict] = mapped_column(JSONB, server_default=text("'{}'"))
+    written: Mapped[int] = mapped_column(Integer, server_default="0")
+    dropped: Mapped[int] = mapped_column(Integer, server_default="0")
+    error: Mapped[str | None] = mapped_column(Text)
+    model: Mapped[str | None] = mapped_column(String(64))
+    prompt_version: Mapped[str | None] = mapped_column(String(32))
+    input_tokens: Mapped[int] = mapped_column(Integer, server_default="0")
+    output_tokens: Mapped[int] = mapped_column(Integer, server_default="0")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class CaseQuestionModel(Base):
+    """A question a student asked about a case, and its checked answer (sentences that cite the decision's paragraphs)."""
+
+    __tablename__ = "case_questions"
+    __table_args__ = (Index("ix_case_questions_case_batch", "case_id", "batch_id"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    case_id: Mapped[int] = mapped_column(ForeignKey("cases.id", ondelete="CASCADE"))
+    batch_id: Mapped[int | None] = mapped_column(ForeignKey("bulk_batches.id", ondelete="CASCADE"))
+    question: Mapped[str] = mapped_column(String(500))
+    answer: Mapped[dict | None] = mapped_column(JSONB)
+    state: Mapped[str] = mapped_column(String(16), server_default="pending")
+    error: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
+
+
+class ReviewDigestEditModel(Base):
+    """The text a student typed over one section of a case digest, in one review. The shared AI digest is never changed."""
+
+    __tablename__ = "review_digest_edits"
+    __table_args__ = (UniqueConstraint("batch_id", "digest_id", "section", name="uq_review_digest_edits_section"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    batch_id: Mapped[int] = mapped_column(ForeignKey("bulk_batches.id", ondelete="CASCADE"))
+    digest_id: Mapped[int] = mapped_column(ForeignKey("case_digests_v2.id", ondelete="CASCADE"))
+    section: Mapped[str] = mapped_column(String(32))
+    text: Mapped[str] = mapped_column(Text)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class BulkBatchModel(Base):
+    """One bulk upload: many files or G.R. numbers given at once."""
+
+    __tablename__ = "bulk_batches"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    subject_ids: Mapped[list[int]] = mapped_column(ARRAY(Integer), server_default=text("'{}'"))  # the upload's tags
+    topic_scope: Mapped[str] = mapped_column(String(300), server_default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class BulkItemModel(Base):
+    """One thing in a bulk upload; it ends in a main case of the library or in a plain reason why not."""
+
+    __tablename__ = "bulk_items"
+    __table_args__ = (Index("ix_bulk_items_batch_status", "batch_id", "status"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    batch_id: Mapped[int] = mapped_column(ForeignKey("bulk_batches.id", ondelete="CASCADE"))
+    position: Mapped[int] = mapped_column(Integer)
+    kind: Mapped[str] = mapped_column(String(16))
+    label: Mapped[str] = mapped_column(Text)
+    gr_no: Mapped[str | None] = mapped_column(String(32))
+    year: Mapped[int | None] = mapped_column(Integer)
+    status: Mapped[str] = mapped_column(String(16), server_default="queued")
+    message: Mapped[str | None] = mapped_column(Text)
+    case_id: Mapped[int | None] = mapped_column(ForeignKey("cases.id", ondelete="SET NULL"), index=True)
+    reporter: Mapped[str | None] = mapped_column(String(64))  # "177 SCRA 668", when the file printed it
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

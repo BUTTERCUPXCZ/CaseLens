@@ -167,3 +167,18 @@ def test_unknown_things_are_404(client, case_id):
 def test_an_unknown_field_is_refused(client, case_id):
     digest_id = client.post(f"/cases/{case_id}/digest", json={}).json()["id"]
     assert client.put(f"/digests/{digest_id}/fields/nonsense/text", json={"text": "x"}).status_code == 422
+
+
+def test_suggest_for_me_queues_a_look_for_an_empty_part_and_refuses_other_fields(client, case_id, jobs, db_session):
+    body = client.post(f"/cases/{case_id}/digest", json={}).json()
+    jobs.digest_builds.clear()
+    assert field(body, "doctrine")["origin"] == "empty"  # nothing found, nothing guessed
+
+    response = client.post(f"/digests/{body['id']}/fields/doctrine/suggest")
+    assert response.status_code == 202
+    assert field(response.json(), "doctrine")["state"] == "pending"
+    assert jobs.digest_builds == [(body["id"], ["doctrine"])]
+
+    assert client.post(f"/digests/{body['id']}/fields/ruling/suggest").status_code == 422  # not a part we look for
+    assert client.post(f"/digests/{body['id']}/fields/doctrine/suggest").status_code == 422  # already being looked for
+    assert client.post("/digests/999999/fields/doctrine/suggest").status_code == 404

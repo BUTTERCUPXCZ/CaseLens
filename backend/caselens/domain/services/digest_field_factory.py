@@ -11,10 +11,22 @@ from caselens.domain.case_digest import (
 )
 from caselens.domain.digest import ParagraphRange, SectionKind
 from caselens.domain.services.heading_sections import HeadingSections
+from caselens.domain.services.passage_suggester import IssueFinder
 from caselens.domain.services.ruling_locator import RulingLocator
 
 MAX_SHOWN_PARAGRAPHS = 4  # a Court section can be 50 paragraphs long (a quoted executive order, say)
 _CUSTOM_LABEL_CHARS = 120
+_PICK_OR_PASTE = "Pick the paragraphs you want, or paste them."
+_MISSING = {
+    "facts": ("Facts", f"The Court did not label the facts in this decision. {_PICK_OR_PASTE}"),
+    "doctrine": ("Doctrine", "Pick the paragraph that states the rule, or paste it. We do not guess which one it is."),
+    "issues": ("Issue", f"The Court did not label the issue in this decision. {_PICK_OR_PASTE}"),
+}
+_NOT_FOUND = {
+    "doctrine": "We did not find one paragraph where the Court states the rule. Pick it, or paste it.",
+    "issues": f"We did not find where the Court states the issue in this decision. {_PICK_OR_PASTE}",
+    "facts": f"We did not find the Court's account of the facts. {_PICK_OR_PASTE}",
+}
 
 
 class DigestFieldFactory:
@@ -23,23 +35,31 @@ class DigestFieldFactory:
     left for the student. The AI answers are only placeholders (pending) until the worker writes them.
     """
 
-    def __init__(self, sections: HeadingSections | None = None, rulings: RulingLocator | None = None) -> None:
+    def __init__(
+        self,
+        sections: HeadingSections | None = None,
+        rulings: RulingLocator | None = None,
+        issues: IssueFinder | None = None,
+        look_for_passages: bool = False,
+    ) -> None:
         self._sections = sections or HeadingSections()
         self._rulings = rulings or RulingLocator()
+        self._issues = issues or IssueFinder()
+        # True when an AI that only points at paragraphs will look for the Facts, Issue and Doctrine the rules could not
+        # find: those fields start as "pending" instead of "empty".
+        self._look = look_for_passages
 
     def build(self, template: DigestTemplate, full_text: str, questions: list[str] | None = None) -> list[DigestField]:
         paragraphs = full_text.split("\n")
         found = self._sections.find(paragraphs)
         ruling = self._rulings.locate(paragraphs)
 
+        body_start = self._sections.body_start(paragraphs)
         facts = self._court_section("facts", "Facts", found.get(SectionKind.FACTS), paragraphs, "The Court did not label the facts in this decision.")
-        doctrine = DigestField(
-            "doctrine", "Doctrine", FieldKind.VERBATIM,
-            note="Pick the paragraph that states the rule, or paste it. We do not guess which one it is.",
-        )
+        doctrine = self.missing("doctrine", pending=self._look)
         fields = [facts, doctrine] if template is DigestTemplate.FACTS_AND_DOCTRINE else [
             facts,
-            self._court_section("issues", "Issue", found.get(SectionKind.ISSUES), paragraphs, "The Court did not label the issue in this decision."),
+            self._issue(found.get(SectionKind.ISSUES), paragraphs, body_start, ruling),
             self._ruling(ruling, paragraphs),
             doctrine,
             self._answer(TOPIC_KEY),
@@ -70,9 +90,33 @@ class DigestFieldFactory:
             note = f"Showing the first {MAX_SHOWN_PARAGRAPHS} of {len(rng)} paragraphs. Pick the passage you want."
         return text, Passage(rng.first, last), note
 
+    def _issue(self, labelled: ParagraphRange | None, paragraphs: list[str], body_start: int | None, ruling: ParagraphRange | None) -> DigestField:
+        """The Issue: under the Court's own heading (cut back to the statement and its questions), else the Court's own
+        cue words, else missing."""
+        if labelled is not None:
+            return self._court_section("issues", "Issue", self._issues.cap(paragraphs, labelled), paragraphs, "")
+        found = self._issues.find(paragraphs, body_start, ruling.first if ruling else None)
+        if found is not None:
+            return self.suggested("issues", "Issue", found.range, paragraphs, found.reason)
+        return self.missing("issues", pending=self._look)
+
+    @staticmethod
+    def suggested(key: str, label: str, rng: ParagraphRange, paragraphs: list[str], reason: str) -> DigestField:
+        """The Court's own paragraphs, found for the student (by rules, or pointed at by an AI): shown as a suggestion to check."""
+        text, passage, note = DigestFieldFactory.verbatim_text(paragraphs, rng)
+        return DigestField(key, label, FieldKind.VERBATIM, text, FieldOrigin.COURT_SUGGESTED, passage=passage, note=note, reason=reason)
+
+    @staticmethod
+    def missing(key: str, *, pending: bool = False, searched: bool = False) -> DigestField:
+        """A Court field with nothing in it. `pending`: a passage is being looked for. `searched`: it was, and none was found."""
+        label, note = _MISSING[key]
+        if pending:
+            return DigestField(key, label, FieldKind.VERBATIM, state=FieldState.PENDING)
+        return DigestField(key, label, FieldKind.VERBATIM, note=_NOT_FOUND[key] if searched else note)
+
     def _court_section(self, key: str, label: str, rng: ParagraphRange | None, paragraphs: list[str], missing: str) -> DigestField:
         if rng is None:
-            return DigestField(key, label, FieldKind.VERBATIM, note=f"{missing} Pick the paragraphs you want, or paste them.")
+            return DigestField(key, label, FieldKind.VERBATIM, state=FieldState.PENDING if self._look else FieldState.READY, note=None if self._look else f"{missing} Pick the paragraphs you want, or paste them.")
         text, passage, note = self.verbatim_text(paragraphs, rng)
         return DigestField(key, label, FieldKind.VERBATIM, text, FieldOrigin.COURT_HEADING, passage=passage, note=note)
 

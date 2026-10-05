@@ -132,11 +132,20 @@ really say it). A sentence that fails is dropped; if nothing passes, the field s
 Set `GEMINI_API_KEY` in `backend/.env`; without it the digest still works, minus the written answers.
 The student can type over, pick paragraphs of the decision, paste, or reset any field.
 
+## Library, subjects, bulk and the case digest
+
+- **Main case rule.** `cases.main_case_id` marks a related page (a Resolution, a repeat, a decision under several G.R. numbers); `CaseFamily` ranks decision > unknown > resolution and `/library/cases` lists mains only. Subjects live in `subjects`; `cases.subject_source` is `ai`, `student` or `batch`, and a student's choice is never overridden.
+- **Bulk.** `MainCaseIdentifier` reads only the caption (first 30 lines; the G.R. line must start the line), so cited cases never become rows. `GrListParser` reads pasted numbers. Items go `queued -> found | duplicate | not_found | unreadable | failed`. The resolve job runs on the 1-thread `lawphil` queue; the digest job on `digests`. PDFs are not stored.
+- **Case digest v2** (`case_digests_v2`, one per main case). The client's prompt is `infrastructure/ai/prompts/digest_v1.py` plus system rules. One writer call returns sections of sentences with cites to `C1` (caption), `P<i>` (decision paragraphs) and `O<n>.<i>` (author-labelled opinion paragraphs); code checks (`AnswerValidator`), a checker keeps only "supported" sentences, one repair pass rewrites the failed ones. Levels short / standard / full only choose which sections print.
+- **Monthly limit.** `CASE_DIGEST_MONTHLY_LIMIT` (2,500) stops new digests with a plain message; `manage resume-digests` (and every restart) starts the waiting ones again as far as the new month's limit allows.
+- **Measured** (Marcos v. Manglapus, one run each): about 87K input and 56K output tokens, 7 calls, 208 s, 89 of 94 sentences kept. With `CASE_DIGEST_THINKING_BUDGET=1024`: 48K output, 175 s, 86 kept. Prices are not measured here; see `DEPLOYMENT_PLAN.md` section 13.
+
 ## API
 
 | Method | Path | |
 |---|---|---|
 | POST | `/uploads` | PDF/DOCX (≤5 MB by default). 202 while citations are still being fetched |
+| POST | `/digests/{id}/fields/{key}/suggest` | Look again for the Court's own passage of an empty facts, issues or doctrine (202; the worker fills it) |
 | GET | `/cases/{id}/document.docx` | The whole decision as a Word file (text, footnotes, opinions) |
 | GET | `/uploads/{id}/cases.docx` | Every found case a review cites, as one Word file (max 40) |
 | GET | `/uploads?limit=` | recent uploads, newest first, with how many citations are in each state |
@@ -151,7 +160,13 @@ The student can type over, pick paragraphs of the decision, paste, or reset any 
 | GET | `/catalog/status` | how much of the list has been read (`building` / `partial` / `ready`) |
 | POST | `/catalog/build` | start or resume reading the list |
 | GET | `/cases?gr_no=180046&year=2009` | stored case, or 202 + background fetch. `year` is optional; the catalog finds it |
-| GET | `/library/cases?q=&limit=&offset=` | stored cases without their text, searchable by name or the start of a G.R. number |
+| GET | `/library/cases?q=&subject_id=&limit=&offset=` | main cases only, without their text, searchable by name or the start of a G.R. number, filterable by subject |
+| GET | `/library/subjects`, `/library/subject-list` | subjects with counts; the plain list |
+| PUT | `/cases/{id}/subject` | file a case under a subject |
+| POST/GET | `/cases/{id}/case-digest` | ask for / read the case digest (202, poll) |
+| GET | `/cases/{id}/case-digest.docx?level=short\|standard\|full` | Word download |
+| POST | `/bulk`, `/bulk/{id}/files`, `/bulk/{id}/retry` | start a bulk upload, add files, retry failed items |
+| GET | `/bulk`, `/bulk/{id}`, `/bulk/{id}/items` | progress |
 | GET | `/cases/{id}` | full official text, footnotes (each with a `#fntN` deep link), opinions, statutes, cited cases |
 | POST | `/cases/fetch` `{"url": ...}` | manual fallback: fetch one official Lawphil page by URL |
 | GET | `/cases/{id}/insights` | ponente, division, ruling (verbatim), concurring justices, statutes, cited cases + footnote links |
@@ -165,6 +180,8 @@ docker compose exec api python -m caselens.manage catalog refresh   # re-read cu
 docker compose exec api python -m caselens.manage catalog status
 docker compose exec api python -m caselens.manage reparse   # re-read stored pages with the current parser (no network)
 docker compose exec api python -m caselens.manage refetch   # download again cases whose stored text was damaged on download
+docker compose run -d --no-deps --name caselens-download api python -m caselens.manage download-all   # save every listed decision (1 page/second, about 10 hours for 34,000; stop and run again any time, it carries on)
+docker compose exec api python -m caselens.manage resume-digests   # start digests that waited for the monthly limit
 docker compose logs -f worker-lawphil worker-digests
 ```
 

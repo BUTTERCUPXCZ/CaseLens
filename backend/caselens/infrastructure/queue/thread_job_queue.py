@@ -34,6 +34,17 @@ class ThreadJobQueue(JobQueue):
         if self._locks.acquire(key, lock_keys.DIGEST_LOCK_SECONDS):
             self._run(self._digests, jobs.build_digest, digest_id, keys, lock=key, free_on_failure=True)
 
+    def enqueue_bulk_item(self, item_id: int) -> None:
+        self._run(self._lawphil, jobs.resolve_bulk_item, item_id)
+
+    def enqueue_case_digest(self, digest_id: int) -> None:
+        key = lock_keys.case_digest_key(digest_id)
+        if self._locks.acquire(key, lock_keys.CASE_DIGEST_LOCK_SECONDS):
+            self._run(self._digests, jobs.build_case_digest, digest_id, lock=key, free_on_failure=True)
+
+    def enqueue_case_question(self, question_id: int) -> None:
+        self._run(self._digests, jobs.answer_case_question, question_id)
+
     def enqueue_refresh_catalog(self) -> bool:
         if not self._locks.acquire(lock_keys.CATALOG_REFRESH_KEY, lock_keys.CATALOG_REFRESH_LOCK_SECONDS):
             return False

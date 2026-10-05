@@ -81,4 +81,9 @@ class CatalogRepository(ABC):
         """Where this G.R. number can be opened (including as part of a joint decision)."""
 
     @abstractmethod
+    def unsaved(self, first_year: int, last_year: int, after_id: int, limit: int) -> list[tuple[int, str]]:
+        """(cursor, page address) of the catalog decisions not saved as cases yet, each page once, oldest list row first,
+        only those after the cursor. A joint decision listed under several numbers is one page."""
+
+    @abstractmethod
     def status(self, building: bool) -> CatalogStatus: ...

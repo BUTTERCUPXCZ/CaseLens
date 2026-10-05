@@ -40,9 +40,6 @@ export function describeMismatch(mismatch: Mismatch): string {
   return `You wrote ${mismatch.claimed ?? 'nothing'}. The Court's record says ${mismatch.official ?? 'nothing'}.`
 }
 
-export const reporterNote =
-  "We can't check the page reference (for example 538 SCRA 428): Lawphil doesn't include it."
-
 /** Why a not-found or failed citation happened, in the student's terms. The backend's own
  *  message is technical, so the common cases are rewritten and the rest shown as given. */
 export function explainCitation(status: CitationStatus, message: string | null): string | null {
@@ -56,11 +53,6 @@ export function explainCitation(status: CitationStatus, message: string | null):
     return "Lawphil didn't answer, or the page couldn't be read. Nothing is wrong with your file. Try again in a minute."
   }
   return null
-}
-
-export const summarizeReview = {
-  empty: 'No citations were found in this file.',
-  checking: (done: number, total: number) => `Checking ${done} of ${total} cases…`,
 }
 
 export const upload = {
@@ -101,13 +93,6 @@ export function friendlyError(error: unknown): string {
     default:
       return 'Something went wrong on our side. Please try again in a moment.'
   }
-}
-
-/** Errors from changing a digest. The backend's 422 sentences ("Pick paragraphs 6 to 132 of the decision.") are
- *  already written for students, so they are shown as they are; everything else uses the general wording. */
-export function friendlyDigestError(error: unknown): string {
-  if (error instanceof ApiError && error.status === 422 && error.detail) return error.detail
-  return friendlyError(error)
 }
 
 export const disclaimer =
@@ -155,108 +140,6 @@ export const listProgress = {
   emptyTitle: "Lawphil's case list hasn't been read yet",
 }
 
-/** The finished reviewer: the student's own text with a digest box after each case it cites. */
-export const finishedCopy = {
-  tabCheck: 'Check results',
-  tabFinished: 'Finished reviewer',
-  intro:
-    'One digest box for each case your reviewer cites. The Facts, Issue, Ruling and Doctrine are the Court’s own words. Change anything you like. The Word file has your whole reviewer with the boxes inside.',
-  download: 'Download as Word',
-  downloadPdfNote: 'Your PDF is rebuilt as a Word file: the text is the same, but the fonts and layout differ.',
-  waitingForCases: 'We are still finding your cases. The boxes appear here as they are found.',
-  noBoxes: 'No case boxes yet. They appear for each case we find in your reviewer.',
-  writing: 'Some explanations are still being written. They appear here by themselves.',
-  unplacedTitle: 'Cases we could not place next to their paragraph',
-  unplacedHelp: 'These cases are cited somewhere we could not read as a paragraph (a table, for example).',
-  boxSource: 'Court’s record on Lawphil',
-  groupCourt: 'From the Court',
-  groupCourtHelp: 'The Court’s own words. Nothing here is reworded.',
-  groupPlain: 'In plain words',
-  groupPlainHelp: 'Written from the decision for you to check and change.',
-  hideBox: 'Hide this digest',
-  showBox: 'Show this digest',
-  jumpTitle: 'Cases in your reviewer',
-  progress: (ready: number, total: number) =>
-    ready === total
-      ? total === 1 ? '1 case, ready' : `${total} cases, all ready`
-      : `${ready} of ${total} cases ready`,
-  boxWriting: 'Writing the explanations…',
-  boxReady: 'Ready',
-  viewLabel: 'Show',
-  viewBoxes: 'Digest boxes only',
-  viewFull: 'With my reviewer text',
-  whereIn: (heading: string | null, excerpt: string) =>
-    heading ? `In your reviewer, under “${heading}”: “${excerpt}”` : `In your reviewer: “${excerpt}”`,
-  whereUnplaced: 'We could not find this case in a paragraph of your file, so it is listed here.',
-  askTitle: 'Ask your own question',
-  askToggle: 'Ask a question',
-  askClose: 'Close the question panel',
-  askOpen: 'Open the question panel',
-  askPlaceholder: 'Ask about this case…',
-  askEmpty: 'Ask anything about this case. The answer is written from the decision and checked.',
-  askTry: 'Try one of these',
-  askSuggestions: [
-    'Give me 4 sentences of the facts in plain words',
-    'Explain the topic of this case in simple words',
-    'What did the Court decide, and why?',
-  ],
-  askDisclaimer: 'Written by AI from the decision. It can make mistakes: check every answer against the Court’s text.',
-  askShowInBox: 'Show in the digest box',
-  askNoAnswer: 'We could not answer this from the decision.',
-  askHelp:
-    'Ask about one of your cases. The answer is written from the decision and checked. It appears in that case’s digest box, under “In plain words”.',
-  askWhich: 'Which case?',
-  askAbout: (name: string) => `About: ${name}`,
-  askSent: (name: string) => `Asked. The answer will appear in the digest box for ${name}.`,
-  askSeeBox: 'See that digest box',
-  askYourQuestions: 'Your questions about this case',
-  askSeeAnswer: 'See the answer',
-  askStateWriting: 'Writing…',
-  askStateReady: 'Answered',
-  askStateEmpty: 'No answer',
-  ownDigestsTitle: 'Your file already has digests in it',
-  ownDigests: (n: number) =>
-    `We found ${n === 1 ? '1 digest' : `${n} digests`} you wrote yourself (like “Digest 1: Facts and Doctrine”). We cannot tell them apart from your other text, so we keep them and add our own box next to each case. A case may appear twice. For a cleaner result, upload your reviewer without the digests.`,
-}
-
-/** Where a field's text came from, in the words a student would use. Nothing is shown for the student's own writing. */
-export const originLabel: Record<string, string | null> = {
-  court_heading: 'The Court’s own words, under its heading',
-  court_ruling: 'The Court’s own ruling',
-  student_picked: 'Paragraphs you picked',
-  student_pasted: 'Pasted by you',
-  ai_drafted: 'Drafted from the decision. Check it.',
-  student_written: 'Written by you',
-  empty: null,
-}
-
-export const digestActions = {
-  edit: 'Edit',
-  save: 'Save',
-  cancel: 'Cancel',
-  saving: 'Saving…',
-  pick: 'Pick paragraphs',
-  paste: 'Paste text',
-  restore: 'Put back the system’s version',
-  writeAgain: 'Write it again',
-  pickTitle: 'Pick paragraphs of the decision',
-  pickHelp: 'Click the first paragraph, then the last one. We copy the Court’s exact words.',
-  pickUse: (n: number) => (n === 1 ? 'Use this paragraph' : `Use these ${n} paragraphs`),
-  pickClear: 'Start again',
-  askLabel: 'Ask your own question about this case',
-  askPlaceholder: 'e.g. Give me 4 sentences of the facts in plain words',
-  askButton: 'Ask',
-  asking: 'Asking…',
-  stillWriting: 'Still being written…',
-  showMore: 'Show more',
-  showLess: 'Show less',
-  emptyPick: 'Pick from the decision',
-  emptyPaste: 'Paste your own',
-  emptyWrite: 'Write it yourself',
-  basedOn: (paragraphs: string[]) =>
-    paragraphs.length === 1 ? `Based on paragraph ${paragraphs[0]} of the decision` : `Based on paragraphs ${paragraphs.join(', ')} of the decision`,
-}
-
 /** The page shown before the app opens, when the owner set an access code. */
 export const accessCopy = {
   opening: 'Opening CaseLens…',
@@ -268,72 +151,58 @@ export const accessCopy = {
 
 /** The "How to use CaseLens" page. Plain words, one idea per step. The result labels are not repeated here: the page shows the
  *  real ones from `citationStatus`, so the guide cannot drift from the app. */
-export type GuideExample = 'redpen' | 'labels'
-export type GuideStep = { title: string; body: string[]; example?: GuideExample }
+export type GuideStep = { title: string; body: string[] }
 
 export const guideCopy = {
   navLabel: 'How to use it',
   title: 'How to use CaseLens',
-  description: 'From your reviewer file to a checked, finished reviewer in a few steps.',
+  description: 'Upload decisions, tag their subject, and get a checked digest of each in the format your professor asks for.',
   promise:
-    'CaseLens finds the cases your reviewer cites, gets the real decision from Lawphil, and checks what you wrote against the Court’s record. It shows where everything comes from and never guesses. You always decide what stays in your reviewer.',
-  stepsTitle: 'The steps',
+    'CaseLens keeps the Supreme Court cases you upload, filed under the subjects you choose, and writes a digest of each one. It gets the real decision from Lawphil and shows where everything comes from. It never guesses: where the decision does not say something, the digest says so. You always decide what to keep.',
+  libraryTitle: 'From upload to digest',
+  librarySteps: [
+    {
+      title: 'Upload the decisions (New digest)',
+      body: [
+        'Open “New digest”. Drop one or more decision files (PDF or Word), or press “Have G.R. numbers instead?” and type the numbers. Each file or number is one case. The cases a decision only mentions are not added, and a case you give twice is shown once.',
+        'To find a case first, use the “Search cases” tab and press “Generate digest” on the one you want.',
+      ],
+    },
+    {
+      title: 'Label it: Subject Tags and Topic scope',
+      body: [
+        'Pick one or more Subject Tags (Civil Law, Constitutional Law, Remedial Law and the others). You label the case: the app never guesses a subject. The tags apply to every case in the upload, and you can change them later on the case page.',
+        'If you want the digest to focus on one doctrine or issue, write it in Topic scope (for example “Presidential powers”). Leave it empty for the standard digest.',
+      ],
+    },
+    {
+      title: 'Read it in My reviews',
+      body: [
+        'Press “Generate Case Digest”. You go straight to the review: your cases on the left, the digest of the one you choose in the middle. Each digest takes about 3 to 5 minutes; you can leave the page.',
+        'The digest follows the format your professor asks for: Doctrine, Facts, Issue, Ruling, Ratio Decidendi, the dissents, the topic explained and why the case matters. Every part says which paragraphs of the decision it rests on, and anything the checks could not back was left out. It is a draft: read it against the Court’s text.',
+        'To change a part, press “Edit” beside its title, type, and press “Save”. Your text is kept in this review only and goes into your Word download; “Put back the AI version” undoes it.',
+      ],
+    },
+    {
+      title: 'Ask the AI assistant',
+      body: [
+        'On the right of the review, ask anything about the case you are reading. The answer is written from the decision and every sentence is checked against it. If the decision does not say enough, it tells you so instead of guessing. On a phone, press “Ask the AI assistant”.',
+      ],
+    },
+    {
+      title: 'Download it',
+      body: [
+        'Use the buttons on the digest. Pick “Facts and Doctrine”, “Doctrine, Facts, Issue, Ruling” (1 to 2 pages) or the “Full case digest” (about 6 pages). The full text of the decision is a Word file too.',
+        'Every case you uploaded is also in the Case library, filed under its tags.',
+      ],
+    },
+  ] satisfies GuideStep[],
+  extraTitle: 'More',
   steps: [
-    {
-      title: 'Upload your reviewer',
-      body: [
-        'On “Check a reviewer”, drop your file or choose it. It can be a PDF or a Word (.docx) file, up to 5 MB.',
-        'The file must have real text. A scanned picture of pages cannot be read.',
-      ],
-    },
-    {
-      title: 'Wait while we check your cases',
-      body: [
-        'We look up each G.R. number you cited on Lawphil. This can take a minute or two the first time. The page updates by itself, so you can leave it open.',
-        'If the site has been quiet, the very first page can be slow to open. Wait a moment and it will load.',
-      ],
-    },
-    {
-      title: 'Read the results',
-      body: [
-        'Each case you cited gets one of these labels. When something is off, we mark it the way a proofreader would: your words crossed out, the Court’s record beside them.',
-        reporterNote,
-      ],
-      example: 'labels',
-    },
-    {
-      title: 'Open your finished reviewer',
-      body: [
-        'Open “Finished reviewer” to see one digest box for each case: Facts, Issue, Ruling and Doctrine, then short explanations in plain words.',
-        'The Facts, Issue and Ruling are the Court’s own words, never reworded. The explanations are written from the decision and marked “Drafted from the decision. Check it.” Read them against the Court’s text.',
-        'Choose “Digest boxes only” for a short page, or “With my reviewer text” to see the boxes inside your own paragraphs.',
-      ],
-      example: 'redpen',
-    },
-    {
-      title: 'Make it yours',
-      body: [
-        'Every box can be changed. Use Edit to type, pick paragraphs of the decision, or paste your own Doctrine. “Put back the system’s version” undoes your change, and “Write it again” asks for a new explanation.',
-      ],
-    },
-    {
-      title: 'Ask your own question',
-      body: [
-        'Use “Ask a question” to open the panel on the right side. Choose a case and ask anything about it. The answer is written from the decision, checked, and added to that case’s box.',
-        'Closed the panel? Use the tab on the right edge to open it again.',
-      ],
-    },
-    {
-      title: 'Download your Word file',
-      body: [
-        'Press “Download as Word”. You get your whole reviewer with the digest boxes inside. A Word upload keeps its own layout. A PDF is rebuilt as a new Word file: the text is the same, but the fonts and layout differ.',
-        'Download it before you leave. To keep the service small, reviewers you uploaded may be removed after about a week.',
-      ],
-    },
     {
       title: 'Not happy with the digest? Take the whole case',
       body: [
-        'Use “Download full case (Word)” on a case, or “Download all cases (Word)” on your finished reviewer. You get the Court’s own text, every footnote and any opinions printed with it, nothing reworded, with a link to the official page.',
+        'Use “Full text” on a row, then “Download full case (Word)”. You get the Court’s own text, every footnote and any opinions printed with it, nothing reworded, with a link to the official page.',
         'Then write your own digest from it.',
       ],
     },
@@ -348,53 +217,34 @@ export const guideCopy = {
   goodToKnowTitle: 'Good to know',
   goodToKnow: [
     'CaseLens gives information, not legal advice. Lawphil gives no warranty that its text is complete or correct: confirm with the Supreme Court.',
-    'If your file already has digests you wrote, we keep them and add our own box next to each case.',
-    'If the explanation service is busy, you still get the Court’s own text. Come back later for the explanations.',
-    'The text of every decision comes from Lawphil, and each box links to the official page.',
-    'You can remove a reviewer you uploaded with the bin button in “My reviews”. Its digest boxes go with it. The cases stay in the Case library.',
+    'If the writing service is busy, the case is still saved with its full text. The digest is written when the service answers again.',
+    'The text of every decision comes from Lawphil, and each digest links to the official page.',
   ],
   faqTitle: 'Questions',
   faq: [
     {
-      q: 'Why does it say “Needs a look”?',
-      a: 'Something you wrote differs from the Court’s record, for example the year or date. The Court’s version is shown next to yours. Check it, then fix your reviewer if needed.',
+      q: 'Why is part of the digest missing or short?',
+      a: 'We only keep what the decision supports. If a sentence could not be backed by the Court’s paragraphs, it was left out, and the part says the decision does not say enough.',
     },
     {
-      q: 'Why is a box or an explanation empty?',
-      a: 'We only show what the decision supports. If it cannot be shown, the box says so, and you can pick paragraphs, paste your own text, or write it yourself.',
-    },
-    {
-      q: 'Can I trust the explanations?',
-      a: 'They are written from the decision, and each sentence is checked against it. They can still be wrong, so they are marked as drafts. The Court’s own words are the source.',
+      q: 'Can I trust the digest?',
+      a: 'It is written from the decision, and each sentence is checked against it. It can still be wrong, so it is marked as a draft. The Court’s own words are the source.',
     },
     {
       q: 'A case could not be found. What now?',
-      a: 'Check the number and year you wrote, or paste the case’s Lawphil link on its row. If it says it could not check right now, try again in a minute.',
+      a: 'Check the number and year you wrote, or paste the case’s Lawphil link. For a case before 1987, write the year, like 88211 (1969).',
     },
   ],
-  start: 'Check a reviewer',
-  redpenCaption: 'Example: you wrote 2010, and the Court’s record says 2009.',
-  labelsCaption: 'The labels you can see next to each case',
+  start: 'Open the case library',
 }
 
 /** The short card new visitors see once on the start page. */
 export const welcomeCopy = {
   title: 'New here? It takes four steps',
-  steps: ['Upload your reviewer', 'We check every case it cites', 'Read and edit your digest boxes', 'Download it as a Word file'],
+  steps: ['Upload the decisions, or find a case', 'Choose its Subject Tags and, if you like, a Topic scope', 'Read the digest in My reviews and ask the AI assistant', 'Download it as a Word file'],
   guide: 'Read the full guide',
   dismiss: 'Got it',
   dismissLabel: 'Close this welcome card',
-}
-
-/** Removing a review from "My reviews". */
-export const deleteCopy = {
-  button: (name: string) => `Delete ${name}`,
-  title: 'Delete this review?',
-  body: (name: string) =>
-    `“${name}” and its digest boxes will be removed from your reviews. This cannot be undone. The cases stay in the Case library. If you want to keep your finished reviewer, download it as a Word file first.`,
-  confirm: 'Delete',
-  deleting: 'Deleting…',
-  cancel: 'Keep it',
 }
 
 /** The full decision, on its own page. */
@@ -412,4 +262,228 @@ export const caseDownloadCopy = {
   oneInBox: 'Download the full case',
   all: 'Download all cases (Word)',
   help: 'Not happy with a digest? Download the whole case and write your own. The file has the Court’s own text, its footnotes and any opinions, nothing reworded.',
+}
+
+/** The Case library: the client's drawing (subject rail, three columns, download options) and the Individual and Bulk entries above it. */
+export const libraryCopy = {
+  title: 'Case library',
+  description: 'Every case you saved, filed by subject. Open its digest or its full text, or download it.',
+  modeIndividual: 'Individual',
+  modeBulk: 'Bulk',
+  individualHelp: 'Look up one case by its name or G.R. number. You get the full text, and you say what subject it is.',
+  individualButton: 'Find the case',
+  individualPlaceholder: 'e.g. Marcos v. Manglapus, or 88211',
+  whatSubject: 'What subject?',
+  letSystemDecide: 'Let the system decide',
+  allCases: 'All cases',
+  noSubjectYet: 'No subject yet',
+  railTitle: 'Filter by subject',
+  columnCase: 'Case',
+  columnNumber: 'G.R. No., date and ponente',
+  columnActions: 'View / Download',
+  caseDigest: 'Case digest',
+  digestWriting: 'Digest being written…',
+  lawphilTitle: 'Also on Lawphil, not saved yet',
+  lawphilHelp: 'These decisions are on Lawphil’s list but not in your library yet. Press “Open this case” to save one.',
+  lawphilMore: (n: number) => `See all ${n} matches on Lawphil’s list`,
+  lawphilNone: 'Nothing else on Lawphil’s list matches.',
+  digestFailed: 'The digest could not be written yet.',
+  fullText: 'Full text',
+  download: 'Download',
+  digestNotWritten: 'The digest is written when you open it.',
+  optionShort: 'Facts and Doctrine',
+  optionStandard: 'Doctrine, Facts, Issue, Ruling',
+  optionStandardHint: '1 to 2 pages',
+  optionFull: 'Full case digest',
+  optionFullHint: 'about 6 pages',
+  optionFullText: 'Full text of the decision',
+  optionFullTextHint: 'Word',
+  menuNeedsDigest: 'Write the digest first, then download it.',
+  emptyTitle: 'Your library is empty',
+  emptyBody: 'Cases are saved here when you upload a decision or pick one in “New digest”.',
+  emptySubject: 'No case is filed under this subject yet.',
+  noMatch: (q: string) => `No saved case matches “${q}”`,
+  searchLabel: 'Search your saved cases',
+  searchPlaceholder: 'Part of the case name, or a G.R. number',
+  ponente: (name: string) => `${name}, J.`,
+  subjectLabel: 'Subject tags',
+  subjectChanged: 'Tags saved.',
+  subjectFailed: 'We could not save the tags. Try again.',
+  noTags: 'No subject yet',
+}
+
+/** "New digest": the client's upload screen (Upload file | Search cases), with Subject Tags and Topic scope. */
+export const uploadCopy = {
+  title: 'New digest',
+  description: 'Upload decisions or find a case, tag its subject, and get a case digest.',
+  tabUpload: 'Upload file',
+  tabSearch: 'Search cases',
+  dropTitle: 'Drop the decision files here',
+  dropHelp: 'PDF or Word, up to 5 MB each. Each file is one case. The cases a decision only mentions are not added.',
+  choose: 'Choose files',
+  filesLabel: 'Decision files (PDF or Word)',
+  remove: (name: string) => `Remove ${name}`,
+  removeShort: 'Remove',
+  numbersToggle: 'Have G.R. numbers instead?',
+  numbersLabel: 'G.R. numbers',
+  numbersHelp: 'One per line, or separated by commas. Add a year for a case older than 1987, like 88211 (1969).',
+  tagsLabel: 'Subject Tags (optional)',
+  tagsCount: (n: number) => (n === 0 ? 'No subject selected' : n === 1 ? '1 subject selected' : `${n} subjects selected`),
+  tagsHelp: 'Tags file the case in your library. They apply to every case in this upload. You can change them later on the case page.',
+  scopeLabel: 'Topic scope',
+  scopeHint: 'optional, narrows the digest to one doctrine or issue',
+  scopeExample: 'Family Code under Conjugal Partnership of Gains',
+  scopeUseExample: (text: string) => `Use the example: ${text}`,
+  scopeCount: (n: number, max: number) => `${n}/${max}`,
+  generate: 'Generate Case Digest',
+  sending: (sent: number, total: number) => `Sending files: ${sent} of ${total}`,
+  starting: 'Starting…',
+  nothing: 'Add a file, or a G.R. number, first.',
+  timeNote: 'We write a case digest of each case from the Court’s own decision. It takes about 3 to 5 minutes per case. You can leave the page.',
+  failedToStart: 'We could not send all the files. The ones already sent are being worked on: see My reviews.',
+  searchHelp: 'Find the case on Lawphil’s list, then press “Generate digest”. The tags and topic scope below apply to it.',
+  generateOne: 'Generate digest',
+  generating: 'Starting…',
+}
+
+/** "My reviews": every upload, and one upload's cases with their digests and the AI assistant. */
+export const reviewsCopy = {
+  title: 'My reviews',
+  description: 'Every upload, newest first. Open one to read its case digests and ask the AI assistant about a case.',
+  emptyTitle: 'No reviews yet',
+  emptyBody: 'Upload a decision in “New digest” and it appears here.',
+  newDigest: 'New digest',
+  open: 'Open',
+  delete: (name: string) => `Delete ${name}`,
+  deleteTitle: 'Delete this review?',
+  deleteBody: 'The review and the questions you asked in it will be removed. The cases and their digests stay in the Case library.',
+  deleteConfirm: 'Delete',
+  deleting: 'Deleting…',
+  keep: 'Keep it',
+  untitled: 'Upload',
+  andMore: (n: number) => ` and ${n} more`,
+  scope: (text: string) => `Topic scope: ${text}`,
+  noScope: 'Standard digest',
+  cases: (found: number, ready: number) => `${found === 1 ? '1 case' : `${found} cases`} · ${ready} ${ready === 1 ? 'digest' : 'digests'} ready`,
+  working: 'Working on it…',
+  back: 'All reviews',
+  casesTitle: 'Cases in this review',
+  pickCase: 'Choose a case to read its digest.',
+  waitingFirst: 'Your cases will appear here as each one is found.',
+  nothingAdded: 'No case was added from this upload.',
+  fullText: 'Full text',
+  digestStates: { none: 'Not started', pending: 'Being written', ready: 'Ready', failed: 'Could not be written' } as Record<string, string>,
+  page: (first: number, last: number, total: number) => `${first}–${last} of ${total}`,
+}
+
+/** The AI assistant panel on the right of a review. */
+export const assistantCopy = {
+  title: 'AI assistant',
+  open: 'Ask the AI assistant',
+  close: 'Close the AI assistant',
+  about: (name: string) => `About ${name}`,
+  noCase: 'Choose a case to ask about it.',
+  empty: 'Ask anything about this case. The answer is written from the decision, and every sentence is checked against it.',
+  label: 'Your question',
+  placeholder: 'e.g. What power did the President use?',
+  ask: 'Ask',
+  asking: 'Asking…',
+  answering: 'Writing the answer…',
+  noAnswer: 'The decision does not say enough to answer this. Try asking it another way.',
+  drafted: 'Drafted from the decision. Check it.',
+  sources: (paragraphs: string[]) => `Based on decision ${paragraphs.length === 1 ? 'paragraph' : 'paragraphs'} ${paragraphs.join(', ')}`,
+  failed: 'Not answered',
+  tooLong: (max: number) => `Keep it under ${max} characters.`,
+}
+
+/** The page of one case's digest. */
+export const digestPageCopy = {
+  back: 'Back to the case',
+  edit: (title: string) => `Edit ${title}`,
+  editShort: 'Edit',
+  save: 'Save',
+  saving: 'Saving…',
+  cancel: 'Cancel',
+  putBack: 'Put back the AI version',
+  editedByYou: 'Edited by you',
+  editHelp: 'Your text is kept in this review only. A blank line starts a new paragraph, a line starting “- ” is a bullet point, a line starting “# ” is a subheading.',
+  editLabel: (title: string) => `Your text for ${title}`,
+  saveFailed: 'We could not save your text. Try again.',
+  pageTitle: 'Case digest',
+  writing: 'Writing the digest…',
+  writingHelp: 'This takes a few minutes. You can leave this page; it will be here when you come back.',
+  start: 'Write the digest',
+  failedTitle: 'The digest could not be written',
+  retry: 'Try again',
+  rewrite: 'Write it again',
+  downloadTitle: 'Download',
+  downloadShort: 'Facts and Doctrine',
+  downloadStandard: 'Doctrine, Facts, Issue, Ruling',
+  downloadFull: 'Full case digest',
+  includes: 'Prints',
+  draftNote: 'Drafted from the decision. Check it.',
+  sources: (paragraphs: string[]) => (paragraphs.length === 1 ? `Based on decision paragraph ${paragraphs[0]}` : `Based on decision paragraphs ${paragraphs.join(', ')}`),
+  opinionSource: 'a separate opinion',
+  recordSource: 'the case record',
+  leftOut: (n: number) => `${n === 1 ? '1 sentence was' : `${n} sentences were`} left out because the decision did not support ${n === 1 ? 'it' : 'them'}.`,
+  noSections: 'The decision did not give enough to write this digest.',
+  topic: 'Topic',
+  ponente: 'Ponente',
+}
+
+/** Bulk upload: many cases at once. Each file or number is ONE main case. */
+export const bulkCopy = {
+  help: 'Give many cases at once. Each G.R. number or file is one case: the cases a decision only mentions are not added, and a case you give twice is shown once.',
+  textLabel: 'G.R. numbers',
+  textHelp: 'One per line, or separated by commas. Add a year if the case is older than 1987, like 88211 (1969).',
+  textPlaceholder: '88211\nG.R. No. 180046\n173931',
+  filesLabel: 'Decision files (PDF or Word)',
+  filesHelp: 'A file is one case. We read its G.R. number from the top of the page, then get the official decision from Lawphil.',
+  filesChosen: (n: number) => (n === 1 ? '1 file chosen' : `${n} files chosen`),
+  start: 'Start',
+  starting: 'Starting…',
+  sending: (sent: number, total: number) => `Sending files: ${sent} of ${total}`,
+  nothing: 'Paste at least one G.R. number or choose a file.',
+  failedToStart: 'We could not send all the files. The ones already sent are being worked on; start again with the rest.',
+  progressTitle: 'Your bulk upload',
+  recent: 'Recent bulk uploads',
+  open: 'Open',
+  total: (n: number) => (n === 1 ? '1 item' : `${n} items`),
+  statusLabel: {
+    queued: 'Waiting',
+    found: 'In the library',
+    duplicate: 'Same case as an earlier one',
+    not_found: 'Not found',
+    unreadable: 'Could not read',
+    failed: 'Lawphil did not answer',
+  } as Record<string, string>,
+  summary: {
+    found: 'in the library',
+    duplicate: 'repeats (shown once)',
+    not_found: 'not found',
+    unreadable: 'could not be read',
+    failed: 'need a retry',
+    queued: 'waiting',
+  } as Record<string, string>,
+  digests: (ready: number, found: number) => `Digests written: ${ready} of ${found}`,
+  digestsFailed: (n: number) => `${n === 1 ? '1 digest' : `${n} digests`} could not be written. Open the case and press “Write it again”.`,
+  working: 'Working on it. You can leave this page and come back; it keeps going.',
+  done: 'All done.',
+  retry: 'Retry the ones Lawphil did not answer',
+  retried: (n: number) => `${n} queued again.`,
+  openLibrary: 'Open the case library',
+  showOnly: 'Show',
+  all: 'All',
+  digestState: { none: 'Digest not asked for', pending: 'Digest being written', ready: 'Digest ready', failed: 'Digest failed' } as Record<string, string>,
+  itemsLabel: 'Items of this upload',
+  resultsTitle: 'Your upload',
+  resultsCaption: 'The cases from this upload, one row each',
+  caseCount: (n: number) => (n === 1 ? '1 case is in your library' : `${n} cases are in your library`),
+  repeats: (n: number) => (n === 1 ? '1 repeat is shown once' : `${n} repeats are shown once`),
+  notAdded: (n: number) => (n === 1 ? '1 item was not added' : `${n} items were not added`),
+  notAddedTitle: 'Not added',
+  waitingFirst: 'Your cases will appear here as each one is found.',
+  nothingAdded: 'No case was added from this upload.',
+  uploadMore: 'Upload more',
+  wholeLibrary: 'See the whole library',
 }

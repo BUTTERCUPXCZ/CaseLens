@@ -1,0 +1,62 @@
+[
+  {
+    "subject_id": 1,
+    "name": "Civil Law",
+    "count": 0
+  },
+  {
+    "subject_id": 2,
+    "name": "Criminal Law",
+    "count": 1
+  },
+  {
+    "subject_id": 3,
+    "name": "Remedial Law",
+    "count": 1
+  },
+  {
+    "subject_id": 4,
+    "name": "Constitutional Law",
+    "count": 2
+  },
+  {
+    "subject_id": 5,
+    "name": "Labor Law",
+    "count": 2
+  },
+  {
+    "subject_id": 6,
+    "name": "Commercial Law",
+    "count": 0
+  },
+  {
+    "subject_id": 7,
+    "name": "Taxation Law",
+    "count": 0
+  },
+  {
+    "subject_id": 8,
+    "name": "Legal Ethics",
+    "count": 0
+  },
+  {
+    "subject_id": 9,
+    "name": "Political Law",
+    "count": 0
+  },
+  {
+    "subject_id": 10,
+    "name": "Litigation",
+    "count": 0
+  },
+  {
+    "subject_id": 11,
+    "name": "Administrative Law",
+    "count": 0
+  },
+  {
+    "subject_id": null,
+    "name": "No subject yet",
+    "count": 2
+  }
+]

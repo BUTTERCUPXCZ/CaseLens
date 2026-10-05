@@ -11,13 +11,16 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GuideRouteImport } from './routes/guide'
+import { Route as LibraryRouteImport } from './routes/library'
 import { Route as LookupRouteImport } from './routes/lookup'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as UploadRouteImport } from './routes/upload'
 import { Route as CasesIndexRouteImport } from './routes/cases.index'
 import { Route as CasesCaseIdRouteImport } from './routes/cases.$caseId'
 import { Route as ReviewsIndexRouteImport } from './routes/reviews.index'
-import { Route as ReviewsReviewIdRouteImport } from './routes/reviews.$reviewId'
+import { Route as ReviewsBatchIdRouteImport } from './routes/reviews.$batchId'
 import { Route as CasesCaseIdDecisionRouteImport } from './routes/cases.$caseId_.decision'
+import { Route as CasesCaseIdDigestRouteImport } from './routes/cases.$caseId_.digest'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -29,6 +32,11 @@ const GuideRoute = GuideRouteImport.update({
   path: '/guide',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LibraryRoute = LibraryRouteImport.update({
+  id: '/library',
+  path: '/library',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LookupRoute = LookupRouteImport.update({
   id: '/lookup',
   path: '/lookup',
@@ -37,6 +45,11 @@ const LookupRoute = LookupRouteImport.update({
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UploadRoute = UploadRouteImport.update({
+  id: '/upload',
+  path: '/upload',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CasesIndexRoute = CasesIndexRouteImport.update({
@@ -54,9 +67,9 @@ const ReviewsIndexRoute = ReviewsIndexRouteImport.update({
   path: '/reviews/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ReviewsReviewIdRoute = ReviewsReviewIdRouteImport.update({
-  id: '/reviews/$reviewId',
-  path: '/reviews/$reviewId',
+const ReviewsBatchIdRoute = ReviewsBatchIdRouteImport.update({
+  id: '/reviews/$batchId',
+  path: '/reviews/$batchId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CasesCaseIdDecisionRoute = CasesCaseIdDecisionRouteImport.update({
@@ -64,87 +77,113 @@ const CasesCaseIdDecisionRoute = CasesCaseIdDecisionRouteImport.update({
   path: '/cases/$caseId/decision',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CasesCaseIdDigestRoute = CasesCaseIdDigestRouteImport.update({
+  id: '/cases/$caseId_/digest',
+  path: '/cases/$caseId/digest',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/guide': typeof GuideRoute
+  '/library': typeof LibraryRoute
   '/lookup': typeof LookupRoute
   '/search': typeof SearchRoute
+  '/upload': typeof UploadRoute
   '/cases/$caseId': typeof CasesCaseIdRoute
-  '/reviews/$reviewId': typeof ReviewsReviewIdRoute
+  '/reviews/$batchId': typeof ReviewsBatchIdRoute
   '/cases/': typeof CasesIndexRoute
   '/reviews/': typeof ReviewsIndexRoute
   '/cases/$caseId/decision': typeof CasesCaseIdDecisionRoute
+  '/cases/$caseId/digest': typeof CasesCaseIdDigestRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/guide': typeof GuideRoute
+  '/library': typeof LibraryRoute
   '/lookup': typeof LookupRoute
   '/search': typeof SearchRoute
+  '/upload': typeof UploadRoute
   '/cases/$caseId': typeof CasesCaseIdRoute
-  '/reviews/$reviewId': typeof ReviewsReviewIdRoute
+  '/reviews/$batchId': typeof ReviewsBatchIdRoute
   '/cases': typeof CasesIndexRoute
   '/reviews': typeof ReviewsIndexRoute
   '/cases/$caseId/decision': typeof CasesCaseIdDecisionRoute
+  '/cases/$caseId/digest': typeof CasesCaseIdDigestRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/guide': typeof GuideRoute
+  '/library': typeof LibraryRoute
   '/lookup': typeof LookupRoute
   '/search': typeof SearchRoute
+  '/upload': typeof UploadRoute
   '/cases/$caseId': typeof CasesCaseIdRoute
-  '/reviews/$reviewId': typeof ReviewsReviewIdRoute
+  '/reviews/$batchId': typeof ReviewsBatchIdRoute
   '/cases/': typeof CasesIndexRoute
   '/reviews/': typeof ReviewsIndexRoute
   '/cases/$caseId_/decision': typeof CasesCaseIdDecisionRoute
+  '/cases/$caseId_/digest': typeof CasesCaseIdDigestRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/guide'
+    | '/library'
     | '/lookup'
     | '/search'
+    | '/upload'
     | '/cases/$caseId'
-    | '/reviews/$reviewId'
+    | '/reviews/$batchId'
     | '/cases/'
     | '/reviews/'
     | '/cases/$caseId/decision'
+    | '/cases/$caseId/digest'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/guide'
+    | '/library'
     | '/lookup'
     | '/search'
+    | '/upload'
     | '/cases/$caseId'
-    | '/reviews/$reviewId'
+    | '/reviews/$batchId'
     | '/cases'
     | '/reviews'
     | '/cases/$caseId/decision'
+    | '/cases/$caseId/digest'
   id:
     | '__root__'
     | '/'
     | '/guide'
+    | '/library'
     | '/lookup'
     | '/search'
+    | '/upload'
     | '/cases/$caseId'
-    | '/reviews/$reviewId'
+    | '/reviews/$batchId'
     | '/cases/'
     | '/reviews/'
     | '/cases/$caseId_/decision'
+    | '/cases/$caseId_/digest'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   GuideRoute: typeof GuideRoute
+  LibraryRoute: typeof LibraryRoute
   LookupRoute: typeof LookupRoute
   SearchRoute: typeof SearchRoute
+  UploadRoute: typeof UploadRoute
   CasesCaseIdRoute: typeof CasesCaseIdRoute
-  ReviewsReviewIdRoute: typeof ReviewsReviewIdRoute
+  ReviewsBatchIdRoute: typeof ReviewsBatchIdRoute
   CasesIndexRoute: typeof CasesIndexRoute
   ReviewsIndexRoute: typeof ReviewsIndexRoute
   CasesCaseIdDecisionRoute: typeof CasesCaseIdDecisionRoute
+  CasesCaseIdDigestRoute: typeof CasesCaseIdDigestRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -163,6 +202,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GuideRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/library': {
+      id: '/library'
+      path: '/library'
+      fullPath: '/library'
+      preLoaderRoute: typeof LibraryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lookup': {
       id: '/lookup'
       path: '/lookup'
@@ -175,6 +221,13 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/upload': {
+      id: '/upload'
+      path: '/upload'
+      fullPath: '/upload'
+      preLoaderRoute: typeof UploadRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cases/': {
@@ -198,11 +251,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReviewsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/reviews/$reviewId': {
-      id: '/reviews/$reviewId'
-      path: '/reviews/$reviewId'
-      fullPath: '/reviews/$reviewId'
-      preLoaderRoute: typeof ReviewsReviewIdRouteImport
+    '/reviews/$batchId': {
+      id: '/reviews/$batchId'
+      path: '/reviews/$batchId'
+      fullPath: '/reviews/$batchId'
+      preLoaderRoute: typeof ReviewsBatchIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cases/$caseId_/decision': {
@@ -212,19 +265,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CasesCaseIdDecisionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cases/$caseId_/digest': {
+      id: '/cases/$caseId_/digest'
+      path: '/cases/$caseId/digest'
+      fullPath: '/cases/$caseId/digest'
+      preLoaderRoute: typeof CasesCaseIdDigestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   GuideRoute: GuideRoute,
+  LibraryRoute: LibraryRoute,
   LookupRoute: LookupRoute,
   SearchRoute: SearchRoute,
+  UploadRoute: UploadRoute,
   CasesCaseIdRoute: CasesCaseIdRoute,
-  ReviewsReviewIdRoute: ReviewsReviewIdRoute,
+  ReviewsBatchIdRoute: ReviewsBatchIdRoute,
   CasesIndexRoute: CasesIndexRoute,
   ReviewsIndexRoute: ReviewsIndexRoute,
   CasesCaseIdDecisionRoute: CasesCaseIdDecisionRoute,
+  CasesCaseIdDigestRoute: CasesCaseIdDigestRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,34 +1,429 @@
 {
-  "_about": "Hand-marked by reading each decision (2026-10-03), BEFORE any model was run on them. Facts/issues are lists of [first, last] paragraph ranges (positions in Case.full_text.split('\\n'), ends included); null = the decision states no issue. Where the Court wrote a heading, the range is the paragraphs under it. Where it did not, the range is the narrative of events and proceedings up to where the Court starts its own analysis (facts) and the questions/errors the Court says it will resolve (issues). The ruling is checked separately in tests/unit/test_digest_structure.py.",
-  "gr_71464_1988.html": {"facts": [[5, 14], [21, 26]], "issues": [[15, 20]]},
-  "gr_71681_1989.html": {"facts": [[5, 26]], "issues": [[27, 27]]},
-  "gr_84272_1991.html": {"facts": [[8, 10]], "issues": [[7, 7]]},
-  "gr_37012_1992.html": {"facts": [[15, 25]], "issues": null},
-  "gr_89967_1994.html": {"facts": [[8, 18]], "issues": [[21, 29]]},
-  "gr_117246_1995.html": {"facts": [[5, 12]], "issues": [[13, 16]]},
-  "gr_119935_1997.html": {"facts": [[5, 22]], "issues": [[23, 23]]},
-  "gr_125548_1998.html": {"facts": [[17, 25]], "issues": [[32, 34]]},
-  "gr_130969_2000.html": {"facts": [[5, 19]], "issues": [[20, 20]]},
-  "gr_133922_2001.html": {"facts": [[22, 44]], "issues": [[54, 62]]},
-  "gr_127152_2003.html": {"facts": [[5, 18]], "issues": [[19, 19]]},
-  "gr_160890_2004.html": {"facts": [[6, 20]], "issues": [[21, 21]]},
-  "gr_161811_2006.html": {"facts": [[5, 22]], "issues": [[37, 40]]},
-  "gr_173256_2007.html": {"facts": [[7, 18]], "issues": [[19, 20]]},
-  "gr_148263_2009.html": {"facts": [[9, 14]], "issues": [[34, 37]]},
-  "gr_165678_2009.html": {"facts": [[9, 49]], "issues": [[63, 67]]},
-  "gr_173931_2009.html": {"facts": [[7, 22]], "issues": [[23, 23]]},
-  "gr_180046_2009.html": {"facts": [[9, 62]], "issues": [[64, 66]]},
-  "gr_183905_2009.html": {"facts": [[9, 27]], "issues": null},
-  "gr_173081_2010.html": {"facts": [[9, 20]], "issues": [[22, 22]]},
-  "gr_174941_2012.html": {"facts": [[10, 92]], "issues": [[93, 108]]},
-  "gr_172846_2013.html": {"facts": [[7, 22]], "issues": null},
-  "gr_175483_2015.html": {"facts": [[9, 28]], "issues": [[28, 28]]},
-  "gr_211972_2015.html": {"facts": [[11, 21]], "issues": [[35, 35]]},
-  "gr_161425_2016.html": {"facts": [[7, 30]], "issues": null},
-  "gr_196510_2018.html": {"facts": [[11, 21]], "issues": [[37, 38]]},
-  "gr_233850_2019.html": {"facts": [[8, 17]], "issues": [[26, 26]]},
-  "gr_240774_2021.html": {"facts": [[8, 41]], "issues": [[79, 88]]},
-  "gr_221664_2022.html": {"facts": [[8, 18]], "issues": [[37, 37]]},
-  "gr_272689_2024.html": {"facts": [[8, 16]], "issues": [[34, 34]]},
-  "gr_260071_2025.html": {"facts": [[8, 13]], "issues": [[37, 37]]}
+ "_about": "Hand-marked by reading each decision (2026-10-03), BEFORE any model was run on them. Facts/issues are lists of [first, last] paragraph ranges (positions in Case.full_text.split('\\n'), ends included); null = the decision states no issue. Where the Court wrote a heading, the range is the paragraphs under it. Where it did not, the range is the narrative of events and proceedings up to where the Court starts its own analysis (facts) and the questions/errors the Court says it will resolve (issues). The ruling is checked separately in tests/unit/test_digest_structure.py.",
+ "gr_71464_1988.html": {
+  "facts": [
+   [
+    5,
+    14
+   ],
+   [
+    21,
+    26
+   ]
+  ],
+  "issues": [
+   [
+    15,
+    20
+   ]
+  ]
+ },
+ "gr_71681_1989.html": {
+  "facts": [
+   [
+    5,
+    26
+   ]
+  ],
+  "issues": [
+   [
+    27,
+    27
+   ]
+  ]
+ },
+ "gr_84272_1991.html": {
+  "facts": [
+   [
+    8,
+    10
+   ]
+  ],
+  "issues": [
+   [
+    7,
+    7
+   ]
+  ]
+ },
+ "gr_37012_1992.html": {
+  "facts": [
+   [
+    15,
+    25
+   ]
+  ],
+  "issues": null
+ },
+ "gr_89967_1994.html": {
+  "facts": [
+   [
+    8,
+    18
+   ]
+  ],
+  "issues": [
+   [
+    21,
+    29
+   ]
+  ]
+ },
+ "gr_117246_1995.html": {
+  "facts": [
+   [
+    5,
+    12
+   ]
+  ],
+  "issues": [
+   [
+    13,
+    16
+   ]
+  ]
+ },
+ "gr_119935_1997.html": {
+  "facts": [
+   [
+    5,
+    22
+   ]
+  ],
+  "issues": [
+   [
+    23,
+    23
+   ]
+  ]
+ },
+ "gr_125548_1998.html": {
+  "facts": [
+   [
+    17,
+    25
+   ]
+  ],
+  "issues": [
+   [
+    32,
+    34
+   ]
+  ]
+ },
+ "gr_130969_2000.html": {
+  "facts": [
+   [
+    5,
+    19
+   ]
+  ],
+  "issues": [
+   [
+    20,
+    20
+   ]
+  ]
+ },
+ "gr_133922_2001.html": {
+  "facts": [
+   [
+    22,
+    44
+   ]
+  ],
+  "issues": [
+   [
+    54,
+    62
+   ]
+  ]
+ },
+ "gr_127152_2003.html": {
+  "facts": [
+   [
+    5,
+    18
+   ]
+  ],
+  "issues": [
+   [
+    19,
+    19
+   ]
+  ]
+ },
+ "gr_160890_2004.html": {
+  "facts": [
+   [
+    6,
+    20
+   ]
+  ],
+  "issues": [
+   [
+    21,
+    21
+   ]
+  ]
+ },
+ "gr_161811_2006.html": {
+  "facts": [
+   [
+    5,
+    22
+   ]
+  ],
+  "issues": [
+   [
+    37,
+    40
+   ]
+  ]
+ },
+ "gr_173256_2007.html": {
+  "facts": [
+   [
+    7,
+    18
+   ]
+  ],
+  "issues": [
+   [
+    19,
+    20
+   ]
+  ]
+ },
+ "gr_148263_2009.html": {
+  "facts": [
+   [
+    9,
+    14
+   ]
+  ],
+  "issues": [
+   [
+    34,
+    37
+   ]
+  ]
+ },
+ "gr_165678_2009.html": {
+  "facts": [
+   [
+    9,
+    49
+   ]
+  ],
+  "issues": [
+   [
+    63,
+    67
+   ]
+  ]
+ },
+ "gr_173931_2009.html": {
+  "facts": [
+   [
+    7,
+    22
+   ]
+  ],
+  "issues": [
+   [
+    23,
+    23
+   ]
+  ]
+ },
+ "gr_180046_2009.html": {
+  "facts": [
+   [
+    9,
+    62
+   ]
+  ],
+  "issues": [
+   [
+    64,
+    66
+   ]
+  ]
+ },
+ "gr_183905_2009.html": {
+  "facts": [
+   [
+    9,
+    27
+   ]
+  ],
+  "issues": [
+   [
+    42,
+    42
+   ]
+  ]
+ },
+ "gr_173081_2010.html": {
+  "facts": [
+   [
+    9,
+    20
+   ]
+  ],
+  "issues": [
+   [
+    22,
+    22
+   ]
+  ]
+ },
+ "gr_174941_2012.html": {
+  "facts": [
+   [
+    10,
+    92
+   ]
+  ],
+  "issues": [
+   [
+    93,
+    108
+   ]
+  ]
+ },
+ "gr_172846_2013.html": {
+  "facts": [
+   [
+    7,
+    22
+   ]
+  ],
+  "issues": null
+ },
+ "gr_175483_2015.html": {
+  "facts": [
+   [
+    9,
+    28
+   ]
+  ],
+  "issues": [
+   [
+    28,
+    28
+   ]
+  ]
+ },
+ "gr_211972_2015.html": {
+  "facts": [
+   [
+    11,
+    21
+   ]
+  ],
+  "issues": [
+   [
+    35,
+    35
+   ]
+  ]
+ },
+ "gr_161425_2016.html": {
+  "facts": [
+   [
+    7,
+    30
+   ]
+  ],
+  "issues": null
+ },
+ "gr_196510_2018.html": {
+  "facts": [
+   [
+    11,
+    21
+   ]
+  ],
+  "issues": [
+   [
+    37,
+    38
+   ]
+  ]
+ },
+ "gr_233850_2019.html": {
+  "facts": [
+   [
+    8,
+    17
+   ]
+  ],
+  "issues": [
+   [
+    26,
+    26
+   ]
+  ]
+ },
+ "gr_240774_2021.html": {
+  "facts": [
+   [
+    8,
+    41
+   ]
+  ],
+  "issues": [
+   [
+    79,
+    88
+   ]
+  ]
+ },
+ "gr_221664_2022.html": {
+  "facts": [
+   [
+    8,
+    18
+   ]
+  ],
+  "issues": [
+   [
+    37,
+    37
+   ]
+  ]
+ },
+ "gr_272689_2024.html": {
+  "facts": [
+   [
+    8,
+    16
+   ]
+  ],
+  "issues": [
+   [
+    34,
+    34
+   ]
+  ]
+ },
+ "gr_260071_2025.html": {
+  "facts": [
+   [
+    8,
+    13
+   ]
+  ],
+  "issues": [
+   [
+    37,
+    37
+   ]
+  ]
+ },
+ "_corrections": {
+  "gr_183905_2009.html": "2026-10-05: issues changed from null to [[42,42]]. Paragraph 42 reads 'the two main issues for adjudication are as follows: (1) whether the SEC has jurisdiction ... and (2) whether the CDO and SCO issued by the SEC are valid.' The first hand reading missed it (it sits mid-decision after a roman numeral heading); the AI picker found it during evaluation and a person confirmed it against the text."
+ }
 }

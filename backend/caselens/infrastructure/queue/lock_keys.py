@@ -14,6 +14,14 @@ CATALOG_BUILD_LOCK_SECONDS = 60 * 60
 CATALOG_REFRESH_KEY = "caselens:refresh-catalog"
 CATALOG_REFRESH_LOCK_SECONDS = 24 * 60 * 60
 
+# One case digest (a case and its scope) is written once at a time (a regenerate asked while it is being written is the same work).
+CASE_DIGEST_LOCK_SECONDS = 20 * 60
+
+
+def case_digest_key(digest_id: int) -> str:
+    return f"caselens:case-digest-v2:{digest_id}"
+
+
 # The same digest work asked for twice must not pay for the AI twice.
 DIGEST_LOCK_SECONDS = 10 * 60
 

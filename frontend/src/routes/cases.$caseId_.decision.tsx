@@ -27,7 +27,7 @@ export const Route = createFileRoute('/cases/$caseId_/decision')({
   ),
   errorComponent: ({ error, reset }) => <ErrorState error={error} onRetry={reset} title={decisionCopy.failed} />,
   notFoundComponent: () => (
-    <EmptyState icon={FileQuestion} title={decisionCopy.missing} action={<Link to="/cases" className="underline">Browse the case library</Link>}>
+    <EmptyState icon={FileQuestion} title={decisionCopy.missing} action={<Link to="/library" search={{}} className="underline">Browse the case library</Link>}>
       The link may be old, or the case may not be saved yet.
     </EmptyState>
   ),

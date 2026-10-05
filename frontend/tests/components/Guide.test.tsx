@@ -2,7 +2,7 @@ import { screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import { GuideSteps } from '@/features/guide/GuideSteps'
-import { citationStatus, guideCopy } from '@/lib/copy'
+import { guideCopy } from '@/lib/copy'
 
 import { renderApp } from '../utils'
 
@@ -15,30 +15,41 @@ describe('the guide steps', () => {
       expect(within(items[i]!).getByRole('heading', { level: 3 })).toHaveTextContent(step.title)
     })
   })
+})
 
-  it('shows the real result labels, so the guide cannot drift from the app', async () => {
-    await renderApp(<GuideSteps steps={guideCopy.steps} />)
-    for (const { label } of Object.values(citationStatus)) {
-      expect(screen.getByText(label)).toBeInTheDocument()
-    }
+describe('the guide steps for the case library', () => {
+  it('walks through the screens in order: upload, label, read in My reviews, ask, download', async () => {
+    await renderApp(<GuideSteps steps={guideCopy.librarySteps} />)
+    expect(screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent?.replace(/^Step \d+: /, ''))).toEqual([
+      'Upload the decisions (New digest)',
+      'Label it: Subject Tags and Topic scope',
+      'Read it in My reviews',
+      'Ask the AI assistant',
+      'Download it',
+    ])
   })
 
-  it('shows the proofreader example with the wrong date crossed out and the Court’s date beside it', async () => {
-    await renderApp(<GuideSteps steps={guideCopy.steps} />)
-    expect(screen.getByText('April 2, 2010').tagName).toBe('DEL')
-    expect(screen.getByText('April 2, 2009').tagName).toBe('INS')
+  it('says the student labels the case and the app never guesses a subject', () => {
+    expect(guideCopy.librarySteps[1]!.body.join(' ')).toContain('the app never guesses a subject')
+  })
+
+  it('says what an upload promises: one case per file, repeats once, cited cases not added', () => {
+    const bulk = guideCopy.librarySteps[0]!.body.join(' ')
+    expect(bulk).toContain('Each file or number is one case')
+    expect(bulk).toContain('shown once')
+    expect(bulk).toContain('only mentions are not added')
+  })
+
+  it('names the three download options of the drawing', () => {
+    const download = guideCopy.librarySteps[4]!.body.join(' ')
+    for (const option of ['Facts and Doctrine', 'Doctrine, Facts, Issue, Ruling', 'Full case digest']) expect(download).toContain(option)
   })
 })
 
 describe('the guide wording', () => {
-  const everyLine = [guideCopy.promise, ...guideCopy.steps.flatMap((s) => [s.title, ...s.body]), ...guideCopy.goodToKnow, ...guideCopy.faq.flatMap((f) => [f.q, f.a])].join(' ')
+  const everyLine = [guideCopy.promise, ...guideCopy.librarySteps.flatMap((s) => [s.title, ...s.body]), ...guideCopy.steps.flatMap((s) => [s.title, ...s.body]), ...guideCopy.goodToKnow, ...guideCopy.faq.flatMap((f) => [f.q, f.a])].join(' ')
 
   it('uses no system words', () => {
     expect(everyLine).not.toMatch(/\b(parse|parsing|ingest|pending|mismatch|API|backend|queue|database|RLS)\b/i)
-  })
-
-  it('states the upload limit the app really enforces', async () => {
-    const { upload } = await import('@/lib/copy')
-    expect(guideCopy.steps[0]!.body[0]).toContain(`${upload.maxBytes / (1024 * 1024)} MB`)
   })
 })

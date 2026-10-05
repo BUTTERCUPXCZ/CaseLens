@@ -1,17 +1,21 @@
 import { expect, test } from '@playwright/test'
 
-import { expectAccessible, OFFICIAL_URL, SAMPLE_PDF, uploadSampleAndWait } from './helpers'
+import { expectAccessible, OFFICIAL_URL } from './helpers'
 
 test.describe.configure({ mode: 'serial' })
 
-test('the start page offers one clear thing to do, and is accessible', async ({ page }) => {
+test('the start page is "New digest", the client’s upload screen, and is accessible', async ({ page }) => {
   await page.goto('/')
+  await expect(page).toHaveURL(/\/upload/)
   await expect(page).toHaveTitle(/CaseLens/)
-  await expect(page.getByRole('heading', { name: 'Check a reviewer', level: 1 })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Drop your reviewer here' })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Choose a file' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'New digest', level: 1 })).toBeVisible()
+  await expect(page.getByRole('tab', { name: 'Upload file' })).toHaveAttribute('aria-selected', 'true')
+  await expect(page.getByRole('tab', { name: 'Search cases' })).toBeVisible()
+  await expect(page.getByRole('group', { name: 'Subject Tags (optional)' }).getByRole('button')).toHaveCount(11)
+  await expect(page.getByLabel('Topic scope')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Generate Case Digest' })).toBeVisible()
   await expect(page.getByRole('navigation', { name: 'Main' }).getByRole('link')).toHaveText([
-    'Check a reviewer',
+    'New digest',
     'My reviews',
     'Case library',
     'How to use it',
@@ -19,37 +23,9 @@ test('the start page offers one clear thing to do, and is accessible', async ({ 
   await expectAccessible(page)
 })
 
-test('the sample reviewer: the wrong year is struck through beside the Court’s year', async ({ page }) => {
-  await uploadSampleAndWait(page)
-
-  // The signature move, on real data: what you wrote struck out, the Court's value beside it.
-  await expect(page.locator('del', { hasText: 'April 2, 2010' })).toBeVisible()
-  await expect(page.locator('ins', { hasText: 'April 2, 2009' })).toBeVisible()
-  await expect(page.getByText('Different', { exact: true })).toBeVisible()
-
-  // It never pretends to have checked what Lawphil does not contain.
-  await expect(page.getByText('538 SCRA 428', { exact: true })).toBeVisible()
-  await expect(page.getByText("Lawphil doesn't include it")).toBeVisible()
-
-  // Every result links back to the official page.
-  const lawphil = page.getByRole('link', { name: /Open on Lawphil/ })
-  await expect(lawphil).toHaveAttribute('href', OFFICIAL_URL)
-  await expect(lawphil).toHaveAttribute('target', '_blank')
-  await expect(page.getByText('Informational only, not legal advice')).toBeVisible()
-
-  await expectAccessible(page)
-})
-
-test('re-checking the same file is instant because the case is already saved', async ({ page }) => {
-  await page.goto('/')
-  await page.locator('input[type=file]').setInputFiles(SAMPLE_PDF)
-  await page.waitForURL(/\/reviews\/\d+/)
-  await expect(page.getByText('Needs a look', { exact: true }).first()).toBeVisible({ timeout: 10_000 })
-})
-
 test('the case page: summary, then the full text with working footnotes', async ({ page }) => {
-  await uploadSampleAndWait(page)
-  await page.getByRole('link', { name: 'Read the case' }).click()
+  await page.goto('/library')
+  await page.getByRole('link', { name: /^Review Center Association/ }).click()
 
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Review Center Association of the Philippines')
   await expect(page.getByText('Petition granted').first()).toBeVisible()
@@ -82,21 +58,21 @@ test('the case page: summary, then the full text with working footnotes', async 
 
 test('the case library lists, finds, and says when nothing matches', async ({ page }) => {
   await page.goto('/cases')
-  await expect(page.getByRole('link', { name: /Review Center Association of the Philippines/ })).toBeVisible()
+  await expect(page.getByRole('link', { name: /^Review Center Association of the Philippines/ })).toBeVisible()
 
   await page.getByLabel('Search your saved cases').fill('ermita')
   await expect(page).toHaveURL(/q=ermita/)
-  await expect(page.getByRole('link', { name: /Review Center Association/ })).toBeVisible()
+  await expect(page.getByRole('link', { name: /^Review Center Association/ })).toBeVisible()
 
   await page.getByLabel('Search your saved cases').fill('zzzzqq')
-  await expect(page.getByText('No saved case matches "zzzzqq"')).toBeVisible()
+  await expect(page.getByText('No saved case matches “zzzzqq”')).toBeVisible()
   await page.getByRole('button', { name: 'Clear the search' }).click()
-  await expect(page.getByRole('link', { name: /Review Center Association/ })).toBeVisible()
+  await expect(page.getByRole('link', { name: /^Review Center Association/ })).toBeVisible()
   await expectAccessible(page)
 })
 
 test('searching by G.R. number finds the case on Lawphil\'s list and opens it', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/library')
   await page.getByLabel('Find a case by name or G.R. number').fill('G.R. No. 180046')
   await page.getByRole('button', { name: 'Search' }).click()
   await expect(page).toHaveURL(/\/search/)
@@ -119,7 +95,7 @@ test('a G.R. number typed into the address bar is kept', async ({ page }) => {
 })
 
 test('mistakes get plain-language messages, not technical ones', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/library')
   // A bad year
   await page.getByLabel('Find a case by name or G.R. number').fill('Ermita')
   await page.getByLabel('Year').fill('20')
@@ -127,14 +103,6 @@ test('mistakes get plain-language messages, not technical ones', async ({ page }
   await expect(page.getByText('Use a four-digit year, for example 2009.')).toBeVisible()
   await page.getByLabel('Find a case by name or G.R. number').fill('')
   await page.getByLabel('Year').fill('')
-
-  // A file we cannot read
-  await page.locator('input[type=file]').setInputFiles({ name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('hello') })
-  await expect(page.getByText(/We can read PDF and Word/)).toBeVisible()
-
-  // A review that does not exist
-  await page.goto('/reviews/99999999')
-  await expect(page.getByRole('heading', { name: "We can't find that review" })).toBeVisible()
 })
 
 test('no browser errors or content-policy violations on any screen', async ({ page }) => {
@@ -144,12 +112,12 @@ test('no browser errors or content-policy violations on any screen', async ({ pa
   })
   page.on('pageerror', (error) => problems.push(error.message))
 
-  for (const url of ['/', '/reviews', '/cases', '/search?q=180046']) {
+  for (const url of ['/library', '/guide', '/search?q=180046']) {
     await page.goto(url)
     await page.waitForLoadState('networkidle')
   }
   await page.goto('/cases')
-  await page.getByRole('link', { name: /Review Center Association/ }).click()
+  await page.getByRole('link', { name: /^Review Center Association/ }).click()
   await page.getByRole('link', { name: 'Read the full decision' }).click()
   await page.getByRole('button', { name: 'Footnote 1', exact: true }).first().click()
   await expect(page.getByRole('dialog')).toBeVisible()
@@ -158,7 +126,7 @@ test('no browser errors or content-policy violations on any screen', async ({ pa
 })
 
 test('the theme the student picks is remembered and applied before the page paints', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/library')
   await page.getByRole('button', { name: /Switch to the dark theme/ }).click()
   await expect(page.locator('html')).toHaveClass(/dark/)
 
@@ -170,26 +138,25 @@ test('the theme the student picks is remembered and applied before the page pain
 })
 
 test('the guide opens from the menu, is accessible, and the welcome card closes for good', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/upload')
   await expect(page.getByRole('heading', { name: 'New here? It takes four steps' })).toBeVisible()
   await page.getByRole('link', { name: 'Read the full guide' }).click()
   await expect(page).toHaveURL(/\/guide/)
   await expect(page.getByRole('heading', { name: 'How to use CaseLens', level: 1 })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Upload your reviewer', level: 3 })).toBeVisible()
-  await expect(page.getByText('Matches the Court\'s record')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Upload the decisions (New digest)', level: 3 })).toBeVisible()
   await expectAccessible(page)
 
-  await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Check a reviewer' }).click()
+  await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'New digest' }).click()
   await page.getByRole('button', { name: 'Got it' }).click()
   await expect(page.getByRole('heading', { name: 'New here? It takes four steps' })).toBeHidden()
   await page.reload()
-  await expect(page.getByRole('heading', { name: 'Drop your reviewer here' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'New digest', level: 1 })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'New here? It takes four steps' })).toBeHidden()
 })
 
 test('the full decision is on its own page, an old text link still works, and there is a way back', async ({ page }) => {
   await page.goto('/cases')
-  await page.getByRole('link', { name: /Review Center Association/ }).click()
+  await page.getByRole('link', { name: /^Review Center Association/ }).click()
   await expect(page.getByRole('tab', { name: 'Read the full text' })).toHaveCount(0) // no longer a tab on the case page
   await page.getByRole('link', { name: 'Read the full decision' }).click()
   await expect(page).toHaveURL(/\/cases\/\d+\/decision/)
@@ -206,7 +173,7 @@ test('the full decision is on its own page, an old text link still works, and th
 
 test('the full case downloads as a Word file from the case page', async ({ page }) => {
   await page.goto('/cases')
-  await page.getByRole('link', { name: /Review Center Association/ }).click()
+  await page.getByRole('link', { name: /^Review Center Association/ }).click()
   const [one] = await Promise.all([
     page.waitForEvent('download'),
     page.getByRole('link', { name: 'Download full case (Word)' }).click(),
@@ -215,4 +182,68 @@ test('the full case downloads as a Word file from the case page', async ({ page 
   const stream = await one.createReadStream()
   const first = await new Promise<Buffer>((resolve) => stream.once('data', resolve))
   expect(first.subarray(0, 2).toString()).toBe('PK') // a .docx is a zip file
+})
+
+
+test('the library is the client’s drawing: a subject rail, three columns, and one row per case', async ({ page }) => {
+  await page.goto('/library')
+  await expect(page.getByRole('heading', { name: 'Case library', level: 1 })).toBeVisible()
+  await expect(page.getByRole('columnheader')).toHaveText(['Case', 'G.R. No., date and ponente', 'View / Download'])
+  const rail = page.getByRole('navigation', { name: 'Filter by subject' })
+  await expect(rail.getByRole('button', { name: /^All cases/ })).toBeVisible()
+  await expect(rail.getByRole('button', { name: /^Constitutional Law/ })).toBeVisible()
+  await expect(rail.getByRole('button', { name: /^Litigation/ })).toBeVisible() // the client's tag list
+  await expectAccessible(page)
+
+  // choosing a subject keeps only its cases, and the address says so (a link can be shared)
+  await rail.getByRole('button', { name: /^Constitutional Law/ }).click()
+  await expect(page).toHaveURL(/subject=\d+/)
+  await expect(rail.getByRole('button', { name: /^Constitutional Law/ })).toHaveAttribute('aria-pressed', 'true')
+})
+
+test('upload with tags and a topic scope: the student lands on the review, one row per case, and the assistant is on the right', async ({ page }) => {
+  await page.goto('/upload')
+  await page.getByRole('button', { name: 'Have G.R. numbers instead?' }).click()
+  await page.getByLabel('G.R. numbers').fill('180046\nbanana\nG.R. No. 180046')
+  await page.getByRole('button', { name: 'Constitutional Law' }).click()
+  await expect(page.getByText('1 subject selected')).toBeVisible()
+  await page.getByLabel('Topic scope').fill('Delegation of legislative power')
+  await expect(page.getByText('31/300')).toBeVisible()
+  await expectAccessible(page)
+  await page.getByRole('button', { name: 'Generate Case Digest' }).click()
+
+  await expect(page).toHaveURL(/\/reviews\/\d+/)
+  await expect(page.getByText('Topic scope: Delegation of legislative power')).toBeVisible()
+  const cases = page.getByRole('navigation', { name: 'Cases in this review' })
+  await expect(cases.getByRole('button', { name: /Review Center Association/ })).toHaveCount(1, { timeout: 30_000 }) // the repeat is not a second row
+  await expect(page.getByRole('region', { name: 'Not added' }).getByText('This is not a G.R. number, so it was skipped.')).toBeVisible()
+  await expect(page.getByRole('region', { name: 'AI assistant' })).toBeVisible() // docked on the right at laptop width
+  await expect(page.getByLabel('Your question')).toBeVisible()
+  await expectAccessible(page)
+
+  await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'My reviews' }).click()
+  await expect(page.getByRole('heading', { name: 'My reviews', level: 1 })).toBeVisible()
+  await expect(page.getByText('Topic scope: Delegation of legislative power').first()).toBeVisible()
+})
+
+test('the library files the uploaded case under its tag', async ({ page }) => {
+  await page.goto('/library')
+  await page.getByRole('navigation', { name: 'Filter by subject' }).getByRole('button', { name: /^Constitutional Law/ }).click()
+  await expect(page.getByRole('link', { name: /^Review Center Association/ })).toBeVisible()
+})
+
+test('the case digest page asks for the digest and says it is being written', async ({ page }) => {
+  await page.goto('/library')
+  await page.getByRole('link', { name: /^Case digest of Review Center Association/ }).click()
+  await expect(page).toHaveURL(/\/cases\/\d+\/digest/)
+  await expect(page.getByRole('link', { name: 'Back to the case' })).toBeVisible()
+  await expect(page.getByText(/Writing the digest…|Digest/).first()).toBeVisible()
+})
+
+test('the library search also finds decisions on Lawphil that are not saved yet, and saves one when opened', async ({ page }) => {
+  await page.goto('/library?q=Corona')
+  const lawphil = page.getByRole('region', { name: 'Also on Lawphil, not saved yet' })
+  await expect(lawphil).toBeVisible()
+  await expect(lawphil.getByRole('button', { name: 'Open this case' }).first()).toBeVisible()
+  await expectAccessible(page)
 })
