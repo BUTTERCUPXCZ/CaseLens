@@ -307,3 +307,48 @@ def test_deleting_a_review_removes_it_and_its_digests_but_keeps_the_case(client,
 
 def test_deleting_an_unknown_review_is_404(client):
     assert client.delete("/uploads/999999").status_code == 404
+
+
+_WORD = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+
+def _word_lines(response) -> list[str]:
+    import io
+
+    import docx
+
+    return [p.text for p in docx.Document(io.BytesIO(response.content)).paragraphs]
+
+
+def test_one_case_downloads_in_full_as_a_word_file(client, services):
+    upload = upload_docx(client, "GR no 180046 (2009)").json()
+    services.resolve_upload_citations().execute(upload["id"])
+    case_id = client.get(f"/uploads/{upload['id']}").json()["citations"][0]["case_id"]
+
+    response = client.get(f"/cases/{case_id}/document.docx")
+
+    assert response.status_code == 200
+    assert response.headers["content-type"] == _WORD
+    assert 'filename="GR-180046-full-case.docx"' in response.headers["content-disposition"]
+    lines = _word_lines(response)
+    assert any("WHEREFORE, we GRANT the petition" in line for line in lines)  # the Court's ruling, verbatim
+    assert f"Official page: {OFFICIAL_URL}" in lines
+    assert client.get("/cases/999999/document.docx").status_code == 404
+
+
+def test_all_cases_of_a_review_download_as_one_word_file(client, services):
+    upload = upload_docx(client, "GR no 180046 (2009)").json()
+    services.resolve_upload_citations().execute(upload["id"])
+
+    response = client.get(f"/uploads/{upload['id']}/cases.docx")
+
+    assert response.status_code == 200 and response.headers["content-type"] == _WORD
+    assert 'filename="reviewer-all-cases.docx"' in response.headers["content-disposition"]
+    assert any("WHEREFORE, we GRANT the petition" in line for line in _word_lines(response))
+    assert client.get("/uploads/999999/cases.docx").status_code == 404
+
+
+def test_a_review_with_no_found_case_has_nothing_to_download(client):
+    upload = upload_docx(client, "GR no 111111 (2001)").json()  # still pending: nothing found yet
+    response = client.get(f"/uploads/{upload['id']}/cases.docx")
+    assert response.status_code == 400 and "nothing to download" in response.json()["detail"]

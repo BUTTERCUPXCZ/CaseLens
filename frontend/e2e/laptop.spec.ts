@@ -59,8 +59,8 @@ test('the case page: summary, then the full text with working footnotes', async 
   await expect(page.getByText('Republic Act No. 7722')).toBeVisible()
   await expectAccessible(page)
 
-  await page.getByRole('tab', { name: 'Read the full text' }).click()
-  await expect(page).toHaveURL(/tab=text/)
+  await page.getByRole('link', { name: 'Read the full decision' }).click()
+  await expect(page).toHaveURL(/\/cases\/\d+\/decision/)
   // 42 footnotes in the decision, plus 13 in Justice Brion's concurring opinion printed beneath it.
   await expect(page.getByRole('button', { name: /^Footnote \d+$/ })).toHaveCount(42 + 13, { timeout: 15_000 })
   await expect(page.getByRole('heading', { name: /Concurring opinion, Justice Brion/ })).toBeVisible()
@@ -75,6 +75,7 @@ test('the case page: summary, then the full text with working footnotes', async 
   await expect(page.getByText('OSG’s Technical Objections')).toBeVisible()
   await expect(page.locator('body')).not.toContainText('�')
 
+  await page.getByRole('link', { name: 'Back to the case' }).click()
   await page.getByRole('tab', { name: /Footnotes \(42\)/ }).click()
   await expect(page.getByRole('listitem').filter({ hasText: 'Rollo, pp. 35-37' })).toBeVisible()
 })
@@ -149,7 +150,7 @@ test('no browser errors or content-policy violations on any screen', async ({ pa
   }
   await page.goto('/cases')
   await page.getByRole('link', { name: /Review Center Association/ }).click()
-  await page.getByRole('tab', { name: 'Read the full text' }).click()
+  await page.getByRole('link', { name: 'Read the full decision' }).click()
   await page.getByRole('button', { name: 'Footnote 1', exact: true }).first().click()
   await expect(page.getByRole('dialog')).toBeVisible()
 
@@ -184,4 +185,34 @@ test('the guide opens from the menu, is accessible, and the welcome card closes 
   await page.reload()
   await expect(page.getByRole('heading', { name: 'Drop your reviewer here' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'New here? It takes four steps' })).toBeHidden()
+})
+
+test('the full decision is on its own page, an old text link still works, and there is a way back', async ({ page }) => {
+  await page.goto('/cases')
+  await page.getByRole('link', { name: /Review Center Association/ }).click()
+  await expect(page.getByRole('tab', { name: 'Read the full text' })).toHaveCount(0) // no longer a tab on the case page
+  await page.getByRole('link', { name: 'Read the full decision' }).click()
+  await expect(page).toHaveURL(/\/cases\/\d+\/decision/)
+  await expect(page.getByText(/WHEREFORE, we GRANT the petition/)).toBeVisible()
+  await expectAccessible(page)
+
+  await page.getByRole('link', { name: 'Back to the case' }).click()
+  await expect(page).toHaveURL(/\/cases\/\d+$/)
+
+  const id = page.url().match(/\/cases\/(\d+)/)![1]
+  await page.goto(`/cases/${id}?tab=text`)
+  await expect(page).toHaveURL(/\/cases\/\d+\/decision/)
+})
+
+test('the full case downloads as a Word file from the case page', async ({ page }) => {
+  await page.goto('/cases')
+  await page.getByRole('link', { name: /Review Center Association/ }).click()
+  const [one] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByRole('link', { name: 'Download full case (Word)' }).click(),
+  ])
+  expect(one.suggestedFilename()).toBe('GR-180046-full-case.docx')
+  const stream = await one.createReadStream()
+  const first = await new Promise<Buffer>((resolve) => stream.once('data', resolve))
+  expect(first.subarray(0, 2).toString()).toBe('PK') // a .docx is a zip file
 })

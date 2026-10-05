@@ -56,6 +56,10 @@ export const getFinishedReviewer = (uploadId: number) => request<FinishedReviewe
 /** The Word file is a plain download link, not a fetch: the browser saves it. */
 export const finishedReviewerDownloadUrl = (uploadId: number) => `/api/uploads/${uploadId}/document.docx`
 
+/** The whole decision as a Word file (the Court's text, footnotes and opinions), and every case a review cites as one file. */
+export const caseDownloadUrl = (caseId: number) => `/api/cases/${caseId}/document.docx`
+export const reviewCasesDownloadUrl = (uploadId: number) => `/api/uploads/${uploadId}/cases.docx`
+
 export const getDigest = (digestId: number) => request<Digest>(`/digests/${digestId}`)
 
 export const writeDigestField = (digestId: number, key: string, text: string) =>

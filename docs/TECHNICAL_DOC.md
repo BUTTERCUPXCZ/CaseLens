@@ -102,6 +102,7 @@ Law needs **accuracy**. That is why the design has three rules:
 | **Ask your own question** | Add any question. The AI answers from the decision. |
 | **Word download** | Get the finished reviewer as a `.docx` file. |
 | **Case library** | Saved cases with footnotes and facts read from each decision. |
+| **Download the full case** | `GET /cases/{id}/document.docx` (one decision) and `GET /uploads/{id}/cases.docx` (every found case a review cites, in cited order, at most 40). Text, footnotes (listed at the end of each decision, numbers raised in the text) and opinions as the Court printed them. No AI text. |
 | **Guide** | `/guide`: steps, what each label means, a few questions and answers. A welcome card on the start page shows once (closed with "Got it", remembered in the browser). The wording is in `frontend/src/lib/copy.ts` (`guideCopy`). |
 
 **Two rules the app always follows:**

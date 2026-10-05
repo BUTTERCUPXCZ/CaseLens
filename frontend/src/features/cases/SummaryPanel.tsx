@@ -33,7 +33,7 @@ export function SummaryPanel({ insights }: { insights: CaseInsights }) {
         {ruling ? (
           <blockquote className="border-l-0 font-serif text-[1.0625rem] leading-[1.75]">{ruling}</blockquote>
         ) : (
-          <p className="text-base text-muted-foreground">We couldn’t find the ruling paragraph. Read the full text.</p>
+          <p className="text-base text-muted-foreground">We couldn’t find the ruling paragraph. Read the full decision.</p>
         )}
       </Section>
 

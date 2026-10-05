@@ -39,6 +39,17 @@ def fetch_case_by_url(body: FetchByUrlIn, services: Services = Depends(get_servi
     return CaseDetailOut.from_entity(services.ingest_case().execute(body.url))
 
 
+@router.get("/{case_id}/document.docx")
+def download_case(case_id: int, services: Services = Depends(get_services)) -> Response:
+    """The whole decision as a Word file: text, footnotes and opinions exactly as the Court printed them."""
+    download = services.export_case_document().execute(case_id)
+    return Response(
+        content=download.data,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": f'attachment; filename="{download.stem}.docx"'},
+    )
+
+
 @router.get("/{case_id}", response_model=CaseDetailOut)
 def get_case(case_id: int, services: Services = Depends(get_services)) -> CaseDetailOut:
     return CaseDetailOut.from_entity(services.get_case().execute(case_id))

@@ -29,6 +29,7 @@ CaseLens does the repeating work and keeps the law accurate:
 | **Explanations in plain words** | "Topic explained", "Why this case matters" and any question the student adds. Written by Gemini from the decision, then checked twice. Marked "Drafted from the decision. Check it." |
 | **Edit everything** | Type, paste, pick paragraphs of the decision, put the original back, or write an answer again. |
 | **Word download** | The reviewer with the digest boxes inside, as a `.docx`. A Word upload keeps its own layout. A PDF is rebuilt as a new Word file. |
+| **Download the full case** | For a student who is not happy with a digest: one Word file per case, or every case a review cites in one file. The Court's own text, footnotes and opinions, nothing reworded, with the official link. |
 | **Case library** | Saved cases with their footnotes, and facts read from each decision (ruling, justice, laws and cases cited). |
 | **Guide** | A "How to use it" page for first-time students, and a short welcome card on the start page. |
 

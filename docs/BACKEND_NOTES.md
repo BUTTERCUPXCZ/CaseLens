@@ -137,6 +137,8 @@ The student can type over, pick paragraphs of the decision, paste, or reset any 
 | Method | Path | |
 |---|---|---|
 | POST | `/uploads` | PDF/DOCX (≤5 MB by default). 202 while citations are still being fetched |
+| GET | `/cases/{id}/document.docx` | The whole decision as a Word file (text, footnotes, opinions) |
+| GET | `/uploads/{id}/cases.docx` | Every found case a review cites, as one Word file (max 40) |
 | GET | `/uploads?limit=` | recent uploads, newest first, with how many citations are in each state |
 | GET | `/uploads/{id}` | per-citation result: `match` / `mismatch` / `not_found` / `error` / `pending`, with the official record each was checked against |
 | POST | `/uploads/{id}/retry` | check again the citations that could not be checked (source down) |

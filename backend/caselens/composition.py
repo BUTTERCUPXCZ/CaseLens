@@ -19,6 +19,7 @@ from caselens.application.use_cases.build_case_digest import BuildCaseDigest
 from caselens.application.use_cases.build_finished_reviewer import BuildFinishedReviewer
 from caselens.application.use_cases.request_upload_digests import RequestUploadDigests
 from caselens.application.use_cases.delete_upload import DeleteUpload
+from caselens.application.use_cases.export_case_documents import ExportCaseDocument, ExportReviewCases
 from caselens.application.use_cases.edit_digest_field import EditDigestField
 from caselens.application.use_cases.get_digest import GetDigest
 from caselens.application.use_cases.request_case_digest import RequestCaseDigest
@@ -60,6 +61,7 @@ from caselens.infrastructure.ai.gemini_answerer import (
     GeminiAnswerWriter,
     _GeminiCall,
 )
+from caselens.infrastructure.docx_case_export import DocxCaseExporter
 from caselens.infrastructure.docx_export import DocxDigestExporter
 from caselens.infrastructure.extraction.block_reader import CompositeBlockReader, DocxBlockReader, PdfBlockReader
 from caselens.infrastructure.extraction.composite_extractor import CompositeDocumentExtractor
@@ -304,6 +306,12 @@ class Services:
     def build_finished_reviewer(self) -> BuildFinishedReviewer:
         reader = CompositeBlockReader([PdfBlockReader(), DocxBlockReader()])
         return BuildFinishedReviewer(self._uploads, self._digests, self._cases, reader)
+
+    def export_case_document(self) -> ExportCaseDocument:
+        return ExportCaseDocument(self._cases, DocxCaseExporter())
+
+    def export_review_cases(self) -> ExportReviewCases:
+        return ExportReviewCases(self._uploads, self._cases, DocxCaseExporter())
 
     def reviewer_exporter(self) -> DocxDigestExporter:
         return DocxDigestExporter()

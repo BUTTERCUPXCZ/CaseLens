@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
-import { createFileRoute, Link, notFound } from '@tanstack/react-router'
-import { ExternalLink, FileQuestion } from 'lucide-react'
+import { createFileRoute, Link, Navigate, notFound } from '@tanstack/react-router'
+import { Download, ExternalLink, FileQuestion, FileText } from 'lucide-react'
 import { z } from 'zod'
 
 import { orNotFound } from '@/api/orNotFound'
+import { caseDownloadUrl } from '@/api/endpoints'
 import { caseQuery, insightsQuery } from '@/api/queries'
 import { Disclaimer } from '@/components/Disclaimer'
 import { EmptyState, ErrorState } from '@/components/States'
@@ -11,9 +12,8 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { FootnoteList } from '@/features/cases/FootnoteList'
-import { OfficialText } from '@/features/cases/OfficialText'
 import { SummaryPanel } from '@/features/cases/SummaryPanel'
-import { dispositionLabel } from '@/lib/copy'
+import { caseDownloadCopy, decisionCopy, dispositionLabel } from '@/lib/copy'
 import { divisionName, formatDate, justiceName, shortCaseName } from '@/lib/format'
 
 const searchSchema = z.object({ tab: z.enum(['summary', 'text', 'footnotes']).optional().catch(undefined) })
@@ -56,6 +56,7 @@ function CasePage() {
   const navigate = Route.useNavigate()
   const { data: detail } = useQuery(caseQuery(caseId))
   const { data: insights } = useQuery(insightsQuery(caseId))
+  if (tab === 'text') return <Navigate to="/cases/$caseId/decision" params={{ caseId: String(caseId) }} replace /> // an old link
   if (!detail || !insights) return <CaseSkeleton />
 
   const meta = [
@@ -75,6 +76,18 @@ function CasePage() {
           <span className="rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground">
             {dispositionLabel[detail.disposition]}
           </span>
+          <Button size="sm" asChild>
+            <Link to="/cases/$caseId/decision" params={{ caseId: String(caseId) }}>
+              <FileText data-icon="inline-start" aria-hidden />
+              {decisionCopy.read}
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <a href={caseDownloadUrl(caseId)} download>
+              <Download data-icon="inline-start" aria-hidden />
+              {caseDownloadCopy.one}
+            </a>
+          </Button>
           <Button variant="outline" size="sm" asChild>
             <a href={detail.source_url} target="_blank" rel="noopener noreferrer">
               Open on Lawphil
@@ -90,7 +103,6 @@ function CasePage() {
         <TabsList className="mb-6 h-auto flex-wrap justify-start gap-1 bg-transparent p-0">
           {[
             ['summary', 'Quick summary'],
-            ['text', 'Read the full text'],
             ['footnotes', `Footnotes (${detail.footnotes.length})`],
           ].map(([value, label]) => (
             <TabsTrigger
@@ -109,19 +121,6 @@ function CasePage() {
             <p className="mt-2 font-serif text-base">{detail.title}</p>
           </details>
           <SummaryPanel insights={insights} />
-        </TabsContent>
-
-        <TabsContent value="text">
-          <OfficialText text={detail.full_text} footnotes={detail.footnotes} />
-          {detail.opinions.map((opinion, index) => (
-            <section key={index} className="mx-auto mt-14 max-w-[62ch] border-t border-border pt-8">
-              <h2 className="mb-4 text-center text-lg font-semibold">
-                {opinion.kind === 'dissenting' ? 'Dissenting opinion' : opinion.kind === 'concurring' ? 'Concurring opinion' : 'Opinion'}
-                {opinion.author ? `, Justice ${justiceName(opinion.author)}` : ''}
-              </h2>
-              <OfficialText text={opinion.text} footnotes={opinion.footnotes} />
-            </section>
-          ))}
         </TabsContent>
 
         <TabsContent value="footnotes">

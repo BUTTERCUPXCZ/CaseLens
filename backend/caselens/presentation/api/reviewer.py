@@ -79,3 +79,15 @@ def download_finished_reviewer(upload_id: int, services: Services = Depends(get_
         media_type=_DOCX,
         headers={"Content-Disposition": f'attachment; filename="{stem}-with-digests.docx"'},
     )
+
+
+@router.get("/{upload_id}/cases.docx")
+def download_review_cases(upload_id: int, services: Services = Depends(get_services)) -> Response:
+    """Every case this reviewer cites (that we found), in full, as one Word file: the Court's own text, footnotes
+    and opinions. For a student who wants to write the digests by hand."""
+    download = services.export_review_cases().execute(upload_id)
+    return Response(
+        content=download.data,
+        media_type=_DOCX,
+        headers={"Content-Disposition": f'attachment; filename="{download.stem}.docx"'},
+    )

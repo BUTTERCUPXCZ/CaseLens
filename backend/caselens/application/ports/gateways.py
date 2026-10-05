@@ -40,6 +40,12 @@ class ReviewerDocumentExporter(ABC):
         """The finished reviewer as a Word (.docx) file."""
 
 
+class CaseDocumentExporter(ABC):
+    @abstractmethod
+    def export(self, cases: list[Case]) -> bytes:
+        """The full decisions (text, footnotes and opinions exactly as the Court printed them) as one Word (.docx) file."""
+
+
 class UploadedFileReader(ABC):
     """Reads any supported uploaded file; picks the format by filename."""
 

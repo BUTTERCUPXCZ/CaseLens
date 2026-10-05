@@ -3,12 +3,12 @@ import { Download, Info, Loader2, MessageCircleQuestion } from 'lucide-react'
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import { createPortal } from 'react-dom'
 
-import { finishedReviewerDownloadUrl } from '@/api/endpoints'
+import { finishedReviewerDownloadUrl, reviewCasesDownloadUrl } from '@/api/endpoints'
 import { finishedReviewerQuery, keys } from '@/api/queries'
 import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { finishedCopy } from '@/lib/copy'
+import { caseDownloadCopy, finishedCopy } from '@/lib/copy'
 import { RIGHT_DOCK_ID } from '@/lib/dock'
 import { toTitleCase } from '@/lib/format'
 import { useWideScreen } from '@/hooks/useWideScreen'
@@ -110,6 +110,7 @@ export function FinishedReviewer({ uploadId, checking, initialView = 'boxes' }: 
         <div>
           <p className="font-semibold">{boxCount > 0 ? finishedCopy.progress(readyCount, boxCount) : finishedCopy.tabFinished}</p>
           <p className="max-w-xl text-sm text-muted-foreground">{finishedCopy.intro}</p>
+          {boxCount > 0 ? <p className="mt-1 max-w-xl text-sm text-muted-foreground">{caseDownloadCopy.help}</p> : null}
         </div>
         <div className="flex flex-wrap gap-2">
           {boxCount > 0 ? (
@@ -118,6 +119,12 @@ export function FinishedReviewer({ uploadId, checking, initialView = 'boxes' }: 
               {finishedCopy.askToggle}
             </Button>
           ) : null}
+          <Button asChild variant="outline" disabled={boxCount === 0}>
+            <a href={reviewCasesDownloadUrl(uploadId)} download>
+              <Download data-icon="inline-start" aria-hidden />
+              {caseDownloadCopy.all}
+            </a>
+          </Button>
           <Button asChild disabled={boxCount === 0}>
             <a href={finishedReviewerDownloadUrl(uploadId)} download>
               <Download data-icon="inline-start" aria-hidden />

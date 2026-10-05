@@ -33,7 +33,7 @@ test('the comparison reads top to bottom on a phone, and nothing scrolls sideway
 test('the case text is comfortable to read on a phone', async ({ page }) => {
   await page.goto('/cases')
   await page.getByRole('link', { name: /Review Center Association/ }).click()
-  await page.getByRole('tab', { name: 'Read the full text' }).click()
+  await page.getByRole('link', { name: 'Read the full decision' }).click()
   await expectNoHorizontalScroll(page)
 
   const marker = page.getByRole('button', { name: 'Footnote 1', exact: true }).first()

@@ -645,3 +645,16 @@ describe('docked on the right edge of the window', () => {
     expect(screen.queryByRole('button', { name: 'Ask a question' })).toBeNull()
   })
 })
+
+describe('taking the whole case away', () => {
+  it('offers every case of the review as one Word file, and each box offers its own full case', async () => {
+    await show()
+    const box = await ermitaBox()
+
+    expect(screen.getByRole('link', { name: 'Download all cases (Word)' })).toHaveAttribute('href', '/api/uploads/3/cases.docx')
+    expect(screen.getByRole('link', { name: 'Download as Word' })).toHaveAttribute('href', '/api/uploads/3/document.docx')
+    expect(within(box).getByRole('link', { name: 'Download the full case' })).toHaveAttribute('href', `/api/cases/${digest.case_id}/document.docx`)
+    expect(screen.getByText(/Not happy with a digest\?/)).toBeInTheDocument()
+  })
+})
+

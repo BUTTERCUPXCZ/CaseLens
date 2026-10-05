@@ -331,6 +331,13 @@ export const guideCopy = {
       ],
     },
     {
+      title: 'Not happy with the digest? Take the whole case',
+      body: [
+        'Use “Download full case (Word)” on a case, or “Download all cases (Word)” on your finished reviewer. You get the Court’s own text, every footnote and any opinions printed with it, nothing reworded, with a link to the official page.',
+        'Then write your own digest from it.',
+      ],
+    },
+    {
       title: 'Find any case',
       body: [
         'Type a case name or a G.R. number in the box at the top of any page. Cases from 1987 onward are in the list. For an older case, add the year or paste its Lawphil link.',
@@ -388,4 +395,21 @@ export const deleteCopy = {
   confirm: 'Delete',
   deleting: 'Deleting…',
   cancel: 'Keep it',
+}
+
+/** The full decision, on its own page. */
+export const decisionCopy = {
+  read: 'Read the full decision',
+  back: 'Back to the case',
+  opening: 'Opening the decision',
+  failed: "The decision didn't open",
+  missing: "We can't find that decision",
+}
+
+/** Taking the whole case away, for a student who wants to write the digest by hand. */
+export const caseDownloadCopy = {
+  one: 'Download full case (Word)',
+  oneInBox: 'Download the full case',
+  all: 'Download all cases (Word)',
+  help: 'Not happy with a digest? Download the whole case and write your own. The file has the Court’s own text, its footnotes and any opinions, nothing reworded.',
 }

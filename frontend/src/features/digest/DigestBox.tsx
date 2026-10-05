@@ -1,13 +1,14 @@
 import { useQuery } from '@tanstack/react-query'
-import { ChevronDown, ChevronUp, ExternalLink, Loader2 } from 'lucide-react'
+import { ChevronDown, ChevronUp, Download, ExternalLink, Loader2 } from 'lucide-react'
 import { useState } from 'react'
 
+import { caseDownloadUrl } from '@/api/endpoints'
 import { digestQuery } from '@/api/queries'
 import type { BoxRef, Digest } from '@/api/types'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { finishedCopy, friendlyDigestError } from '@/lib/copy'
+import { caseDownloadCopy, finishedCopy, friendlyDigestError } from '@/lib/copy'
 import { formatDate, shortCaseName } from '@/lib/format'
 
 import { boxAnchor } from './anchors'
@@ -98,6 +99,11 @@ function Record({ digest }: { digest: Digest }) {
         {finishedCopy.boxSource}
         <ExternalLink className="size-3.5" aria-hidden />
         <span className="sr-only">(opens in a new tab)</span>
+      </a>{' '}
+      ·{' '}
+      <a href={caseDownloadUrl(digest.case_id)} download className="inline-flex items-center gap-1 underline">
+        <Download className="size-3.5" aria-hidden />
+        {caseDownloadCopy.oneInBox}
       </a>
     </p>
   )

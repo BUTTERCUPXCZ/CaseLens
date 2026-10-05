@@ -8,6 +8,18 @@ import { AccessGate } from './components/AccessGate'
 import { routeTree } from './routeTree.gen'
 import './index.css'
 
+// After a new version is deployed, a tab that was opened before it asks for files that no longer exist. Load the new
+// version once instead of leaving a blank page (the flag stops a reload loop if the files are really missing).
+window.addEventListener('vite:preloadError', () => {
+  try {
+    if (window.sessionStorage.getItem('caselens:reloaded') === '1') return
+    window.sessionStorage.setItem('caselens:reloaded', '1')
+  } catch {
+    return
+  }
+  window.location.reload()
+})
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

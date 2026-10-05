@@ -17,6 +17,7 @@ import { Route as CasesIndexRouteImport } from './routes/cases.index'
 import { Route as CasesCaseIdRouteImport } from './routes/cases.$caseId'
 import { Route as ReviewsIndexRouteImport } from './routes/reviews.index'
 import { Route as ReviewsReviewIdRouteImport } from './routes/reviews.$reviewId'
+import { Route as CasesCaseIdDecisionRouteImport } from './routes/cases.$caseId_.decision'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -58,6 +59,11 @@ const ReviewsReviewIdRoute = ReviewsReviewIdRouteImport.update({
   path: '/reviews/$reviewId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CasesCaseIdDecisionRoute = CasesCaseIdDecisionRouteImport.update({
+  id: '/cases/$caseId_/decision',
+  path: '/cases/$caseId/decision',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -68,6 +74,7 @@ export interface FileRoutesByFullPath {
   '/reviews/$reviewId': typeof ReviewsReviewIdRoute
   '/cases/': typeof CasesIndexRoute
   '/reviews/': typeof ReviewsIndexRoute
+  '/cases/$caseId/decision': typeof CasesCaseIdDecisionRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByTo {
   '/reviews/$reviewId': typeof ReviewsReviewIdRoute
   '/cases': typeof CasesIndexRoute
   '/reviews': typeof ReviewsIndexRoute
+  '/cases/$caseId/decision': typeof CasesCaseIdDecisionRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -89,6 +97,7 @@ export interface FileRoutesById {
   '/reviews/$reviewId': typeof ReviewsReviewIdRoute
   '/cases/': typeof CasesIndexRoute
   '/reviews/': typeof ReviewsIndexRoute
+  '/cases/$caseId_/decision': typeof CasesCaseIdDecisionRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
     | '/reviews/$reviewId'
     | '/cases/'
     | '/reviews/'
+    | '/cases/$caseId/decision'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
     | '/reviews/$reviewId'
     | '/cases'
     | '/reviews'
+    | '/cases/$caseId/decision'
   id:
     | '__root__'
     | '/'
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
     | '/reviews/$reviewId'
     | '/cases/'
     | '/reviews/'
+    | '/cases/$caseId_/decision'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -132,6 +144,7 @@ export interface RootRouteChildren {
   ReviewsReviewIdRoute: typeof ReviewsReviewIdRoute
   CasesIndexRoute: typeof CasesIndexRoute
   ReviewsIndexRoute: typeof ReviewsIndexRoute
+  CasesCaseIdDecisionRoute: typeof CasesCaseIdDecisionRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -192,6 +205,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReviewsReviewIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cases/$caseId_/decision': {
+      id: '/cases/$caseId_/decision'
+      path: '/cases/$caseId/decision'
+      fullPath: '/cases/$caseId/decision'
+      preLoaderRoute: typeof CasesCaseIdDecisionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -204,6 +224,7 @@ const rootRouteChildren: RootRouteChildren = {
   ReviewsReviewIdRoute: ReviewsReviewIdRoute,
   CasesIndexRoute: CasesIndexRoute,
   ReviewsIndexRoute: ReviewsIndexRoute,
+  CasesCaseIdDecisionRoute: CasesCaseIdDecisionRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
