@@ -77,6 +77,10 @@ class UploadRepository(ABC):
         """Persist changes to the upload's status and its citations' results."""
 
     @abstractmethod
+    def delete(self, upload_id: int) -> bool:
+        """Remove an upload with its citations, original file and digests. The cases it cited are kept. False if it does not exist."""
+
+    @abstractmethod
     def list_recent(self, limit: int) -> list[UploadSummary]:
         """Newest uploads first, each with how many of its citations are in each state."""
 

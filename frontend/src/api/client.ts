@@ -42,6 +42,7 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   if (!response.ok) {
     throw new ApiError(response.status, await readDetail(response))
   }
+  if (response.status === 204) return undefined as T // nothing to read back (a delete)
   return (await response.json()) as T
 }
 

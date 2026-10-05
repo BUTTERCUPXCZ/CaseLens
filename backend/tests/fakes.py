@@ -111,6 +111,9 @@ class InMemoryUploadRepository(UploadRepository):
     def save(self, upload: Upload) -> None:
         self.uploads[upload.id] = upload
 
+    def delete(self, upload_id: int) -> bool:
+        return self.uploads.pop(upload_id, None) is not None
+
     def list_recent(self, limit: int) -> list[UploadSummary]:
         def count(upload: Upload, status: MatchStatus) -> int:
             return sum(1 for c in upload.citations if c.status is status)

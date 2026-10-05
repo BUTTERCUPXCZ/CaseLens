@@ -201,6 +201,14 @@ class SqlUploadRepository(UploadRepository):
     def get_file_data(self, upload_id: int) -> bytes | None:
         return self._session.scalar(select(UploadModel.file_data).where(UploadModel.id == upload_id))
 
+    def delete(self, upload_id: int) -> bool:
+        model = self._session.get(UploadModel, upload_id)
+        if model is None:
+            return False
+        self._session.delete(model)  # its citations go with it; its digests are removed by the database (ON DELETE CASCADE)
+        self._session.flush()
+        return True
+
     def list_recent(self, limit: int) -> list[UploadSummary]:
         def count(status: MatchStatus):
             return func.count(UploadCitationModel.id).filter(UploadCitationModel.status == status.value)

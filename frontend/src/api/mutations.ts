@@ -4,6 +4,7 @@ import {
   askDigestQuestion,
   attachLink,
   createUpload,
+  deleteUpload,
   fetchCaseByUrl,
   pasteDigestField,
   pickDigestPassage,
@@ -28,6 +29,18 @@ function useRememberUpload() {
 export function useUploadReviewer() {
   const remember = useRememberUpload()
   return useMutation({ mutationFn: (file: File) => createUpload(file), onSuccess: remember })
+}
+
+/** Remove a review. Its digest boxes go with it; the cases it cited stay in the library. */
+export function useDeleteReview() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (uploadId: number) => deleteUpload(uploadId),
+    onSuccess: (_, uploadId) => {
+      queryClient.removeQueries({ queryKey: keys.upload(uploadId) })
+      void queryClient.invalidateQueries({ queryKey: keys.uploads })
+    },
+  })
 }
 
 export function useRetryReview() {

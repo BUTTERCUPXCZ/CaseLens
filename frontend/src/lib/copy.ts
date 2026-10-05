@@ -344,6 +344,7 @@ export const guideCopy = {
     'If your file already has digests you wrote, we keep them and add our own box next to each case.',
     'If the explanation service is busy, you still get the Court’s own text. Come back later for the explanations.',
     'The text of every decision comes from Lawphil, and each box links to the official page.',
+    'You can remove a reviewer you uploaded with the bin button in “My reviews”. Its digest boxes go with it. The cases stay in the Case library.',
   ],
   faqTitle: 'Questions',
   faq: [
@@ -376,4 +377,15 @@ export const welcomeCopy = {
   guide: 'Read the full guide',
   dismiss: 'Got it',
   dismissLabel: 'Close this welcome card',
+}
+
+/** Removing a review from "My reviews". */
+export const deleteCopy = {
+  button: (name: string) => `Delete ${name}`,
+  title: 'Delete this review?',
+  body: (name: string) =>
+    `“${name}” and its digest boxes will be removed from your reviews. This cannot be undone. The cases stay in the Case library. If you want to keep your finished reviewer, download it as a Word file first.`,
+  confirm: 'Delete',
+  deleting: 'Deleting…',
+  cancel: 'Keep it',
 }

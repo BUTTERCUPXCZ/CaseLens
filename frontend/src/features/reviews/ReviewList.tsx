@@ -1,11 +1,16 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { CheckCircle2, ChevronRight, CircleAlert, FileText, Loader2 } from 'lucide-react'
+import { CheckCircle2, ChevronRight, CircleAlert, FileText, Loader2, Trash2 } from 'lucide-react'
+import { useState } from 'react'
 
 import { uploadsQuery } from '@/api/queries'
 import type { UploadSummary } from '@/api/types'
+import { useDeleteReview } from '@/api/mutations'
 import { ErrorState } from '@/components/States'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
+import { deleteCopy, friendlyError } from '@/lib/copy'
 import { formatWhen } from '@/lib/format'
 
 import { headline, summaryText } from './summary'
@@ -20,12 +25,15 @@ const HEADLINE_ICON = {
 function ReviewRow({ review }: { review: UploadSummary }) {
   const state = headline(review)
   const { Icon, className, label } = HEADLINE_ICON[state]
+  const [confirming, setConfirming] = useState(false)
+  const remove = useDeleteReview()
+
   return (
-    <li>
+    <li className="flex items-center hover:bg-accent/60">
       <Link
         to="/reviews/$reviewId"
         params={{ reviewId: String(review.id) }}
-        className="group flex items-center gap-4 px-1 py-4 hover:bg-accent/60 md:px-3"
+        className="group flex min-w-0 flex-1 items-center gap-4 px-1 py-4 md:px-3"
       >
         <Icon className={`size-5 shrink-0 ${className}`} aria-label={label} role="img" />
         <div className="min-w-0 flex-1">
@@ -35,6 +43,49 @@ function ReviewRow({ review }: { review: UploadSummary }) {
         <span className="hidden shrink-0 text-sm text-muted-foreground sm:block">{formatWhen(review.created_at)}</span>
         <ChevronRight className="size-4 shrink-0 text-muted-foreground group-hover:text-foreground" aria-hidden />
       </Link>
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label={deleteCopy.button(review.filename)}
+        onClick={() => setConfirming(true)}
+        className="mr-1 shrink-0 text-muted-foreground hover:text-problem"
+      >
+        <Trash2 aria-hidden />
+      </Button>
+
+      <Dialog
+        open={confirming}
+        onOpenChange={(open) => {
+          if (!remove.isPending) {
+            setConfirming(open)
+            if (!open) remove.reset()
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{deleteCopy.title}</DialogTitle>
+            <DialogDescription>{deleteCopy.body(review.filename)}</DialogDescription>
+          </DialogHeader>
+          {remove.isError ? (
+            <p role="alert" className="text-sm text-problem">
+              {friendlyError(remove.error)}
+            </p>
+          ) : null}
+          <DialogFooter>
+            <Button variant="outline" disabled={remove.isPending} onClick={() => setConfirming(false)}>
+              {deleteCopy.cancel}
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={remove.isPending}
+              onClick={() => remove.mutate(review.id, { onSuccess: () => setConfirming(false) })}
+            >
+              {remove.isPending ? deleteCopy.deleting : deleteCopy.confirm}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </li>
   )
 }

@@ -23,6 +23,7 @@ export function createUpload(file: File): Promise<Upload> {
   return request<Upload>('/uploads', { method: 'POST', body: form })
 }
 
+export const deleteUpload = (id: number) => request<void>(`/uploads/${id}`, { method: 'DELETE' })
 export const retryUpload = (id: number) => request<Upload>(`/uploads/${id}/retry`, { method: 'POST' })
 
 export const attachLink = (uploadId: number, citationId: number, url: string) =>

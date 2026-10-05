@@ -18,6 +18,7 @@ from caselens.application.use_cases.attach_case_to_citation import AttachCaseToC
 from caselens.application.use_cases.build_case_digest import BuildCaseDigest
 from caselens.application.use_cases.build_finished_reviewer import BuildFinishedReviewer
 from caselens.application.use_cases.request_upload_digests import RequestUploadDigests
+from caselens.application.use_cases.delete_upload import DeleteUpload
 from caselens.application.use_cases.edit_digest_field import EditDigestField
 from caselens.application.use_cases.get_digest import GetDigest
 from caselens.application.use_cases.request_case_digest import RequestCaseDigest
@@ -208,6 +209,9 @@ class Services:
 
     def get_upload(self) -> GetUpload:
         return GetUpload(self._uploads, self._cases)
+
+    def delete_upload(self) -> DeleteUpload:
+        return DeleteUpload(self._uploads, self._uow)
 
     def list_uploads(self) -> ListUploads:
         return ListUploads(self._uploads)

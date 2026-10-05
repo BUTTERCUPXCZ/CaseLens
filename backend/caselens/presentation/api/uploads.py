@@ -38,6 +38,13 @@ def get_upload(upload_id: int, services: Services = Depends(get_services)) -> Up
     return UploadOut.from_report(services.get_upload().execute(upload_id))
 
 
+@router.delete("/{upload_id}", status_code=204)
+def delete_upload(upload_id: int, services: Services = Depends(get_services)) -> Response:
+    """Remove a reviewer and its digest boxes. The cases it cited stay in the library."""
+    services.delete_upload().execute(upload_id)
+    return Response(status_code=204)
+
+
 @router.post("/{upload_id}/retry", response_model=UploadOut)
 def retry_upload(upload_id: int, services: Services = Depends(get_services)) -> UploadOut:
     """Check again the citations that could not be checked (source down, page unreadable)."""

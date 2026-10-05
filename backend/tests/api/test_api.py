@@ -286,3 +286,24 @@ def test_unknown_ids_are_404(client):
 
 def test_health(client):
     assert client.get("/health").json() == {"status": "ok", "db": "ok", "pg_trgm": True}
+
+
+def test_deleting_a_review_removes_it_and_its_digests_but_keeps_the_case(client, services):
+    upload = upload_docx(client, "GR no 180046 (2009)").json()
+    services.resolve_upload_citations().execute(upload["id"])
+    case_id = client.get(f"/uploads/{upload['id']}").json()["citations"][0]["case_id"]
+    digest = client.post(f"/cases/{case_id}/digest", json={"upload_id": upload["id"], "template": "full"}).json()
+    assert client.get(f"/uploads/{upload['id']}/digests").json() != []
+    other = upload_docx(client, "GR no 180046 (2009)").json()
+
+    response = client.delete(f"/uploads/{upload['id']}")
+
+    assert response.status_code == 204 and response.content == b""
+    assert client.get(f"/uploads/{upload['id']}").status_code == 404
+    assert client.get(f"/digests/{digest['id']}").status_code == 404
+    assert client.get(f"/cases/{case_id}").status_code == 200  # the Court's text stays in the library
+    assert [u["id"] for u in client.get("/uploads").json()] == [other["id"]]  # another review is untouched
+
+
+def test_deleting_an_unknown_review_is_404(client):
+    assert client.delete("/uploads/999999").status_code == 404
