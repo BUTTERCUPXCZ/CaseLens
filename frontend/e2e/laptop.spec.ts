@@ -264,8 +264,9 @@ test('a case page has a Back button that returns to where the student was', asyn
   await page.getByRole('button', { name: 'Back' }).click()
   await expect(page).toHaveURL(/\/library\?.*q=Review/) // the same search, as the student left it
 
-  await page.goto('/cases/1') // opened straight from a link
-  await expect(page.getByRole('link', { name: 'Back to the Case library' })).toBeVisible()
+  const fresh = await page.context().newPage() // a new tab, opened straight from a link: nothing to go back to
+  await fresh.goto('/cases/1')
+  await expect(fresh.getByRole('link', { name: 'Back to the Case library' })).toBeVisible()
 })
 
 test('an upload’s page has a Back button too', async ({ page }) => {
@@ -331,4 +332,16 @@ test('Individual: find one case, say its subject, open it, and read its full dec
   await expect(page.getByRole('list', { name: 'My uploads' }).getByText('Individual').first()).toBeVisible()
   await page.goto('/upload?tab=search')
   await expect(page).toHaveURL(/\/individual/) // the old address
+})
+
+test('Back on a case returns to the library even after its digest was opened first (no loop)', async ({ page }) => {
+  await page.goto('/library?tab=cases&q=Review%20Center')
+  await page.getByRole('link', { name: /^Read the digest of Review Center Association/ }).click()
+  await expect(page).toHaveURL(/\/digest/)
+  await page.getByRole('link', { name: 'Back to the case' }).click() // came from the library, so this opens the case
+  await expect(page).toHaveURL(/\/cases\/\d+$/)
+  await page.getByRole('link', { name: 'Read the full decision' }).click()
+  await page.getByRole('button', { name: 'Back to the case' }).click()
+  await page.getByRole('button', { name: 'Back', exact: true }).click()
+  await expect(page).toHaveURL(/\/library\?.*q=Review/) // the library as the student left it, not the digest or the decision
 })

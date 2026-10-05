@@ -1,5 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query'
-import { createRootRouteWithContext, Link, Outlet } from '@tanstack/react-router'
+import { createRootRouteWithContext, Link, Outlet, useRouterState } from '@tanstack/react-router'
+import { useEffect } from 'react'
 import { Scale } from 'lucide-react'
 
 import { AppSidebar } from '@/components/AppSidebar'
@@ -7,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { RIGHT_DOCK_ID } from '@/lib/dock'
+import { isCasePage, rememberPlace } from '@/lib/returnPlace'
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   component: RootLayout,
@@ -14,6 +16,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 })
 
 function RootLayout() {
+  const location = useRouterState({ select: (state) => state.location })
+  // Remember where the student is, unless it is one of a case's own pages: the case page's Back returns here.
+  useEffect(() => {
+    if (!isCasePage(location.pathname)) rememberPlace(location.href)
+  }, [location.pathname, location.href])
   return (
       <TooltipProvider>
         <a

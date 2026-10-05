@@ -73,7 +73,7 @@ function CasePage() {
   return (
     <>
       <header className="mb-6">
-        <BackButton />
+        <BackButton to="place" />
         <h1 className="font-serif text-2xl leading-tight font-semibold md:text-3xl">{shortCaseName(detail.title)}</h1>
         <p className="tabular mt-3 text-base text-muted-foreground">{meta.join(' · ')}</p>
 
