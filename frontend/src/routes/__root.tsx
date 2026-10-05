@@ -3,7 +3,6 @@ import { createRootRouteWithContext, Link, Outlet } from '@tanstack/react-router
 import { Scale } from 'lucide-react'
 
 import { AppSidebar } from '@/components/AppSidebar'
-import { GrSearch } from '@/components/GrSearch'
 import { Button } from '@/components/ui/button'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -26,15 +25,15 @@ function RootLayout() {
         <SidebarProvider>
           <AppSidebar />
           <SidebarInset>
-            <header className="sticky top-0 z-20 border-b bg-background/95 px-4 py-3 backdrop-blur-sm md:px-8">
-              <div className="mb-2 flex items-center gap-3 md:hidden">
+            {/* On a phone: the menu button and the name. On a laptop the menu is always on the left, so there is no header bar. */}
+            <header className="sticky top-0 z-20 border-b bg-background/95 px-4 py-3 backdrop-blur-sm md:hidden">
+              <div className="flex items-center gap-3">
                 <SidebarTrigger aria-label="Open the menu" />
                 <Link to="/" className="flex items-center gap-2 text-lg font-semibold">
                   <Scale className="size-5 text-primary" aria-hidden />
                   CaseLens
                 </Link>
               </div>
-              <GrSearch />
             </header>
             <main id="main" className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 md:px-8 md:py-10">
               <Outlet />

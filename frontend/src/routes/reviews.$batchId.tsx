@@ -1,13 +1,14 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, Link, notFound } from '@tanstack/react-router'
-import { ArrowLeft, ChevronLeft, ChevronRight, FileQuestion, Loader2, MessageCircleQuestion } from 'lucide-react'
-import { useState } from 'react'
+import { ChevronLeft, ChevronRight, FileQuestion, FileText, MessageCircleQuestion } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { z } from 'zod'
 
 import { orNotFound } from '@/api/orNotFound'
 import { batchCasesQuery, bulkQuery, PAGE_SIZE } from '@/api/queries'
 import type { Bulk, CaseSummary } from '@/api/types'
+import { BackButton } from '@/components/BackButton'
 import { Disclaimer } from '@/components/Disclaimer'
 import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
@@ -17,8 +18,10 @@ import { AssistantPanel } from '@/features/assistant/AssistantPanel'
 import { CaseDigestPanel } from '@/features/digest/CaseDigestPanel'
 import { NotAdded } from '@/features/reviews/NotAdded'
 import { reviewTitle } from '@/features/reviews/reviewTitle'
+import { TONE_CLASS, uploadState } from '@/features/reviews/uploadState'
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import { useWideScreen } from '@/hooks/useWideScreen'
-import { assistantCopy, bulkCopy, reviewsCopy } from '@/lib/copy'
+import { assistantCopy, bulkCopy, decisionCopy, reviewsCopy } from '@/lib/copy'
 import { RIGHT_DOCK_ID } from '@/lib/dock'
 import { shortCaseName } from '@/lib/format'
 
@@ -31,10 +34,18 @@ export const Route = createFileRoute('/reviews/$batchId')({
     if (!Number.isInteger(id)) throw notFound()
     await orNotFound(context.queryClient.ensureQueryData(bulkQuery(id)))
   },
-  pendingComponent: () => <Skeleton className="h-96 w-full" aria-busy="true" aria-label="Opening the review" />,
-  errorComponent: ({ error, reset }) => <ErrorState error={error} onRetry={reset} title="The review didn't open" />,
+  pendingComponent: () => <Skeleton className="h-96 w-full" aria-busy="true" aria-label="Opening the upload" />,
+  errorComponent: ({ error, reset }) => <ErrorState error={error} onRetry={reset} title="The upload didn't open" />,
   notFoundComponent: () => (
-    <EmptyState icon={FileQuestion} title="We can't find that review" action={<Link to="/reviews" className="underline">{reviewsCopy.back}</Link>}>
+    <EmptyState
+      icon={FileQuestion}
+      title="We can't find that upload"
+      action={
+        <Link to="/library" search={{ tab: 'uploads' }} className="underline">
+          {reviewsCopy.tabUploads}
+        </Link>
+      }
+    >
       It may have been deleted.
     </EmptyState>
   ),
@@ -72,15 +83,35 @@ function CaseList({ cases, selected, onSelect }: { cases: CaseSummary[]; selecte
 
 function Header({ bulk }: { bulk: Bulk }) {
   const c = bulk.counts
+  const title = reviewTitle(bulk)
+  const state = uploadState(bulk)
   return (
     <header className="mb-6">
-      <Button variant="ghost" size="sm" asChild className="-ml-3 mb-3">
-        <Link to="/reviews">
-          <ArrowLeft data-icon="inline-start" aria-hidden />
-          {reviewsCopy.back}
-        </Link>
-      </Button>
-      <h1 className="font-serif text-2xl leading-tight font-semibold md:text-3xl">{reviewTitle(bulk)}</h1>
+      <BackButton fallback="uploads" />
+      <Breadcrumb className="mb-3">
+        <BreadcrumbList className="text-base">
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/library" search={{ tab: 'cases' }}>
+                {reviewsCopy.crumbLibrary}
+              </Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/library" search={{ tab: 'uploads' }}>
+                {reviewsCopy.tabUploads}
+              </Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem className="min-w-0">
+            <BreadcrumbPage className="truncate">{title}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      <h1 className="font-serif text-2xl leading-tight font-semibold md:text-3xl">{title}</h1>
       <p className="mt-1 text-base text-muted-foreground">{bulk.topic_scope ? reviewsCopy.scope(bulk.topic_scope) : reviewsCopy.noScope}</p>
       {bulk.subjects.length > 0 ? (
         <ul className="mt-2 flex flex-wrap gap-1.5" aria-label="Subject tags">
@@ -91,16 +122,18 @@ function Header({ bulk }: { bulk: Bulk }) {
           ))}
         </ul>
       ) : null}
-      <p role="status" className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-        {!bulk.finished || c.digests_pending > 0 ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
+      <p role="status" className={`mt-3 flex items-center gap-2 text-base font-medium ${TONE_CLASS[state.tone]}`}>
+        <state.icon className={`size-4 shrink-0 ${state.busy ? 'animate-spin' : ''}`} aria-hidden />
+        {state.label}
+      </p>
+      <p className="mt-0.5 text-sm text-muted-foreground">
         {bulkCopy.total(c.total)} · {reviewsCopy.cases(c.found, c.digests_ready)}
-        {!bulk.finished ? ` · ${reviewsCopy.working}` : ''}
       </p>
     </header>
   )
 }
 
-/** One review: the cases of an upload on the left, the selected case's digest (for the upload's topic scope) in the middle,
+/** One upload: its cases on the left, the selected case's digest (for the upload's topic scope) in the middle,
  *  and the AI assistant on the right (docked on a wide screen, a sheet on a smaller one). */
 function ReviewPage() {
   const batchId = Number(Route.useParams().batchId)
@@ -112,6 +145,16 @@ function ReviewPage() {
   const { data: bulk } = useQuery(bulkQuery(batchId))
   const live = bulk ? !bulk.finished || bulk.counts.digests_pending > 0 : true
   const cases = useQuery(batchCasesQuery(batchId, page, live))
+  const queryClient = useQueryClient()
+  const found = bulk?.counts.found
+  const ready = bulk?.counts.digests_ready
+
+  // An upload can finish between two refreshes (a case already in the library, its digest already written): whenever the counts move,
+  // read the list of cases again, so it never stops on an old, empty answer.
+  useEffect(() => {
+    if (found === undefined) return
+    void queryClient.invalidateQueries({ queryKey: ['library', 'batch', batchId] })
+  }, [found, ready, batchId, queryClient])
 
   if (!bulk) return null
   const items = cases.data?.items ?? []
@@ -156,9 +199,11 @@ function ReviewPage() {
           {selected ? (
             <>
               <div className="mb-4 flex flex-wrap items-center gap-2">
-                <Button variant="outline" size="sm" asChild>
+                {/* Individual is for reading the case: its full text comes first. */}
+                <Button variant={bulk.kind === 'individual' ? 'default' : 'outline'} size={bulk.kind === 'individual' ? 'lg' : 'sm'} asChild>
                   <Link to="/cases/$caseId/decision" params={{ caseId: String(selected.id) }}>
-                    {reviewsCopy.fullText}
+                    <FileText data-icon="inline-start" aria-hidden />
+                    {bulk.kind === 'individual' ? decisionCopy.read : reviewsCopy.fullText}
                   </Link>
                 </Button>
                 {!wide ? (

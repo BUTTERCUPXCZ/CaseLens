@@ -10,7 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BulkRouteImport } from './routes/bulk'
 import { Route as GuideRouteImport } from './routes/guide'
+import { Route as IndividualRouteImport } from './routes/individual'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as LookupRouteImport } from './routes/lookup'
 import { Route as SearchRouteImport } from './routes/search'
@@ -27,9 +29,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BulkRoute = BulkRouteImport.update({
+  id: '/bulk',
+  path: '/bulk',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GuideRoute = GuideRouteImport.update({
   id: '/guide',
   path: '/guide',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndividualRoute = IndividualRouteImport.update({
+  id: '/individual',
+  path: '/individual',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LibraryRoute = LibraryRouteImport.update({
@@ -85,7 +97,9 @@ const CasesCaseIdDigestRoute = CasesCaseIdDigestRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/bulk': typeof BulkRoute
   '/guide': typeof GuideRoute
+  '/individual': typeof IndividualRoute
   '/library': typeof LibraryRoute
   '/lookup': typeof LookupRoute
   '/search': typeof SearchRoute
@@ -99,7 +113,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/bulk': typeof BulkRoute
   '/guide': typeof GuideRoute
+  '/individual': typeof IndividualRoute
   '/library': typeof LibraryRoute
   '/lookup': typeof LookupRoute
   '/search': typeof SearchRoute
@@ -114,7 +130,9 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/bulk': typeof BulkRoute
   '/guide': typeof GuideRoute
+  '/individual': typeof IndividualRoute
   '/library': typeof LibraryRoute
   '/lookup': typeof LookupRoute
   '/search': typeof SearchRoute
@@ -130,7 +148,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/bulk'
     | '/guide'
+    | '/individual'
     | '/library'
     | '/lookup'
     | '/search'
@@ -144,7 +164,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/bulk'
     | '/guide'
+    | '/individual'
     | '/library'
     | '/lookup'
     | '/search'
@@ -158,7 +180,9 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/bulk'
     | '/guide'
+    | '/individual'
     | '/library'
     | '/lookup'
     | '/search'
@@ -173,7 +197,9 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BulkRoute: typeof BulkRoute
   GuideRoute: typeof GuideRoute
+  IndividualRoute: typeof IndividualRoute
   LibraryRoute: typeof LibraryRoute
   LookupRoute: typeof LookupRoute
   SearchRoute: typeof SearchRoute
@@ -195,11 +221,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/bulk': {
+      id: '/bulk'
+      path: '/bulk'
+      fullPath: '/bulk'
+      preLoaderRoute: typeof BulkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/guide': {
       id: '/guide'
       path: '/guide'
       fullPath: '/guide'
       preLoaderRoute: typeof GuideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/individual': {
+      id: '/individual'
+      path: '/individual'
+      fullPath: '/individual'
+      preLoaderRoute: typeof IndividualRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/library': {
@@ -277,7 +317,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BulkRoute: BulkRoute,
   GuideRoute: GuideRoute,
+  IndividualRoute: IndividualRoute,
   LibraryRoute: LibraryRoute,
   LookupRoute: LookupRoute,
   SearchRoute: SearchRoute,

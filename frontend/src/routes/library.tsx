@@ -1,25 +1,29 @@
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
-import { ChevronLeft, ChevronRight, Library, SearchX } from 'lucide-react'
+import { ChevronLeft, ChevronRight, FileStack, Library, SearchX } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { z } from 'zod'
 
-import { libraryQuery, PAGE_SIZE, subjectCountsQuery, type SubjectFilter } from '@/api/queries'
+import { libraryQuery, PAGE_SIZE, reviewsQuery, subjectCountsQuery, type SubjectFilter } from '@/api/queries'
+import { GrSearch } from '@/components/GrSearch'
 import { PageHeader } from '@/components/PageHeader'
 import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { UploadList } from '@/features/reviews/UploadList'
 import { LawphilMatches } from '@/features/library/LawphilMatches'
 import { LibraryTable } from '@/features/library/LibraryTable'
 import { SubjectRail } from '@/features/library/SubjectRail'
-import { libraryCopy, uploadCopy } from '@/lib/copy'
+import { individualCopy, libraryCopy, reviewsCopy } from '@/lib/copy'
 
 const searchSchema = z.object({
   q: z.string().optional().catch(undefined),
   subject: z.union([z.literal('none'), z.coerce.number().int()]).optional().catch(undefined),
   page: z.coerce.number().int().min(0).optional().catch(undefined),
-  // old addresses from before "New digest" and "My reviews" existed: sent on to their new place
+  tab: z.enum(['uploads', 'cases']).optional().catch(undefined), // "My uploads" or "All cases"
+  // old addresses from before the Individual and Bulk pages existed: sent on to them
   mode: z.enum(['individual', 'bulk']).optional().catch(undefined),
   batch: z.coerce.number().int().optional().catch(undefined),
 })
@@ -28,15 +32,19 @@ export const Route = createFileRoute('/library')({
   validateSearch: searchSchema,
   beforeLoad: ({ search }) => {
     if (search.batch !== undefined) throw redirect({ to: '/reviews/$batchId', params: { batchId: String(search.batch) } })
-    if (search.mode === 'individual') throw redirect({ to: '/upload', search: { tab: 'search' } })
-    if (search.mode === 'bulk') throw redirect({ to: '/upload', search: {} })
+    if (search.mode === 'individual') throw redirect({ to: '/individual' })
+    if (search.mode === 'bulk') throw redirect({ to: '/bulk' })
   },
   component: LibraryPage,
 })
 
-/** The client's drawing on one page: Individual and Bulk on top, the subject filter on the left, the table of cases on the right. */
+/** The Case library: "My uploads" (what this student uploaded) and "All cases" (the client's drawing: the subject filter on the left, the
+ *  table of cases on the right). */
 function LibraryPage() {
   const search = Route.useSearch()
+  const uploads = useQuery(reviewsQuery(0))
+  // a search or a subject in the address is about cases; otherwise the student's own uploads come first, when there are any
+  const tab = search.tab ?? (search.q || search.subject !== undefined || (uploads.data && uploads.data.length === 0) ? 'cases' : 'uploads')
   const q = search.q ?? ''
   const page = search.page ?? 0
   const subject: SubjectFilter = search.subject
@@ -61,10 +69,34 @@ function LibraryPage() {
     <>
       <PageHeader title={libraryCopy.title} description={libraryCopy.description} />
 
+      <section aria-label={libraryCopy.lawphilSearch} className="mb-8 rounded-lg border border-border bg-card px-4 py-4">
+        <GrSearch />
+        <p className="mt-2 text-sm text-muted-foreground">{libraryCopy.lawphilSearchHelp}</p>
+      </section>
+
+      <Tabs value={tab} onValueChange={(next) => void navigate({ search: (prev) => ({ ...prev, tab: next === 'cases' ? 'cases' : 'uploads' }), replace: true })}>
+        <TabsList className="mb-6">
+          <TabsTrigger value="uploads" className="px-4 text-base">
+            <FileStack aria-hidden /> {reviewsCopy.tabUploads}
+          </TabsTrigger>
+          <TabsTrigger value="cases" className="px-4 text-base">
+            <Library aria-hidden /> {reviewsCopy.tabCases}
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="uploads">
+          <UploadList />
+        </TabsContent>
+
+        <TabsContent value="cases">
       <div className="grid gap-8 md:grid-cols-[14rem_minmax(0,1fr)]">
         <aside>{counts.data ? <SubjectRail counts={counts.data} selected={subject} onSelect={pick} /> : <Skeleton className="h-40 w-full" aria-label="Loading the subjects" />}</aside>
 
         <div className="min-w-0">
+          <div className="mb-5">
+            <h2 className="text-xl font-semibold">{libraryCopy.savedTitle}</h2>
+            <p className="mt-1 max-w-prose text-base text-muted-foreground">{libraryCopy.savedNote}</p>
+          </div>
           <div className="mb-6 max-w-md">
             <label htmlFor="library-search" className="mb-1.5 block text-sm font-medium">
               {libraryCopy.searchLabel}
@@ -81,7 +113,7 @@ function LibraryPage() {
           ) : error ? (
             <ErrorState error={error} onRetry={() => void refetch()} title="The library didn't load" />
           ) : data.total === 0 && q === '' ? (
-            <EmptyState icon={Library} title={subject === undefined ? libraryCopy.emptyTitle : libraryCopy.emptySubject} action={<Button asChild><Link to="/upload">{uploadCopy.title}</Link></Button>}>
+            <EmptyState icon={Library} title={subject === undefined ? libraryCopy.emptyTitle : libraryCopy.emptySubject} action={<Button asChild><Link to="/individual">{individualCopy.title}</Link></Button>}>
               {libraryCopy.emptyBody}
             </EmptyState>
           ) : data.total === 0 ? (
@@ -109,6 +141,8 @@ function LibraryPage() {
           {q.trim().length >= 2 && subject === undefined ? <LawphilMatches q={q} /> : null}
         </div>
       </div>
+        </TabsContent>
+      </Tabs>
     </>
   )
 }

@@ -1,6 +1,8 @@
 import { Link, useNavigate } from '@tanstack/react-router'
+import { BookOpenText } from 'lucide-react'
 
 import type { CaseSummary } from '@/api/types'
+import { Button } from '@/components/ui/button'
 import { libraryCopy } from '@/lib/copy'
 import { formatDate, justiceName, shortCaseName } from '@/lib/format'
 
@@ -57,10 +59,13 @@ export function LibraryTable({ cases, caption = 'Saved cases, newest decision fi
               </td>
               <td className="md:py-4 md:align-top">
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                  <Link to="/cases/$caseId/digest" params={{ caseId: String(item.id) }} className="text-primary underline-offset-4 hover:underline">
-                    {libraryCopy.caseDigest}{' '}
-                    <span className="sr-only">of {name}</span>
-                  </Link>
+                  <Button asChild size="sm">
+                    <Link to="/cases/$caseId/digest" params={{ caseId: String(item.id) }}>
+                      <BookOpenText data-icon="inline-start" aria-hidden />
+                      {libraryCopy.readDigest}{' '}
+                      <span className="sr-only">of {name}</span>
+                    </Link>
+                  </Button>
                   <Link to="/cases/$caseId/decision" params={{ caseId: String(item.id) }} className="text-primary underline-offset-4 hover:underline">
                     {libraryCopy.fullText}{' '}
                     <span className="sr-only">of {name}</span>

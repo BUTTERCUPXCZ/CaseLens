@@ -352,7 +352,7 @@ class Services:
         return ResolveBulkItem(self._bulk, self.fetch_case_by_gr_number(), self._cases, self.request_case_digest_v2(), self._uow)
 
     def get_bulk_batch(self) -> GetBulkBatch:
-        return GetBulkBatch(self._bulk)
+        return GetBulkBatch(self._bulk, self._cases)
 
     def retry_bulk_batch(self) -> RetryBulkBatch:
         return RetryBulkBatch(self._bulk, self._job_queue(), self._uow)

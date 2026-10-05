@@ -8,6 +8,7 @@ import { MAX_SEARCH_POLLS, searchQuery } from '@/api/queries'
 import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { BackButton } from '@/components/BackButton'
 import { PageHeader } from '@/components/PageHeader'
 import { isValidYear } from '@/features/search/grNumber'
 import { PasteLink } from '@/features/search/PasteLink'
@@ -44,6 +45,7 @@ function Search() {
     }
     return (
       <>
+        <BackButton />
         <PageHeader title={`G.R. No. ${grNo}`} description="We have more than one document for this number. Pick the one you want." />
         <ul className="divide-y divide-border border-y border-border">
           {data.cases.map((found) => (
@@ -90,6 +92,7 @@ function NeedsYear({ grNo }: { grNo: string }) {
 
   return (
     <div className="max-w-xl">
+      <BackButton />
       <PageHeader
         title={`We need the year for G.R. No. ${grNo}`}
         description="We don't have this case saved yet. Lawphil lists cases by the month they were decided, so we need to know roughly when. A year that's one or two off still works."
@@ -141,6 +144,7 @@ function NeedsYear({ grNo }: { grNo: string }) {
 function GaveUp({ grNo, year }: { grNo: string; year: number | undefined }) {
   return (
     <div className="max-w-xl">
+      <BackButton />
       <PageHeader
         title={`We couldn't find G.R. No. ${grNo}${year ? ` near ${year}` : ''}`}
         description="Check the number and the year. If you have the case's own Lawphil link, paste it below and we'll save the case from there."

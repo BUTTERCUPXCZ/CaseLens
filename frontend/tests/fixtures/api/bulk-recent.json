@@ -22,6 +22,9 @@
       }
     ],
     "topic_scope": "",
-    "labels": []
+    "labels": [],
+    "kind": "bulk",
+    "cases": [],
+    "case_total": 0
   }
 ]

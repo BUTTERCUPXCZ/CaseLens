@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, notFound } from '@tanstack/react-router'
-import { ArrowLeft, Download, ExternalLink, FileQuestion } from 'lucide-react'
+import { Download, ExternalLink, FileQuestion } from 'lucide-react'
 
 import { orNotFound } from '@/api/orNotFound'
 import { caseDownloadUrl } from '@/api/endpoints'
 import { caseQuery } from '@/api/queries'
 import { Disclaimer } from '@/components/Disclaimer'
 import { EmptyState, ErrorState } from '@/components/States'
+import { BackToCase } from '@/components/BackToCase'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { OfficialText } from '@/features/cases/OfficialText'
@@ -43,12 +44,7 @@ function DecisionPage() {
   return (
     <>
       <header className="mb-8">
-        <Button variant="ghost" size="sm" asChild className="-ml-3 mb-3">
-          <Link to="/cases/$caseId" params={{ caseId: String(caseId) }}>
-            <ArrowLeft data-icon="inline-start" aria-hidden />
-            {decisionCopy.back}
-          </Link>
-        </Button>
+        <BackToCase caseId={caseId} label={decisionCopy.back} />
         <h1 className="font-serif text-2xl leading-tight font-semibold md:text-3xl">{shortCaseName(detail.title)}</h1>
         <p className="tabular mt-3 text-base text-muted-foreground">{`G.R. No. ${detail.gr_no}`}</p>
         <div className="mt-4 flex flex-wrap gap-3">

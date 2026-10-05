@@ -162,10 +162,17 @@ export const guideCopy = {
   libraryTitle: 'From upload to digest',
   librarySteps: [
     {
-      title: 'Upload the decisions (New digest)',
+      title: 'One case: Individual',
       body: [
-        'Open “New digest”. Drop one or more decision files (PDF or Word), or press “Have G.R. numbers instead?” and type the numbers. Each file or number is one case. The cases a decision only mentions are not added, and a case you give twice is shown once.',
-        'To find a case first, use the “Search cases” tab and press “Generate digest” on the one you want.',
+        'Open “Individual”. Find the case on Lawphil by its name or G.R. number and press “Choose”, or upload its file (a decision, or your reviewer with one case).',
+        'Say what subject it is, then press “Open the case”. You can read the full decision right away; its digest is written in a few minutes.',
+      ],
+    },
+    {
+      title: 'Many cases: Bulk',
+      body: [
+        'Open “Bulk”. Drop the decision files (PDF or Word), or press “Have G.R. numbers instead?” and type the numbers. Each file or number is one case. The cases a decision only mentions are not added, and a case you give twice is shown once.',
+        'Say what subject they are, then press “Generate case digests”.',
       ],
     },
     {
@@ -176,24 +183,24 @@ export const guideCopy = {
       ],
     },
     {
-      title: 'Read it in My reviews',
+      title: 'Find it in the Case library, under My uploads',
       body: [
-        'Press “Generate Case Digest”. You go straight to the review: your cases on the left, the digest of the one you choose in the middle. Each digest takes about 3 to 5 minutes; you can leave the page.',
+        'After “Open the case” or “Generate case digests” you go straight to your upload: its cases on the left, the digest of the one you choose in the middle. Each digest takes about 3 to 5 minutes; you can leave the page.',
         'The digest follows the format your professor asks for: Doctrine, Facts, Issue, Ruling, Ratio Decidendi, the dissents, the topic explained and why the case matters. Every part says which paragraphs of the decision it rests on, and anything the checks could not back was left out. It is a draft: read it against the Court’s text.',
-        'To change a part, press “Edit” beside its title, type, and press “Save”. Your text is kept in this review only and goes into your Word download; “Put back the AI version” undoes it.',
+        'To change a part, press “Edit” beside its title, type, and press “Save”. Your text is kept in this upload only and goes into your Word download; “Put back the AI version” undoes it.',
       ],
     },
     {
       title: 'Ask the AI assistant',
       body: [
-        'On the right of the review, ask anything about the case you are reading. The answer is written from the decision and every sentence is checked against it. If the decision does not say enough, it tells you so instead of guessing. On a phone, press “Ask the AI assistant”.',
+        'On the right of your upload’s page, ask anything about the case you are reading. The answer is written from the decision and every sentence is checked against it. If the decision does not say enough, it tells you so instead of guessing. On a phone, press “Ask the AI assistant”.',
       ],
     },
     {
       title: 'Download it',
       body: [
         'Use the buttons on the digest. Pick “Facts and Doctrine”, “Doctrine, Facts, Issue, Ruling” (1 to 2 pages) or the “Full case digest” (about 6 pages). The full text of the decision is a Word file too.',
-        'Every case you uploaded is also in the Case library, filed under its tags.',
+        'Every case you uploaded is also under “All cases” in the Case library, filed under its tags.',
       ],
     },
   ] satisfies GuideStep[],
@@ -209,7 +216,7 @@ export const guideCopy = {
     {
       title: 'Find any case',
       body: [
-        'Type a case name or a G.R. number in the box at the top of any page. Cases from 1987 onward are in the list. For an older case, add the year or paste its Lawphil link.',
+        'In the Case library, type a case name or a G.R. number in “Find a case by name or G.R. number”. Cases from 1987 onward are in the list. For an older case, add the year or paste its Lawphil link.',
         'Cases you open are kept in the Case library, with their footnotes, the ruling, and the laws and cases they cite.',
       ],
     },
@@ -241,7 +248,7 @@ export const guideCopy = {
 /** The short card new visitors see once on the start page. */
 export const welcomeCopy = {
   title: 'New here? It takes four steps',
-  steps: ['Upload the decisions, or find a case', 'Choose its Subject Tags and, if you like, a Topic scope', 'Read the digest in My reviews and ask the AI assistant', 'Download it as a Word file'],
+  steps: ['Open one case in Individual, or many in Bulk', 'Say what subject it is and, if you like, a Topic scope', 'Find it in the Case library, under My uploads, and ask the AI assistant', 'Download it as a Word file'],
   guide: 'Read the full guide',
   dismiss: 'Got it',
   dismissLabel: 'Close this welcome card',
@@ -267,7 +274,7 @@ export const caseDownloadCopy = {
 /** The Case library: the client's drawing (subject rail, three columns, download options) and the Individual and Bulk entries above it. */
 export const libraryCopy = {
   title: 'Case library',
-  description: 'Every case you saved, filed by subject. Open its digest or its full text, or download it.',
+  description: 'Your uploads, and every case saved, filed by subject. Read a digest, open the full decision, or download it as Word.',
   modeIndividual: 'Individual',
   modeBulk: 'Bulk',
   individualHelp: 'Look up one case by its name or G.R. number. You get the full text, and you say what subject it is.',
@@ -282,6 +289,7 @@ export const libraryCopy = {
   columnNumber: 'G.R. No., date and ponente',
   columnActions: 'View / Download',
   caseDigest: 'Case digest',
+  readDigest: 'Read the digest',
   digestWriting: 'Digest being written…',
   lawphilTitle: 'Also on Lawphil, not saved yet',
   lawphilHelp: 'These decisions are on Lawphil’s list but not in your library yet. Press “Open this case” to save one.',
@@ -300,11 +308,15 @@ export const libraryCopy = {
   optionFullTextHint: 'Word',
   menuNeedsDigest: 'Write the digest first, then download it.',
   emptyTitle: 'Your library is empty',
-  emptyBody: 'Cases are saved here when you upload a decision or pick one in “New digest”.',
+  emptyBody: 'Cases are saved here when you open one in “Individual” or upload many in “Bulk”.',
   emptySubject: 'No case is filed under this subject yet.',
   noMatch: (q: string) => `No saved case matches “${q}”`,
-  searchLabel: 'Search your saved cases',
-  searchPlaceholder: 'Part of the case name, or a G.R. number',
+  searchLabel: 'Filter your saved cases',
+  savedTitle: 'Saved cases',
+  savedNote: 'Only the cases already saved in CaseLens are listed here. To find any other decision, use “Find any decision on Lawphil” above.',
+  lawphilSearch: 'Find any decision on Lawphil',
+  lawphilSearchHelp: 'Finds every decision on Lawphil’s list, saved or not. Open one to save it to your library.',
+  searchPlaceholder: 'Case name or G.R. number',
   ponente: (name: string) => `${name}, J.`,
   subjectLabel: 'Subject tags',
   subjectChanged: 'Tags saved.',
@@ -312,7 +324,43 @@ export const libraryCopy = {
   noTags: 'No subject yet',
 }
 
-/** "New digest": the client's upload screen (Upload file | Search cases), with Subject Tags and Topic scope. */
+/** "Individual": one case, opened for its full text (the first line of the client's sketch). */
+export const individualCopy = {
+  title: 'Individual',
+  description: 'One case: find it or upload it, say what subject it is, and open its full text. Its digest is written for you too.',
+  step1: '1. Which case?',
+  step2: '2. What subject?',
+  findTab: 'Find it on Lawphil',
+  fileTab: 'Upload the file',
+  choose: 'Choose',
+  chosen: 'Chosen',
+  chooseLabel: (title: string) => `Choose ${title}`,
+  picked: (title: string) => `Your case: ${title}`,
+  change: 'Choose another',
+  fileHelp: 'One decision (PDF or Word), or your reviewer with one case in it. Up to 5 MB.',
+  fileButton: 'Choose the file',
+  fileLabel: 'The case file (PDF or Word)',
+  open: 'Open the case',
+  opening: 'Opening…',
+  needCase: 'Choose a case first: find it on Lawphil, or upload its file.',
+  timeNote: 'You can read the full decision right away. The case digest takes about 3 to 5 minutes.',
+}
+
+/** "Bulk": many cases at once (the second line of the client's sketch). */
+export const bulkPageCopy = {
+  title: 'Bulk',
+  description: 'Many cases at once: upload the decisions or your reviewer, or type the G.R. numbers, and say what subject they are.',
+  generate: 'Generate case digests',
+}
+
+/** Moving around the app. */
+export const navCopy = {
+  back: 'Back',
+  toLibrary: 'Back to the Case library',
+  toUploads: 'Back to My uploads',
+}
+
+/** The pieces of the Individual and Bulk forms: the file drop, the Subject Tags and the Topic scope. */
 export const uploadCopy = {
   title: 'New digest',
   description: 'Upload decisions or find a case, tag its subject, and get a case digest.',
@@ -330,6 +378,7 @@ export const uploadCopy = {
   tagsLabel: 'Subject Tags (optional)',
   tagsCount: (n: number) => (n === 0 ? 'No subject selected' : n === 1 ? '1 subject selected' : `${n} subjects selected`),
   tagsHelp: 'Tags file the case in your library. They apply to every case in this upload. You can change them later on the case page.',
+  tagsHelpCase: 'Tags file this case in your library. Press a subject to add it, press it again to remove it. It is saved at once.',
   scopeLabel: 'Topic scope',
   scopeHint: 'optional, narrows the digest to one doctrine or issue',
   scopeExample: 'Family Code under Conjugal Partnership of Gains',
@@ -340,34 +389,43 @@ export const uploadCopy = {
   starting: 'Starting…',
   nothing: 'Add a file, or a G.R. number, first.',
   timeNote: 'We write a case digest of each case from the Court’s own decision. It takes about 3 to 5 minutes per case. You can leave the page.',
-  failedToStart: 'We could not send all the files. The ones already sent are being worked on: see My reviews.',
+  failedToStart: 'We could not send all the files. The ones already sent are being worked on: see My uploads in the Case library.',
   searchHelp: 'Find the case on Lawphil’s list, then press “Generate digest”. The tags and topic scope below apply to it.',
   generateOne: 'Generate digest',
   generating: 'Starting…',
 }
 
-/** "My reviews": every upload, and one upload's cases with their digests and the AI assistant. */
+/** "My uploads" (in the Case library): every upload, and one upload's cases with their digests and the AI assistant. */
 export const reviewsCopy = {
-  title: 'My reviews',
-  description: 'Every upload, newest first. Open one to read its case digests and ask the AI assistant about a case.',
-  emptyTitle: 'No reviews yet',
-  emptyBody: 'Upload a decision in “New digest” and it appears here.',
-  newDigest: 'New digest',
+  title: 'My uploads',
+  tabUploads: 'My uploads',
+  tabCases: 'All cases',
+  description: 'What you uploaded, newest first. Open one to read its digests, edit them, and ask the AI assistant.',
+  emptyTitle: 'Nothing uploaded yet',
+  emptyBody: 'Open one case in “Individual”, or many at once in “Bulk”. Each upload appears here, and its cases go into the library.',
+  kind: { individual: 'Individual', bulk: 'Bulk' } as Record<string, string>,
   open: 'Open',
   delete: (name: string) => `Delete ${name}`,
-  deleteTitle: 'Delete this review?',
-  deleteBody: 'The review and the questions you asked in it will be removed. The cases and their digests stay in the Case library.',
+  deleteTitle: 'Delete this upload?',
+  deleteBody: 'The upload, your edits and the questions you asked in it will be removed. The cases and their digests stay in the Case library.',
   deleteConfirm: 'Delete',
   deleting: 'Deleting…',
   keep: 'Keep it',
   untitled: 'Upload',
   andMore: (n: number) => ` and ${n} more`,
+  casesIn: (title: string) => `Cases in ${title}`,
+  moreCases: (n: number) => (n === 1 ? 'and 1 more case' : `and ${n} more cases`),
+  uploaded: (what: string) => `Uploaded: ${what}`,
   scope: (text: string) => `Topic scope: ${text}`,
   noScope: 'Standard digest',
   cases: (found: number, ready: number) => `${found === 1 ? '1 case' : `${found} cases`} · ${ready} ${ready === 1 ? 'digest' : 'digests'} ready`,
-  working: 'Working on it…',
-  back: 'All reviews',
-  casesTitle: 'Cases in this review',
+  stateGetting: 'Getting the cases…',
+  stateWriting: (ready: number, found: number) => `Writing the digests (${ready} of ${found} ready)…`,
+  stateReady: 'Ready',
+  stateNotAdded: (n: number) => (n === 1 ? '1 item could not be added' : `${n} items could not be added`),
+  stateNothing: 'No case was found',
+  crumbLibrary: 'Case library',
+  casesTitle: 'Cases in this upload',
   pickCase: 'Choose a case to read its digest.',
   waitingFirst: 'Your cases will appear here as each one is found.',
   nothingAdded: 'No case was added from this upload.',
@@ -376,7 +434,7 @@ export const reviewsCopy = {
   page: (first: number, last: number, total: number) => `${first}–${last} of ${total}`,
 }
 
-/** The AI assistant panel on the right of a review. */
+/** The AI assistant panel on the right of an upload's page. */
 export const assistantCopy = {
   title: 'AI assistant',
   open: 'Ask the AI assistant',
@@ -406,7 +464,7 @@ export const digestPageCopy = {
   cancel: 'Cancel',
   putBack: 'Put back the AI version',
   editedByYou: 'Edited by you',
-  editHelp: 'Your text is kept in this review only. A blank line starts a new paragraph, a line starting “- ” is a bullet point, a line starting “# ” is a subheading.',
+  editHelp: 'Your text is kept in this upload only. A blank line starts a new paragraph, a line starting “- ” is a bullet point, a line starting “# ” is a subheading.',
   editLabel: (title: string) => `Your text for ${title}`,
   saveFailed: 'We could not save your text. Try again.',
   pageTitle: 'Case digest',

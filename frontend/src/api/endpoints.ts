@@ -74,7 +74,8 @@ export const caseDownloadUrl = (caseId: number) => `/api/cases/${caseId}/documen
 
 // -- bulk upload ----------------------------------------------------------------
 
-export const startBulk = (text: string, subjectIds: number[], topicScope: string) => postJson<Bulk>('/bulk', { text, subject_ids: subjectIds, topic_scope: topicScope })
+export const startBulk = (text: string, subjectIds: number[], topicScope: string, kind: 'individual' | 'bulk' = 'bulk') =>
+  postJson<Bulk>('/bulk', { text, subject_ids: subjectIds, topic_scope: topicScope, kind })
 /** Decision files, a few at a time (the web host limits one request to about 4 MB). */
 export function addBulkFiles(batchId: number, files: File[]): Promise<BulkItems> {
   const form = new FormData()

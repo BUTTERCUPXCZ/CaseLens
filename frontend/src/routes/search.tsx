@@ -1,6 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
 
+import { BackButton } from '@/components/BackButton'
+import { GrSearch } from '@/components/GrSearch'
 import { PageHeader } from '@/components/PageHeader'
 import { EmptyState } from '@/components/States'
 import { SearchResults } from '@/features/search/SearchResults'
@@ -24,15 +26,26 @@ function Search() {
   const { q = '', year, page = 0 } = Route.useSearch()
   const navigate = Route.useNavigate()
 
+  const top = (
+    <div className="mb-8">
+      <BackButton />
+      <GrSearch key={`${q}|${year ?? ''}`} initialQ={q} initialYear={year} />
+    </div>
+  )
+
   if (q.trim() === '') {
     return (
+      <>
+      {top}
       <EmptyState icon={SearchX} title={searchCopy.needSomething}>
         Searching covers every decision on Lawphil's list from 1987 on.
       </EmptyState>
+      </>
     )
   }
   return (
     <>
+      {top}
       <PageHeader
         title={`Search: ${q}`}
         description="Decisions from Lawphil's own list. Open one to save the full case, with its footnotes, to your library."

@@ -93,7 +93,7 @@ Law needs **accuracy**. That is why the design has three rules:
 
 ## 2. Main features
 
-> **Check a reviewer** and **My reviews** were removed from the app (the client does not need them). The backend routes for uploads and the old digests still exist but no page uses them; Flows B to D below describe that older path.
+> The menu is **New digest · Case library · How to use it**. The Case library has two tabs: **My uploads** (each upload, newest first, its state in plain words, Open, Delete) and **All cases** (the subject filter and the table of saved cases). An upload opens on its own page (`/reviews/{id}`, breadcrumb Case library › My uploads › file): its cases, the digest with section editing, and the AI assistant. The old **Check a reviewer** flow was removed; its backend routes still exist but no page uses them (Flows B to D below describe that older path). `/reviews` redirects to `/library?tab=uploads`.
 
 | Feature | What it does |
 |---|---|

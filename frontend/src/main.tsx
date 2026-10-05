@@ -42,6 +42,9 @@ declare module '@tanstack/react-router' {
   interface Register {
     router: typeof router
   }
+  interface HistoryState {
+    fromCase?: number // set when the student opens a case's decision or digest from its page: "Back to the case" then steps back
+  }
 }
 
 createRoot(document.getElementById('root')!).render(

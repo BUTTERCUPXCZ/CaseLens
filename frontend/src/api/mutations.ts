@@ -71,8 +71,15 @@ export function useRequestCaseDigest(caseId: number, scope = '', batchId: number
 export function useStartBulk() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (input: { text: string; subjectIds: number[]; topicScope: string; files: File[]; onProgress?: (sent: number, total: number) => void }) => {
-      const batch = await startBulk(input.text, input.subjectIds, input.topicScope)
+    mutationFn: async (input: {
+      text: string
+      subjectIds: number[]
+      topicScope: string
+      files: File[]
+      kind?: 'individual' | 'bulk'
+      onProgress?: (sent: number, total: number) => void
+    }) => {
+      const batch = await startBulk(input.text, input.subjectIds, input.topicScope, input.kind ?? 'bulk')
       let sent = 0
       for (const group of chunkFiles(input.files)) {
         await addBulkFiles(batch.id, group)
@@ -111,7 +118,7 @@ export function useAskAboutCase(caseId: number, batchId: number | null) {
   })
 }
 
-/** Remove an upload from "My reviews" (its cases and digests stay in the library). */
+/** Remove an upload from "My uploads" (its cases and digests stay in the library). */
 export function useDeleteReview() {
   const queryClient = useQueryClient()
   return useMutation({

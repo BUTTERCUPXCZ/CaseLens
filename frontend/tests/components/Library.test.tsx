@@ -37,7 +37,7 @@ describe('the table of the drawing (Case | G.R. No., date and ponente | View / D
   it('links View to the case digest and to the full text, by case, with the case named for a screen reader', async () => {
     await renderApp(<LibraryTable cases={cases} />)
     const row = screen.getByRole('link', { name: 'Aquilino Pimentel III et al.' }).closest('tr')!
-    expect(within(row).getByRole('link', { name: /Case digest of Aquilino Pimentel III et al\./ })).toHaveAttribute('href', '/cases/7/digest')
+    expect(within(row).getByRole('link', { name: /Read the digest of Aquilino Pimentel III et al\./ })).toHaveAttribute('href', '/cases/7/digest')
     expect(within(row).getByRole('link', { name: /Full text of Aquilino Pimentel III et al\./ })).toHaveAttribute('href', '/cases/7/decision')
   })
 

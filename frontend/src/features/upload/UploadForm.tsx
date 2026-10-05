@@ -5,7 +5,7 @@ import { type FileRejection, useDropzone } from 'react-dropzone'
 import { useStartBulk } from '@/api/mutations'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { friendlyError, upload, uploadCopy } from '@/lib/copy'
+import { bulkPageCopy, friendlyError, individualCopy, upload, uploadCopy } from '@/lib/copy'
 
 import { SubjectTags } from './SubjectTags'
 import { TopicScope } from './TopicScope'
@@ -54,13 +54,13 @@ export function UploadForm({ onStarted }: { onStarted: (batchId: number) => void
     if (nothing) return setProblem(uploadCopy.nothing)
     setProblem(null)
     start.mutate(
-      { text: numbers, subjectIds: tags, topicScope: scope.trim(), files, onProgress: (sent, total) => setProgress({ sent, total }) },
+      { kind: 'bulk', text: numbers, subjectIds: tags, topicScope: scope.trim(), files, onProgress: (sent, total) => setProgress({ sent, total }) },
       { onSuccess: (batch) => onStarted(batch.id) },
     )
   }
 
   return (
-    <form onSubmit={submit} className="space-y-6" aria-label={uploadCopy.tabUpload}>
+    <form onSubmit={submit} className="space-y-6" aria-label={bulkPageCopy.title}>
       <div
         {...getRootProps()}
         className={[
@@ -117,15 +117,18 @@ export function UploadForm({ onStarted }: { onStarted: (batchId: number) => void
         )}
       </div>
 
-      <div className="space-y-6 rounded-xl border border-border bg-card px-5 py-5">
+      <section aria-labelledby="bulk-subject" className="space-y-6 rounded-xl border border-border bg-card px-5 py-5">
+        <h2 id="bulk-subject" className="text-xl font-semibold">
+          {individualCopy.step2.replace(/^2\. /, '')}
+        </h2>
         <SubjectTags value={tags} onChange={setTags} disabled={busy} />
         <TopicScope value={scope} onChange={setScope} disabled={busy} />
-      </div>
+      </section>
 
       <div>
         <Button type="submit" size="lg" className="w-full" disabled={busy}>
           {busy ? <Loader2 data-icon="inline-start" className="animate-spin" aria-hidden /> : <FileText data-icon="inline-start" aria-hidden />}
-          {busy ? uploadCopy.starting : uploadCopy.generate}
+          {busy ? uploadCopy.starting : bulkPageCopy.generate}
         </Button>
         <p className="mt-3 text-center text-sm text-muted-foreground">{uploadCopy.timeNote}</p>
         <div aria-live="polite" className="min-h-6 pt-1 text-center">

@@ -18,30 +18,31 @@ describe('the guide steps', () => {
 })
 
 describe('the guide steps for the case library', () => {
-  it('walks through the screens in order: upload, label, read in My reviews, ask, download', async () => {
+  it('walks through the screens in order: Individual, Bulk, label, find it under My uploads, ask, download', async () => {
     await renderApp(<GuideSteps steps={guideCopy.librarySteps} />)
     expect(screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent?.replace(/^Step \d+: /, ''))).toEqual([
-      'Upload the decisions (New digest)',
+      'One case: Individual',
+      'Many cases: Bulk',
       'Label it: Subject Tags and Topic scope',
-      'Read it in My reviews',
+      'Find it in the Case library, under My uploads',
       'Ask the AI assistant',
       'Download it',
     ])
   })
 
   it('says the student labels the case and the app never guesses a subject', () => {
-    expect(guideCopy.librarySteps[1]!.body.join(' ')).toContain('the app never guesses a subject')
+    expect(guideCopy.librarySteps[2]!.body.join(' ')).toContain('the app never guesses a subject')
   })
 
   it('says what an upload promises: one case per file, repeats once, cited cases not added', () => {
-    const bulk = guideCopy.librarySteps[0]!.body.join(' ')
+    const bulk = guideCopy.librarySteps[1]!.body.join(' ')
     expect(bulk).toContain('Each file or number is one case')
     expect(bulk).toContain('shown once')
     expect(bulk).toContain('only mentions are not added')
   })
 
   it('names the three download options of the drawing', () => {
-    const download = guideCopy.librarySteps[4]!.body.join(' ')
+    const download = guideCopy.librarySteps[5]!.body.join(' ')
     for (const option of ['Facts and Doctrine', 'Doctrine, Facts, Issue, Ruling', 'Full case digest']) expect(download).toContain(option)
   })
 })

@@ -916,6 +916,13 @@ export interface components {
             /** Ready */
             ready: boolean;
         };
+        /** BulkCaseNameOut */
+        BulkCaseNameOut: {
+            /** Name */
+            name: string;
+            /** Gr No */
+            gr_no: string;
+        };
         /** BulkCaseOut */
         BulkCaseOut: {
             /** Id */
@@ -993,8 +1000,17 @@ export interface components {
             subjects: components["schemas"]["SubjectOut"][];
             /** Topic Scope */
             topic_scope: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "individual" | "bulk";
             /** Labels */
             labels: string[];
+            /** Cases */
+            cases: components["schemas"]["BulkCaseNameOut"][];
+            /** Case Total */
+            case_total: number;
             counts: components["schemas"]["BulkCountsOut"];
             /** Finished */
             finished: boolean;
@@ -1013,6 +1029,12 @@ export interface components {
              * @default
              */
             topic_scope: string;
+            /**
+             * Kind
+             * @default bulk
+             * @enum {string}
+             */
+            kind: "individual" | "bulk";
         };
         /** CaseDetailOut */
         CaseDetailOut: {

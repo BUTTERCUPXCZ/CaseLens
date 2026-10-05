@@ -155,7 +155,7 @@ export const batchCasesQuery = (id: number, page: number, live: boolean) =>
     placeholderData: (previous) => previous,
   })
 
-/** "My reviews": the uploads, newest first, a page at a time. Asked again while any is still being worked on. */
+/** "My uploads": the uploads, newest first, a page at a time. Asked again while any is still being worked on. */
 export const REVIEWS_PAGE_SIZE = 20
 export const reviewsQuery = (page: number) =>
   queryOptions({

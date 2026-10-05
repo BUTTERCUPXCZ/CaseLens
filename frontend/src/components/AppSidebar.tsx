@@ -1,7 +1,7 @@
 import { Link, useRouterState } from '@tanstack/react-router'
-import { BookOpen, FilePlus2, FileStack, Library, Scale } from 'lucide-react'
+import { BookOpen, FileSearch, Layers, Library, Scale } from 'lucide-react'
 
-import { guideCopy, libraryCopy, reviewsCopy, uploadCopy } from '@/lib/copy'
+import { bulkPageCopy, guideCopy, individualCopy, libraryCopy } from '@/lib/copy'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import {
   Sidebar,
@@ -16,9 +16,9 @@ import {
 } from '@/components/ui/sidebar'
 
 const NAV = [
-  { to: '/upload', label: uploadCopy.title, icon: FilePlus2, matches: (path: string) => path.startsWith('/upload') },
-  { to: '/reviews', label: reviewsCopy.title, icon: FileStack, matches: (path: string) => path.startsWith('/reviews') },
-  { to: '/library', label: libraryCopy.title, icon: Library, matches: (path: string) => path === '/library' || path.startsWith('/cases') || path.startsWith('/search') },
+  { to: '/individual', label: individualCopy.title, icon: FileSearch, matches: (path: string) => path.startsWith('/individual') },
+  { to: '/bulk', label: bulkPageCopy.title, icon: Layers, matches: (path: string) => path.startsWith('/bulk') },
+  { to: '/library', label: libraryCopy.title, icon: Library, matches: (path: string) => path === '/library' || path.startsWith('/cases') || path.startsWith('/search') || path.startsWith('/reviews') },
   { to: '/guide', label: guideCopy.navLabel, icon: BookOpen, matches: (path: string) => path.startsWith('/guide') },
 ] as const
 

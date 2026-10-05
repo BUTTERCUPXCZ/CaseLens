@@ -36,10 +36,14 @@ class BulkItem:
     reporter: str | None = None  # the reporter citation the file printed ("177 SCRA 668"), shown on the digest's citation line
 
 
+UPLOAD_KINDS = ("individual", "bulk")
+
+
 @dataclass
 class BulkBatch:
     subject_ids: tuple[int, ...] = ()  # the tags chosen once for the whole upload (may be none)
     topic_scope: str = ""  # narrows every digest of this upload to one doctrine or issue ("" = the standard digest)
+    kind: str = "bulk"  # "individual": one case, opened for its full text; "bulk": many cases
     id: int | None = None
     created_at: datetime | None = None
     items: list[BulkItem] = field(default_factory=list)

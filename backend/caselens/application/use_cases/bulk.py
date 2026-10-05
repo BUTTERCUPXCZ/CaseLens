@@ -7,8 +7,9 @@ from caselens.application.ports.gateways import JobQueue, UploadedFileReader
 from caselens.application.ports.repositories import CaseRepository, SubjectRepository, UnitOfWork
 from caselens.application.use_cases.case_digest_v2 import RequestCaseDigestV2
 from caselens.application.use_cases.fetch_case_by_gr_number import FetchCaseByGrNumber
-from caselens.domain.bulk import BulkBatch, BulkCounts, BulkItem, ItemKind, ItemStatus
+from caselens.domain.bulk import UPLOAD_KINDS, BulkBatch, BulkCounts, BulkItem, ItemKind, ItemStatus
 from caselens.domain.errors import CaseNotFoundError, CaseParseError, DomainError, SourceUnavailableError
+from caselens.domain.services.case_names import short_case_name
 from caselens.domain.services.gr_list_parser import GrListParser
 from caselens.domain.services.main_case_identifier import MainCaseIdentifier, ReviewerCaseFinder
 from caselens.domain.digest_v2 import clean_scope
@@ -23,6 +24,7 @@ _NO_CASE_IN_FILE = (
     "We could not find a case in this file: no G.R. number at the top of a decision, and no case under a “Digest” heading "
     "(like “Digest 1: Facts and Doctrine” followed by “Review Center v Ermita, 538 SCRA 428, GR no 180046”)."
 )
+_ONE_CASE = "Individual is for one case. This has more than one: use Bulk for several cases."
 _LAWPHIL_DOWN = "Lawphil did not answer, or its page could not be read. Press Retry to try again."
 
 
@@ -40,6 +42,8 @@ class BulkView:
     batch: BulkBatch
     counts: BulkCounts
     labels: tuple[str, ...] = ()  # the first few files or numbers given, to name the upload in a list
+    cases: tuple[tuple[str, str], ...] = ()  # the first few main cases it gave: (case name, G.R. number)
+    case_total: int = 0  # how many main cases it gave in all
 
 
 class StartBulkBatch:
@@ -52,7 +56,9 @@ class StartBulkBatch:
         self._jobs = jobs
         self._uow = uow
 
-    def execute(self, text: str, subject_ids: Sequence[int] = (), topic_scope: str = "") -> BulkBatch:
+    def execute(self, text: str, subject_ids: Sequence[int] = (), topic_scope: str = "", kind: str = "bulk") -> BulkBatch:
+        if kind not in UPLOAD_KINDS:
+            raise DomainError(f"Unknown kind of upload: {kind}.")
         tags = tuple(dict.fromkeys(subject_ids))
         for subject_id in tags:
             if self._subjects.get(subject_id) is None:
@@ -63,7 +69,9 @@ class StartBulkBatch:
             else BulkItem(0, 0, ItemKind.GR_NUMBER, entry.raw, None, None, ItemStatus.UNREADABLE, _NOT_A_NUMBER)
             for entry in self._parser.parse(text)
         ]
-        batch = self._bulk.add_batch(BulkBatch(subject_ids=tags, topic_scope=clean_scope(topic_scope), items=items))
+        if kind == "individual" and len(items) > 1:
+            raise DomainError(_ONE_CASE)
+        batch = self._bulk.add_batch(BulkBatch(subject_ids=tags, topic_scope=clean_scope(topic_scope), kind=kind, items=items))
         self._uow.commit()  # commit first so the worker sees the items
         for item in batch.items:
             if item.status is ItemStatus.QUEUED:
@@ -86,11 +94,14 @@ class AddBulkFiles:
         self._uow = uow
 
     def execute(self, batch_id: int, files: Sequence[tuple[str, bytes]]) -> list[BulkItem]:
-        if self._bulk.get_batch(batch_id) is None:
+        batch = self._bulk.get_batch(batch_id)
+        if batch is None:
             raise CaseNotFoundError(f"Bulk upload {batch_id} does not exist.")
         if len(files) > MAX_FILES_PER_REQUEST:
             raise DomainError(f"Send at most {MAX_FILES_PER_REQUEST} files at a time.")
         items = [item for name, data in files for item in self._items(name, data)]
+        if batch.kind == "individual" and self._bulk.counts(batch_id).total + len(items) > 1:
+            raise DomainError(_ONE_CASE)
         stored = self._bulk.add_items(batch_id, items)
         self._uow.commit()
         for item in stored:
@@ -165,9 +176,13 @@ class ResolveBulkItem:
         return item
 
 
+_CASES_SHOWN = 3
+
+
 class GetBulkBatch:
-    def __init__(self, bulk: BulkRepository) -> None:
+    def __init__(self, bulk: BulkRepository, cases: CaseRepository | None = None) -> None:
         self._bulk = bulk
+        self._cases = cases
 
     def execute(self, batch_id: int) -> BulkView:
         batch = self._bulk.get_batch(batch_id)
@@ -178,7 +193,12 @@ class GetBulkBatch:
     def _view(self, batch: BulkBatch) -> BulkView:
         assert batch.id is not None
         first, _ = self._bulk.items(batch.id, None, 3, 0)
-        return BulkView(batch, self._bulk.counts(batch.id), tuple(i.label for i in first))
+        named: tuple[tuple[str, str], ...] = ()
+        main_ids = self._bulk.main_case_ids(batch.id)
+        if self._cases is not None and main_ids:
+            known = self._cases.summaries(main_ids[:_CASES_SHOWN])
+            named = tuple((short_case_name(known[i].title), str(known[i].gr_no)) for i in main_ids[:_CASES_SHOWN] if i in known)
+        return BulkView(batch, self._bulk.counts(batch.id), tuple(i.label for i in first), named, len(main_ids))
 
     def items(self, batch_id: int, status: ItemStatus | None, limit: int, offset: int) -> tuple[list[BulkItem], int]:
         if self._bulk.get_batch(batch_id) is None:

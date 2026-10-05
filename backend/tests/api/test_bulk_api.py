@@ -186,3 +186,23 @@ def test_the_clients_reviewer_pdf_becomes_the_case_in_its_digest_boxes(client, s
     assert [r["gr_no"] for r in rows] == ["180046"]
     header = client.get(f"/cases/{rows[0]['id']}/case-digest", params={"batch_id": batch["id"]}).json()["header"]
     assert header["citation"].startswith("538 SCRA 428, G.R. No. 180046, April 2, 2009")  # the Court's date, not the 2010 the notes wrote
+
+
+def test_an_individual_upload_is_one_case_and_says_so(client, services, jobs):
+    one = client.post("/bulk", json={"text": "180046", "kind": "individual"}).json()
+    assert one["kind"] == "individual" and one["counts"]["total"] == 1
+    assert client.post("/bulk", json={"text": "180046\n173931", "kind": "individual"}).status_code == 400  # two cases: that is Bulk
+    empty = client.post("/bulk", json={"text": "", "kind": "individual"}).json()
+    two_files = [("files", (f"case{i}.docx", word_file("G.R. No. 180046, April 2, 2009"), "application/octet-stream")) for i in range(2)]
+    assert client.post(f"/bulk/{empty['id']}/files", files=two_files).status_code == 400
+    assert client.post("/bulk", json={"text": "1"}).json()["kind"] == "bulk"  # the default
+    assert client.post("/bulk", json={"text": "1", "kind": "other"}).status_code == 422
+
+
+def test_my_uploads_names_the_cases_each_upload_gave(client, services, jobs):
+    batch = client.post("/bulk", json={"text": "180046\nbanana"}).json()
+    assert client.get(f"/bulk/{batch['id']}").json()["cases"] == []  # nothing found yet
+    work(services, jobs)
+    listed = next(b for b in client.get("/bulk").json() if b["id"] == batch["id"])
+    assert listed["case_total"] == 1 and listed["cases"][0]["gr_no"] == "180046"
+    assert listed["cases"][0]["name"].startswith("Review Center Association of the Philippines")

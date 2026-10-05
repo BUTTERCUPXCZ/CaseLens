@@ -20,6 +20,7 @@ class BulkStartIn(BaseModel):
     text: str = ""  # pasted G.R. numbers, one per line or separated by commas
     subject_ids: list[int] = Field(default_factory=list, max_length=20)  # the tags for every case of this upload (may be none)
     topic_scope: str = Field("", max_length=300)  # narrows every digest of this upload to one doctrine or issue
+    kind: Literal["individual", "bulk"] = "bulk"  # individual: one case, opened for its full text
 
 
 class BulkCountsOut(BaseModel):
@@ -35,12 +36,20 @@ class BulkCountsOut(BaseModel):
     digests_failed: int
 
 
+class BulkCaseNameOut(BaseModel):
+    name: str  # "Review Center Association of the Philippines v. Ermita"
+    gr_no: str
+
+
 class BulkOut(BaseModel):
     id: int
     created_at: datetime | None
     subjects: list[SubjectOut]  # the tags chosen for this upload
     topic_scope: str  # "" = the standard digest
+    kind: Literal["individual", "bulk"]
     labels: list[str]  # the first few files or numbers given
+    cases: list[BulkCaseNameOut]  # the first few cases it gave, by name and G.R. number
+    case_total: int  # how many cases it gave in all
     counts: BulkCountsOut
     finished: bool  # nothing is waiting for Lawphil any more (digests may still be written)
 
@@ -50,7 +59,8 @@ class BulkOut(BaseModel):
         return cls(
             id=view.batch.id, created_at=view.batch.created_at, finished=c.finished,
             subjects=[SubjectOut(id=s.id, name=s.name) for s in services.subjects_named(view.batch.subject_ids)],
-            topic_scope=view.batch.topic_scope, labels=list(view.labels),
+            topic_scope=view.batch.topic_scope, kind=view.batch.kind, labels=list(view.labels),  # type: ignore[arg-type]
+            cases=[BulkCaseNameOut(name=name, gr_no=gr_no) for name, gr_no in view.cases], case_total=view.case_total,
             counts=BulkCountsOut(
                 total=c.total, queued=c.queued, found=c.found, duplicate=c.duplicate, not_found=c.not_found, unreadable=c.unreadable,
                 failed=c.failed, digests_ready=c.digests_ready, digests_pending=c.digests_pending, digests_failed=c.digests_failed,
@@ -101,7 +111,7 @@ def _items_out(services: Services, items: list[BulkItem], scope: str) -> list[Bu
 def start_bulk(body: BulkStartIn, services: Services = Depends(get_services)) -> BulkOut:
     """Start a bulk upload. Pasted G.R. numbers are queued at once; send decision files next with POST /bulk/{id}/files. Each number or
     file becomes ONE main case; the cases a decision only cites are never added."""
-    batch = services.start_bulk_batch().execute(body.text, body.subject_ids, body.topic_scope)
+    batch = services.start_bulk_batch().execute(body.text, body.subject_ids, body.topic_scope, body.kind)
     return BulkOut.from_view(services.get_bulk_batch().execute(batch.id), services)
 
 

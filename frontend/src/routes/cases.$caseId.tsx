@@ -14,8 +14,9 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { FootnoteList } from '@/features/cases/FootnoteList'
 import { SubjectTags } from '@/features/upload/SubjectTags'
+import { BackButton } from '@/components/BackButton'
 import { SummaryPanel } from '@/features/cases/SummaryPanel'
-import { caseDownloadCopy, decisionCopy, dispositionLabel, libraryCopy } from '@/lib/copy'
+import { caseDownloadCopy, decisionCopy, dispositionLabel, libraryCopy, uploadCopy } from '@/lib/copy'
 import { divisionName, formatDate, justiceName, shortCaseName } from '@/lib/format'
 
 const searchSchema = z.object({ tab: z.enum(['summary', 'text', 'footnotes']).optional().catch(undefined) })
@@ -72,6 +73,7 @@ function CasePage() {
   return (
     <>
       <header className="mb-6">
+        <BackButton />
         <h1 className="font-serif text-2xl leading-tight font-semibold md:text-3xl">{shortCaseName(detail.title)}</h1>
         <p className="tabular mt-3 text-base text-muted-foreground">{meta.join(' · ')}</p>
 
@@ -80,13 +82,13 @@ function CasePage() {
             {dispositionLabel[detail.disposition]}
           </span>
           <Button size="sm" asChild>
-            <Link to="/cases/$caseId/digest" params={{ caseId: String(caseId) }}>
+            <Link to="/cases/$caseId/digest" params={{ caseId: String(caseId) }} state={{ fromCase: caseId }}>
               <BookOpenText data-icon="inline-start" aria-hidden />
               {libraryCopy.caseDigest}
             </Link>
           </Button>
           <Button variant="outline" size="sm" asChild>
-            <Link to="/cases/$caseId/decision" params={{ caseId: String(caseId) }}>
+            <Link to="/cases/$caseId/decision" params={{ caseId: String(caseId) }} state={{ fromCase: caseId }}>
               <FileText data-icon="inline-start" aria-hidden />
               {decisionCopy.read}
             </Link>
@@ -107,7 +109,7 @@ function CasePage() {
         </div>
 
         <div className="mt-5 max-w-3xl">
-          <SubjectTags id="case-tags" value={detail.subjects.map((s) => s.id)} disabled={setSubjects.isPending} onChange={(ids) => setSubjects.mutate(ids)} />
+          <SubjectTags id="case-tags" help={uploadCopy.tagsHelpCase} value={detail.subjects.map((s) => s.id)} disabled={setSubjects.isPending} onChange={(ids) => setSubjects.mutate(ids)} />
           {setSubjects.isError ? <p role="alert" className="mt-1 text-sm text-problem">{libraryCopy.subjectFailed}</p> : null}
         </div>
       </header>

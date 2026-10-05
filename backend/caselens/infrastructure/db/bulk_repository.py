@@ -23,7 +23,7 @@ def _fill(row: BulkItemModel, item: BulkItem) -> None:
 
 
 def _batch(row: BulkBatchModel) -> BulkBatch:
-    return BulkBatch(subject_ids=tuple(row.subject_ids or ()), topic_scope=row.topic_scope or "", id=row.id, created_at=row.created_at)
+    return BulkBatch(subject_ids=tuple(row.subject_ids or ()), topic_scope=row.topic_scope or "", kind=row.kind or "bulk", id=row.id, created_at=row.created_at)
 
 
 class SqlBulkRepository(BulkRepository):
@@ -31,7 +31,7 @@ class SqlBulkRepository(BulkRepository):
         self._session = session
 
     def add_batch(self, batch: BulkBatch) -> BulkBatch:
-        row = BulkBatchModel(subject_ids=list(batch.subject_ids), topic_scope=batch.topic_scope)
+        row = BulkBatchModel(subject_ids=list(batch.subject_ids), topic_scope=batch.topic_scope, kind=batch.kind)
         self._session.add(row)
         self._session.flush()
         self._session.refresh(row)

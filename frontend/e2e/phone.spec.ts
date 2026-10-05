@@ -6,7 +6,7 @@ import { expectAccessible, expectNoHorizontalScroll } from './helpers'
 
 test('the start page fits the phone and the menu opens', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByRole('heading', { name: 'New digest', level: 1 })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Individual', level: 1 })).toBeVisible()
   await expectNoHorizontalScroll(page)
 
   await page.getByRole('button', { name: 'Open the menu' }).click()
@@ -18,7 +18,7 @@ test('the start page fits the phone and the menu opens', async ({ page }) => {
 })
 
 test('the case text is comfortable to read on a phone', async ({ page }) => {
-  await page.goto('/cases')
+  await page.goto('/library?tab=cases&q=Review%20Center')
   await page.getByRole('link', { name: /^Review Center Association/ }).click()
   await page.getByRole('link', { name: 'Read the full decision' }).click()
   await expectNoHorizontalScroll(page)
@@ -46,21 +46,21 @@ test('the guide fits the phone and nothing scrolls sideways', async ({ page }) =
 
 
 test('the library fits the phone: the subject list is a dropdown and each case is a card', async ({ page }) => {
-  await page.goto('/library')
+  await page.goto('/library?tab=cases')
   await expect(page.getByRole('combobox', { name: 'Filter by subject' })).toBeVisible()
   await expectNoHorizontalScroll(page)
   await expectAccessible(page)
 })
 
 test('the upload screen and a review fit the phone; the assistant opens as a sheet', async ({ page }) => {
-  await page.goto('/upload')
+  await page.goto('/bulk')
   await expectNoHorizontalScroll(page)
   await expectAccessible(page)
   await page.getByRole('button', { name: 'Have G.R. numbers instead?' }).click()
   await page.getByLabel('G.R. numbers').fill('180046')
-  await page.getByRole('button', { name: 'Generate Case Digest' }).click()
+  await page.getByRole('button', { name: 'Generate case digests' }).click()
   await expect(page).toHaveURL(/\/reviews\/\d+/)
-  await expect(page.getByRole('navigation', { name: 'Cases in this review' }).getByRole('button').first()).toBeVisible({ timeout: 30_000 })
+  await expect(page.getByRole('navigation', { name: 'Cases in this upload' }).getByRole('button').first()).toBeVisible({ timeout: 30_000 })
   await expectNoHorizontalScroll(page)
   await page.getByRole('button', { name: 'Ask the AI assistant' }).click()
   await expect(page.getByRole('dialog').getByLabel('Your question')).toBeVisible()

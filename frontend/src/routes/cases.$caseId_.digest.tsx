@@ -1,11 +1,11 @@
 import { createFileRoute, Link, notFound } from '@tanstack/react-router'
-import { ArrowLeft, FileQuestion } from 'lucide-react'
+import { FileQuestion } from 'lucide-react'
 
 import { orNotFound } from '@/api/orNotFound'
 import { caseQuery } from '@/api/queries'
+import { BackToCase } from '@/components/BackToCase'
 import { Disclaimer } from '@/components/Disclaimer'
 import { EmptyState, ErrorState } from '@/components/States'
-import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { CaseDigestPanel } from '@/features/digest/CaseDigestPanel'
 import { digestPageCopy } from '@/lib/copy'
@@ -36,12 +36,7 @@ function DigestPage() {
   const caseId = Number(Route.useParams().caseId)
   return (
     <>
-      <Button variant="ghost" size="sm" asChild className="-ml-3 mb-4">
-        <Link to="/cases/$caseId" params={{ caseId: String(caseId) }}>
-          <ArrowLeft data-icon="inline-start" aria-hidden />
-          {digestPageCopy.back}
-        </Link>
-      </Button>
+      <BackToCase caseId={caseId} label={digestPageCopy.back} className="mb-4" />
       <h1 className="sr-only">{digestPageCopy.pageTitle}</h1>
       <CaseDigestPanel caseId={caseId} />
       <Disclaimer className="mt-10 max-w-prose" />

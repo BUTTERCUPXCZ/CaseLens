@@ -7,11 +7,11 @@ import { Input } from '@/components/ui/input'
 import { findCaseSchema } from '@/features/search/grNumber'
 import { searchCopy } from '@/lib/copy'
 
-/** Always in the header: type a case name or a G.R. number (and a year if you like) and go. */
-export function GrSearch() {
+/** In the Case library (and on the results page): type a case name or a G.R. number (and a year if you like) to find any decision on Lawphil. */
+export function GrSearch({ initialQ = '', initialYear }: { initialQ?: string; initialYear?: number } = {}) {
   const navigate = useNavigate()
   const form = useForm({
-    defaultValues: { q: '', year: '' },
+    defaultValues: { q: initialQ, year: initialYear ? String(initialYear) : '' },
     validators: { onSubmit: findCaseSchema },
     onSubmit: ({ value }) => {
       void navigate({

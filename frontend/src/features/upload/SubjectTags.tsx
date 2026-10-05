@@ -6,7 +6,19 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { uploadCopy } from '@/lib/copy'
 
 /** The client's chips: the student labels the case with one or more subjects (nothing is guessed for them). */
-export function SubjectTags({ value, onChange, disabled, id = 'subject-tags' }: { value: number[]; onChange: (next: number[]) => void; disabled?: boolean; id?: string }) {
+export function SubjectTags({
+  value,
+  onChange,
+  disabled,
+  id = 'subject-tags',
+  help = uploadCopy.tagsHelp,
+}: {
+  value: number[]
+  onChange: (next: number[]) => void
+  disabled?: boolean
+  id?: string
+  help?: string
+}) {
   const { data: subjects } = useQuery(subjectListQuery())
   const toggle = (subjectId: number) => onChange(value.includes(subjectId) ? value.filter((v) => v !== subjectId) : [...value, subjectId])
 
@@ -46,7 +58,7 @@ export function SubjectTags({ value, onChange, disabled, id = 'subject-tags' }: 
         {uploadCopy.tagsCount(value.length)}
       </p>
       <p id={`${id}-help`} className="text-sm text-muted-foreground">
-        {uploadCopy.tagsHelp}
+        {help}
       </p>
     </div>
   )

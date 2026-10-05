@@ -352,6 +352,7 @@ class BulkBatchModel(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     subject_ids: Mapped[list[int]] = mapped_column(ARRAY(Integer), server_default=text("'{}'"))  # the upload's tags
     topic_scope: Mapped[str] = mapped_column(String(300), server_default="")
+    kind: Mapped[str] = mapped_column(String(16), server_default="bulk")  # "individual" | "bulk"
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
