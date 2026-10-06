@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- CaseLens app icon: the gold scales of the sidebar logo on the app's navy. Source for `npx tauri icon`. -->
+  <defs>
+    <linearGradient id="navy" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#26437c"/>
+      <stop offset="1" stop-color="#132549"/>
+    </linearGradient>
+    <linearGradient id="gilt" gradientUnits="userSpaceOnUse" x1="0" y1="200" x2="0" y2="820">
+      <stop offset="0" stop-color="#f6dc8f"/>
+      <stop offset="1" stop-color="#d6a843"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="228" fill="url(#navy)"/>
+  <rect x="22" y="22" width="980" height="980" rx="208" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="8"/>
+  <g stroke="url(#gilt)" stroke-width="52" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M512 262 V 790"/>
+    <path d="M340 790 H 684"/>
+    <path d="M222 382 H 802"/>
+    <path d="M222 382 L 138 588 M222 382 L 306 588"/>
+    <path d="M802 382 L 718 588 M802 382 L 886 588"/>
+  </g>
+  <circle cx="512" cy="246" r="40" fill="url(#gilt)"/>
+  <path d="M120 588 H 324 A 102 102 0 0 1 120 588 Z" fill="url(#gilt)"/>
+  <path d="M700 588 H 904 A 102 102 0 0 1 700 588 Z" fill="url(#gilt)"/>
+</svg>

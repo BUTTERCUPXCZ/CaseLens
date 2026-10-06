@@ -1,5 +1,5 @@
-# Builds the desktop installers: Windows (.exe), Mac Apple chip and Mac Intel (.dmg). No paid signing: Mac builds are ad-hoc
-# signed, Windows is unsigned (see desktop/INSTALL.md for the first-open steps). Updates are signed with CaseLens's own update
+# Builds the desktop installer for Windows (.exe); Mac builds are ready to switch back on in the matrix. No paid signing: Mac
+# builds would be ad-hoc signed, Windows is unsigned (see desktop/INSTALL.md for the first-open steps). Updates are signed with CaseLens's own update
 # key (repo secrets TAURI_SIGNING_PRIVATE_KEY and TAURI_SIGNING_PRIVATE_KEY_PASSWORD); installed apps refuse anything else.
 # Each build gathers its files under clear names; the publish step attaches them all and writes latest.json.
 #   - Actions tab > "Desktop app" > Run workflow: builds the installers (download them from the run's page).
@@ -55,12 +55,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: windows-latest
+          - os: windows-latest # the client uses Windows
             bundles: nsis
-          - os: macos-latest # Apple chip (M1 and newer)
-            bundles: app,dmg
-          - os: macos-15-intel # Intel Mac
-            bundles: app,dmg
+          # For a Mac build later, add these back (the steps below already handle Macs):
+          #   - os: macos-latest      # Apple chip (M1 and newer)
+          #     bundles: app,dmg
+          #   - os: macos-15-intel    # Intel Mac
+          #     bundles: app,dmg
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
