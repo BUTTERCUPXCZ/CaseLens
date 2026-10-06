@@ -2,6 +2,8 @@
 from datetime import date
 from pathlib import Path
 
+import sqlite3
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import func, insert, select
@@ -121,3 +123,70 @@ def test_the_shipped_catalog_fills_an_empty_library_once(tmp_path):
     with library.connect() as connection:
         assert connection.execute(select(func.count()).select_from(CatalogNumberModel.__table__)).scalar_one() == 1
     library.dispose()
+
+
+def test_with_a_launch_code_only_the_apps_own_window_gets_in(tmp_path, screens, monkeypatch):
+    """Another program on this computer (no cookie) is refused; the app's window opens with the code once and then uses a
+    private cookie, so the code does not stay in the address."""
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+    settings = _Settings(data_dir)
+    monkeypatch.setattr(desktop_api, "get_settings", lambda: settings)
+    app = create_desktop_app(screens, launch_token="s3cret-code")
+
+    stranger = TestClient(app, base_url=LOCAL)
+    assert stranger.get("/").status_code == 403
+    assert stranger.get("/api/desktop/settings").status_code == 403
+    assert stranger.get("/?launch=wrong").status_code == 403
+    assert stranger.get("/api/health").status_code != 403  # the app's start check needs no code
+
+    window = TestClient(app, base_url=LOCAL)
+    opened = window.get("/?launch=s3cret-code")
+    assert opened.status_code == 200 and 'location.replace("/")' in opened.text  # moves on to the library by itself
+    assert "httponly" in opened.headers["set-cookie"].lower() and "samesite=strict" in opened.headers["set-cookie"].lower()
+    window.cookies.set("caselens_launch", "s3cret-code")
+    assert window.get("/").text == "<div id=root></div>"
+    assert window.get("/api/desktop/settings").status_code == 200
+
+
+def test_the_key_file_is_private_from_the_start(tmp_path, monkeypatch):
+    import builtins
+    import stat
+
+    from caselens.desktop import ai_key
+
+    real_import = builtins.__import__
+
+    def no_keyring(name, *args, **kwargs):
+        if name == "keyring":
+            raise ImportError("no password store")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", no_keyring)
+    ai_key.save_ai_key(str(tmp_path), "secret-key")
+    path = tmp_path / "ai-key.txt"
+    assert stat.S_IMODE(path.stat().st_mode) == 0o600
+    assert ai_key.read_ai_key(str(tmp_path)) == "secret-key"
+    ai_key.save_ai_key(str(tmp_path), None)
+    assert not path.exists()
+
+
+def test_a_new_version_copies_the_library_first_and_keeps_the_last_three(tmp_path):
+    from caselens.desktop.server import backup_before_update
+
+    library = tmp_path / "caselens.db"
+    with sqlite3.connect(library) as connection:
+        connection.execute("CREATE TABLE notes (text TEXT)")
+        connection.execute("INSERT INTO notes VALUES ('my digest edits')")
+
+    assert backup_before_update(tmp_path, "1.1.0") is None  # first start of the app: nothing to keep yet
+    assert backup_before_update(tmp_path, "1.1.0") is None  # same version again: no copy
+    copy = backup_before_update(tmp_path, "1.2.0")
+    assert copy == tmp_path / "backups" / "before-1.2.0.db"
+    with sqlite3.connect(copy) as connection:
+        assert connection.execute("SELECT text FROM notes").fetchall() == [("my digest edits",)]
+
+    for version in ["1.3.0", "1.4.0", "1.5.0"]:
+        backup_before_update(tmp_path, version)
+    assert sorted(p.name for p in (tmp_path / "backups").iterdir()) == ["before-1.3.0.db", "before-1.4.0.db", "before-1.5.0.db"]
+    assert (tmp_path / "version.txt").read_text() == "1.5.0"

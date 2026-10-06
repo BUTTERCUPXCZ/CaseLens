@@ -4,7 +4,9 @@ The desktop shell starts it as `caselens-server --port 51234 --data-dir <folder>
 import argparse
 import logging
 import os
+import secrets
 import shutil
+import sqlite3
 import sys
 from pathlib import Path
 
@@ -12,6 +14,7 @@ log = logging.getLogger("caselens.desktop")
 
 _LOCAL_HOSTS = {"127.0.0.1", "localhost"}
 _SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
+_LAUNCH_COOKIE = "caselens_launch"
 
 
 def bundled_path(name: str) -> Path:
@@ -37,9 +40,42 @@ def apply_pending_restore(data_dir: Path) -> bool:
     return True
 
 
-def create_desktop_app(frontend_dir: Path):
+def _same(given: str, expected: str) -> bool:
+    return secrets.compare_digest(given.encode(), expected.encode())
+
+
+_KEEP_UPDATE_BACKUPS = 3
+
+
+def backup_before_update(data_dir: Path, version: str | None) -> Path | None:
+    """The first start of a new version may change the library (new tables or columns): a copy is made first, so an update can
+    never lose the client's work. Keeps the last few. Returns the copy, or None when nothing changed."""
+    library, seen = data_dir / "caselens.db", data_dir / "version.txt"
+    if not version:
+        return None
+    before = seen.read_text(encoding="utf-8").strip() if seen.exists() else None
+    if before == version:
+        return None
+    copy = None
+    if before is not None and library.exists():  # a new install has nothing to keep
+        folder = data_dir / "backups"
+        folder.mkdir(exist_ok=True)
+        copy = folder / f"before-{version}.db"
+        copy.unlink(missing_ok=True)
+        with sqlite3.connect(library) as connection:  # a whole, consistent copy (also of changes still in the -wal file)
+            connection.execute("VACUUM INTO ?", (str(copy),))
+        for old in sorted(folder.glob("before-*.db"), key=lambda p: p.stat().st_mtime)[:-_KEEP_UPDATE_BACKUPS]:
+            old.unlink()
+        log.info("Library copied before the update to %s: %s", version, copy.name)
+    seen.write_text(version, encoding="utf-8")
+    return copy
+
+
+def create_desktop_app(frontend_dir: Path, launch_token: str | None = None):
+    """`launch_token`: a secret the app makes each time it opens. Its window opens `/?launch=<token>` once and gets it back as a
+    private cookie; every other request without it is refused, so no other program on this computer can use the library."""
     from fastapi import FastAPI, Request
-    from fastapi.responses import JSONResponse
+    from fastapi.responses import HTMLResponse, JSONResponse
     from starlette.exceptions import HTTPException as StarletteHTTPException
     from starlette.staticfiles import StaticFiles
 
@@ -68,6 +104,19 @@ def create_desktop_app(frontend_dir: Path):
         host = (request.headers.get("host") or "").rsplit(":", 1)[0]
         if host not in _LOCAL_HOSTS:
             return JSONResponse({"detail": "Not allowed."}, status_code=403)
+        if launch_token:
+            given = request.query_params.get("launch")
+            if given is not None:  # the app's window, opening: swap the code in the address for a private cookie
+                if not _same(given, launch_token):
+                    return JSONResponse({"detail": "Not allowed."}, status_code=403)
+                # A page that moves on by itself: that next load comes from this address, so every engine (WebView2, WebKit)
+                # sends the new cookie with it, whatever it thought of the first one, which came from the loading screen.
+                opened = HTMLResponse('<!doctype html><meta charset="utf-8"><title>CaseLens</title><script>location.replace("/")</script>')
+                opened.set_cookie(_LAUNCH_COOKIE, launch_token, httponly=True, samesite="strict", path="/")
+                opened.headers["Cache-Control"] = "no-store"
+                return opened
+            if request.url.path != "/api/health" and not _same(request.cookies.get(_LAUNCH_COOKIE, ""), launch_token):
+                return JSONResponse({"detail": "Open CaseLens from its app icon."}, status_code=403)  # health: the app's own start check
         # Browsers say where a request comes from: only the app's own page (same address and port) may use the library.
         if request.headers.get("sec-fetch-site", "same-origin") not in ("same-origin", "none"):
             return JSONResponse({"detail": "Not allowed."}, status_code=403)
@@ -121,6 +170,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--data-dir", default=os.environ.get("CASELENS_DATA_DIR"), required="CASELENS_DATA_DIR" not in os.environ)
     parser.add_argument("--frontend-dir", default=os.environ.get("CASELENS_FRONTEND_DIR"))
     parser.add_argument("--app-pid", type=int, help="the window program; this backend stops when it ends")
+    parser.add_argument("--app-version", default=os.environ.get("CASELENS_APP_VERSION"), help="the app's version, shown in Settings")
     args = parser.parse_args(argv)
     data_dir = Path(args.data_dir).expanduser().resolve()
     data_dir.mkdir(parents=True, exist_ok=True)
@@ -133,7 +183,10 @@ def main(argv: list[str] | None = None) -> None:
     os.environ["CASELENS_DESKTOP"] = "1"
     os.environ["CASELENS_DATA_DIR"] = str(data_dir)
     os.environ["DATABASE_URL"] = f"sqlite:///{(data_dir / 'caselens.db').as_posix()}"
+    if args.app_version:
+        os.environ["CASELENS_APP_VERSION"] = args.app_version
     apply_pending_restore(data_dir)
+    backup_before_update(data_dir, args.app_version)
 
     import uvicorn
 
@@ -144,7 +197,8 @@ def main(argv: list[str] | None = None) -> None:
 
     upgrade_sqlite(get_settings().database_url)
     import_catalog(engine, Path(os.environ.get("CASELENS_CATALOG_SEED") or bundled_path("catalog.sqlite")))
-    uvicorn.run(create_desktop_app(frontend_dir), host="127.0.0.1", port=args.port, log_level="info", log_config=None)
+    launch_token = os.environ.pop("CASELENS_LAUNCH_TOKEN", None)  # from the app; not passed on to anything this starts
+    uvicorn.run(create_desktop_app(frontend_dir, launch_token), host="127.0.0.1", port=args.port, log_level="info", log_config=None)
 
 
 if __name__ == "__main__":

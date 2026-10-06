@@ -1,7 +1,10 @@
 # Builds the desktop installers: Windows (.exe), Mac Apple chip and Mac Intel (.dmg). No paid signing: Mac builds are ad-hoc
-# signed, Windows is unsigned (see desktop/INSTALL.md for the first-open steps).
+# signed, Windows is unsigned (see desktop/INSTALL.md for the first-open steps). Updates are signed with CaseLens's own update
+# key (repo secrets TAURI_SIGNING_PRIVATE_KEY and TAURI_SIGNING_PRIVATE_KEY_PASSWORD); installed apps refuse anything else.
 #   - Actions tab > "Desktop app" > Run workflow: builds the installers (download them from the run's page).
-#   - Push a tag like v1.0.0: builds them and publishes a GitHub Release with the three installers attached.
+#   - Push a tag like v1.2.0 (= the version in desktop/src-tauri/tauri.conf.json, set with desktop/scripts/version.mjs):
+#     publishes a GitHub Release with the installers, the signed update files and latest.json, which installed apps read to
+#     update themselves. The tag's message is the release notes shown in the app's update bar.
 name: Desktop app
 
 on:
@@ -10,10 +13,43 @@ on:
     tags: ["v*"]
 
 permissions:
-  contents: read # only the release step may write (it publishes the installers)
+  contents: read
 
 jobs:
+  release:
+    # A tag run: check the version, then create the release once, before the three builds add their files to it.
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      id: ${{ steps.create.outputs.id }}
+    env:
+      TAG: ${{ github.ref_name }}
+      REPO: ${{ github.repository }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: The tag matches the app's version
+        run: |
+          version=$(node -p "require('./desktop/src-tauri/tauri.conf.json').version")
+          if [ "v$version" != "$TAG" ]; then
+            echo "Tag $TAG but the app says $version: run 'node desktop/scripts/version.mjs ${TAG#v}', commit, and tag again." >&2
+            exit 1
+          fi
+      - name: Create the release (notes = the tag's message)
+        id: create
+        run: |
+          git fetch --force origin "refs/tags/$TAG:refs/tags/$TAG"
+          git tag -l --format='%(contents)' "$TAG" > notes.txt
+          gh release create "$TAG" --repo "$REPO" --title "CaseLens $TAG" --notes-file notes.txt --draft
+          echo "id=$(gh api "repos/$REPO/releases" --jq ".[] | select(.tag_name == \"$TAG\") | .id")" >> "$GITHUB_OUTPUT"
+
   build:
+    needs: release
+    if: ${{ !failure() && !cancelled() }} # also runs on a manual run, where there is no release job
+    permissions:
+      contents: write # adds the installers to the release
     strategy:
       fail-fast: false
       matrix:
@@ -56,11 +92,23 @@ jobs:
           python -m pip install -r requirements-desktop.txt
           python -m PyInstaller caselens.spec --noconfirm
 
-      - name: Desktop app
+      - name: Desktop tools
         working-directory: desktop
-        run: |
-          npm ci
-          npx tauri build --bundles ${{ matrix.bundles }}
+        run: npm ci
+
+      - name: Build, sign the update files, add them to the release
+        uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5 # v0.6.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          projectPath: desktop
+          tauriScript: npx tauri
+          # Signed update files only when the signing secrets are set; without them the installers are still built.
+          args: --bundles ${{ matrix.bundles }} ${{ secrets.TAURI_SIGNING_PRIVATE_KEY != '' && '--config {"bundle":{"createUpdaterArtifacts":true}}' || '' }}
+          releaseId: ${{ needs.release.outputs.id }}
+          includeUpdaterJson: true
 
       - uses: actions/upload-artifact@v4
         with:
@@ -70,24 +118,15 @@ jobs:
             desktop/src-tauri/target/release/bundle/dmg/*.dmg
           if-no-files-found: error
 
-  release:
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: build
+  publish:
+    # All three built: make the release public. Only now does latest.json point installed apps at the new version.
+    needs: [release, build]
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      TAG: ${{ github.ref_name }}
+      REPO: ${{ github.repository }}
+      GH_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/download-artifact@v4
-        with:
-          path: installers
-          merge-multiple: true
-      - name: Publish the release
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.ref_name }}
-          REPO: ${{ github.repository }}
-        run: |
-          gh release create "$TAG" installers/* \
-            --repo "$REPO" \
-            --title "CaseLens $TAG" \
-            --notes "Windows: CaseLens_*_x64-setup.exe. Mac with Apple chip (M1 or newer): CaseLens_*_aarch64.dmg. Intel Mac: CaseLens_*_x64.dmg. First time opening: see desktop/INSTALL.md."
+      - run: gh release edit "$TAG" --repo "$REPO" --draft=false --latest

@@ -5,6 +5,7 @@ import { Scale } from 'lucide-react'
 
 import { AppSidebar } from '@/components/AppSidebar'
 import { DesktopTitleBar } from '@/components/DesktopTitleBar'
+import { UpdateBanner } from '@/features/desktop/UpdateBanner'
 import { Button } from '@/components/ui/button'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -35,6 +36,7 @@ function RootLayout() {
         <SidebarProvider>
           <AppSidebar />
           <SidebarInset className="min-w-0">
+            {inDesktopWindow ? <UpdateBanner /> : null}
             {/* On a phone: the menu button and the name. On a laptop the menu is always on the left, so there is no header bar. */}
             <header className="sticky top-0 z-20 border-b bg-background/95 px-4 py-3 backdrop-blur-sm md:hidden">
               <div className="flex items-center gap-3">

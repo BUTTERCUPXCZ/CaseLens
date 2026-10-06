@@ -47,7 +47,10 @@ once a week. **Restore from a backup** brings it back on this or a new computer 
 ## Good to know
 
 - Keep CaseLens open while a Bulk upload is being digested. Ready cases can be read while the others are still being written.
-- A new version: download and install it the same way. Your library and AI key are kept.
+- **Updates come by themselves.** When a new version is out, a bar at the top says "CaseLens 1.2.0 is ready". Click
+  **Install and restart** (it waits if digests are still being written). Your library and AI key are kept, and a copy of the
+  library is saved first in the `backups` folder of the library folder below. You can also look now: **Settings → Check for
+  updates**. (Version 1.0.0 cannot update itself: install 1.1.0 or newer once by hand.)
 - Your library is in: Windows `%APPDATA%\ph.caselens.desktop`, Mac `~/Library/Application Support/ph.caselens.desktop`
   (also shown in **Settings**).
 

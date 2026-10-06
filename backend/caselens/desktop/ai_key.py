@@ -52,7 +52,10 @@ def save_ai_key(data_dir: str | None, key: str | None) -> None:
     if path is None:
         raise RuntimeError("No place to keep the key.")
     if key:
-        path.write_text(key, encoding="utf-8")
-        os.chmod(path, 0o600)
+        # Created private (owner only) from the start, never readable by others even for a moment.
+        descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        os.chmod(path, 0o600)  # an older file keeps its old mode on open: make it private too
+        with os.fdopen(descriptor, "w", encoding="utf-8") as out:
+            out.write(key)
     elif path.exists():
         path.unlink()

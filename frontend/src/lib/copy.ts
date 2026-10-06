@@ -362,6 +362,24 @@ export const navCopy = {
   toUploads: 'Back to My uploads',
 }
 
+/** The desktop app's update bar and its line in Settings. */
+export const updateCopy = {
+  ready: (version: string) => `CaseLens ${version} is ready.`,
+  keeps: 'Your library and AI key stay as they are.',
+  waitForDigests: 'It can be installed when the digests being written are finished.',
+  install: 'Install and restart',
+  afterDigests: 'Waiting for the digests',
+  later: 'Later',
+  downloading: (percent: number) => `Downloading the update… ${percent}%`,
+  failed: 'The update could not be installed. Try again later.',
+  versionTitle: 'Version',
+  version: (version: string) => `CaseLens ${version}`,
+  check: 'Check for updates',
+  checking: 'Checking…',
+  upToDate: 'You have the newest version.',
+  available: (version: string) => `CaseLens ${version} is ready: use the bar at the top of the window to install it.`,
+}
+
 /** Settings: only in the desktop app (the client's own computer). */
 export const settingsCopy = {
   title: 'Settings',

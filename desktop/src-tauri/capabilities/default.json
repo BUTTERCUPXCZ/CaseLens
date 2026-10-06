@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "The app's own title bar (loading screen and library page) may move, minimize, maximize and close the window. Nothing else: no files, no shell.",
+  "description": "The app's own title bar (loading screen and library page) may move, minimize, maximize and close the window, and check for and install a signed CaseLens update. Nothing else: no files, no shell.",
   "windows": [
     "main"
   ],
@@ -18,6 +18,8 @@
     "core:window:allow-start-dragging",
     "core:window:allow-is-maximized",
     "core:event:allow-listen",
-    "core:event:allow-unlisten"
+    "core:event:allow-unlisten",
+    "allow-check-update",
+    "allow-install-update"
   ]
 }

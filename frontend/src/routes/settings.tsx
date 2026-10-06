@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Navigate } from '@tanstack/react-router'
-import { CircleCheck, Download, KeyRound, Upload } from 'lucide-react'
+import { CircleCheck, Download, KeyRound, RefreshCw, Upload } from 'lucide-react'
 import { useRef, useState, type FormEvent } from 'react'
 
 import { backupUrl } from '@/api/endpoints'
@@ -12,7 +12,9 @@ import { ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import { friendlyError, settingsCopy } from '@/lib/copy'
+import { appUpdateQuery } from '@/features/desktop/appUpdate'
+import { friendlyError, settingsCopy, updateCopy } from '@/lib/copy'
+import { inDesktopWindow } from '@/lib/desktop'
 
 export const Route = createFileRoute('/settings')({
   component: Settings,
@@ -40,6 +42,7 @@ function DesktopSettingsPage() {
           <AiKey settings={settings.data} />
           <Backup />
           <Restore settings={settings.data} />
+          <Version settings={settings.data} />
           <section aria-labelledby="where-title">
             <h2 id="where-title" className="mb-2 text-xl font-semibold">
               {settingsCopy.whereTitle}
@@ -161,6 +164,40 @@ function Restore({ settings }: { settings: DesktopSettings }) {
       ) : settings.restore_pending ? (
         <p role="status" className="mt-2 text-base font-medium">
           {settingsCopy.restoreWaiting}
+        </p>
+      ) : null}
+    </section>
+  )
+}
+
+/** The installed version, and a button to look for a newer one now (the app also looks by itself every few hours). */
+function Version({ settings }: { settings: DesktopSettings }) {
+  const update = useQuery(appUpdateQuery())
+  const [asked, setAsked] = useState(false)
+  if (!settings.app_version) return null
+  return (
+    <section aria-labelledby="version-title">
+      <h2 id="version-title" className="mb-2 text-xl font-semibold">
+        {updateCopy.versionTitle}
+      </h2>
+      <p className="mb-4 text-base">{updateCopy.version(settings.app_version)}</p>
+      {inDesktopWindow ? (
+        <Button
+          type="button"
+          variant="outline"
+          disabled={update.isFetching}
+          onClick={() => {
+            setAsked(true)
+            void update.refetch()
+          }}
+        >
+          <RefreshCw data-icon="inline-start" className={update.isFetching ? 'animate-spin' : undefined} aria-hidden />
+          {update.isFetching ? updateCopy.checking : updateCopy.check}
+        </Button>
+      ) : null}
+      {asked && !update.isFetching ? (
+        <p role="status" className="mt-2 text-base">
+          {update.data ? updateCopy.available(update.data.version) : updateCopy.upToDate}
         </p>
       ) : null}
     </section>

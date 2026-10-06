@@ -1,5 +1,6 @@
 """Settings for the desktop app (one user on their own computer): the AI key, and backing up or restoring the library. These routes
 exist only in the desktop app: on the website anyone could reach them."""
+import os
 import sqlite3
 import tempfile
 from datetime import date
@@ -23,6 +24,7 @@ class DesktopSettingsOut(BaseModel):
     ai_key_set: bool  # never the key itself
     data_dir: str  # where the library lives on this computer
     restore_pending: bool  # a backup is waiting to replace the library at the next start
+    app_version: str | None = None  # the installed CaseLens version (from the app)
 
 
 class AiKeyIn(BaseModel):
@@ -39,7 +41,12 @@ def _data_dir() -> Path:
 @router.get("/settings", response_model=DesktopSettingsOut)
 def desktop_settings() -> DesktopSettingsOut:
     folder = _data_dir()
-    return DesktopSettingsOut(ai_key_set=bool(get_settings().gemini_api_key), data_dir=str(folder), restore_pending=(folder / RESTORE_FILE).exists())
+    return DesktopSettingsOut(
+        ai_key_set=bool(get_settings().gemini_api_key),
+        data_dir=str(folder),
+        restore_pending=(folder / RESTORE_FILE).exists(),
+        app_version=os.environ.get("CASELENS_APP_VERSION"),
+    )
 
 
 @router.put("/ai-key", response_model=DesktopSettingsOut)
