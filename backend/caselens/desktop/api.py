@@ -10,7 +10,10 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
-from caselens.desktop.ai_key import save_ai_key
+from caselens.desktop.ai_key import save_ai_key, save_provider
+from caselens.infrastructure.ai.calls import PROVIDER_NAMES, PROVIDERS, ai_configured, api_key_for, forget_key_problem, key_problem, model_name
+from caselens.infrastructure.ai.gemini_answerer import check_gemini_key
+from caselens.infrastructure.ai.openai_style_call import check_key
 from caselens.infrastructure.config import get_settings
 from caselens.infrastructure.db.session import engine
 
@@ -20,15 +23,44 @@ RESTORE_FILE = "restore-pending.db"
 _MAX_BACKUP_MB = 2000
 
 
+class ProviderOut(BaseModel):
+    id: str  # groq | deepseek | gemini
+    name: str
+    model: str  # the model that writes
+    key_set: bool  # never the key itself
+    problem: str | None = None  # "invalid" | "credit": its last call was refused for the key itself
+
+
 class DesktopSettingsOut(BaseModel):
-    ai_key_set: bool  # never the key itself
+    ai_key_set: bool  # any provider has a key (never the key itself)
     data_dir: str  # where the library lives on this computer
     restore_pending: bool  # a backup is waiting to replace the library at the next start
     app_version: str | None = None  # the installed CaseLens version (from the app)
+    ai_out_of_credit: bool = False  # the key's last AI call was refused for no credit / no allowance left
+    ai_key_invalid: bool = False  # the key's last AI call was refused because the key itself is not valid
+    ai_provider: str = "gemini"  # the provider that writes first; the others with a key take over when it cannot answer
+    providers: list[ProviderOut] = []
 
 
 class AiKeyIn(BaseModel):
     key: str = Field("", max_length=300)  # empty removes it
+    provider: str = Field("gemini", pattern="^(groq|deepseek|openrouter|gemini)$")
+
+
+class AiProviderIn(BaseModel):
+    provider: str = Field(pattern="^(groq|deepseek|openrouter|gemini)$")
+
+
+_KEY_HELP = {
+    "gemini": "Google says this is not a valid Gemini API key. Copy it again from Google AI Studio (it starts with AIza).",
+    "groq": "Groq says this is not a valid API key. Copy it again from console.groq.com → API Keys (it starts with gsk_).",
+    "deepseek": "DeepSeek says this is not a valid API key. Copy it again from platform.deepseek.com → API keys (it starts with sk-).",
+    "openrouter": "OpenRouter says this is not a valid API key. Copy it again from openrouter.ai → Keys (it starts with sk-or-).",
+}
+
+
+def _model_of(provider: str) -> str:
+    return model_name(get_settings(), provider)
 
 
 def _data_dir() -> Path:
@@ -41,19 +73,41 @@ def _data_dir() -> Path:
 @router.get("/settings", response_model=DesktopSettingsOut)
 def desktop_settings() -> DesktopSettingsOut:
     folder = _data_dir()
+    settings = get_settings()
+    chosen = settings.ai_provider if settings.ai_provider in PROVIDERS else "gemini"
     return DesktopSettingsOut(
-        ai_key_set=bool(get_settings().gemini_api_key),
+        ai_key_set=ai_configured(settings),
         data_dir=str(folder),
         restore_pending=(folder / RESTORE_FILE).exists(),
         app_version=os.environ.get("CASELENS_APP_VERSION"),
+        ai_out_of_credit=key_problem(chosen) == "credit",
+        ai_key_invalid=key_problem(chosen) == "invalid",
+        ai_provider=chosen,
+        providers=[
+            ProviderOut(id=p, name=PROVIDER_NAMES[p], model=_model_of(p), key_set=bool(api_key_for(settings, p)), problem=key_problem(p))
+            for p in PROVIDERS
+        ],
     )
 
 
 @router.put("/ai-key", response_model=DesktopSettingsOut)
 def set_ai_key(body: AiKeyIn) -> DesktopSettingsOut:
     """Keep the client's AI key in the computer's password store. New digests and questions use it at once."""
-    save_ai_key(str(_data_dir()), body.key.strip() or None)
+    key, provider = body.key.strip(), body.provider
+    works = (check_gemini_key(key) if provider == "gemini" else check_key(provider, key)) if key else None
+    if works is False:  # offline or the provider down (None): saved anyway, the first digest will tell
+        raise HTTPException(400, _KEY_HELP[provider])
+    save_ai_key(str(_data_dir()), key or None, provider)
     get_settings.cache_clear()  # the next request reads the new key
+    forget_key_problem(provider)  # a new key: the old key's problem no longer applies
+    return desktop_settings()
+
+
+@router.put("/ai-provider", response_model=DesktopSettingsOut)
+def set_ai_provider(body: AiProviderIn) -> DesktopSettingsOut:
+    """Which provider writes first. The others that have a key take over when it cannot answer."""
+    save_provider(str(_data_dir()), body.provider)
+    get_settings.cache_clear()
     return desktop_settings()
 
 

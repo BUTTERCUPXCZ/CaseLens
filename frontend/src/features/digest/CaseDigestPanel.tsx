@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { Link } from '@tanstack/react-router'
 import { Loader2 } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 
@@ -8,6 +9,7 @@ import { ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { digestPageCopy } from '@/lib/copy'
+import { inDesktopWindow } from '@/lib/desktop'
 
 import { CaseDigestView } from './CaseDigestView'
 
@@ -35,9 +37,17 @@ export function CaseDigestPanel({ caseId, scope = '', batchId = null }: { caseId
       <div role="alert" className="max-w-prose rounded-lg bg-problem-wash px-5 py-4 text-problem">
         <p className="font-semibold">{digestPageCopy.failedTitle}</p>
         <p className="mt-1 text-base">{digest.error}</p>
-        <Button className="mt-3" variant="outline" disabled={request.isPending} onClick={() => request.mutate(true)}>
-          {digestPageCopy.retry}
-        </Button>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button variant="outline" disabled={request.isPending} onClick={() => request.mutate(true)}>
+            {digestPageCopy.retry}
+          </Button>
+          {/* A problem with the AI key is fixed in Settings (desktop app): one click there. */}
+          {inDesktopWindow && digest.error?.includes('Settings') ? (
+            <Button variant="outline" asChild>
+              <Link to="/settings">{digestPageCopy.openSettings}</Link>
+            </Button>
+          ) : null}
+        </div>
       </div>
     )
   }

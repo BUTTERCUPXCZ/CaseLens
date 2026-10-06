@@ -43,4 +43,15 @@ export type BatchDigestFilter = 'ready' | 'writing' | 'failed'
 
 /** The desktop app only (its routes are not in the web version's OpenAPI document). */
 export type Health = { status: string; database: 'postgresql' | 'sqlite'; desktop?: boolean }
-export type DesktopSettings = { ai_key_set: boolean; data_dir: string; restore_pending: boolean; app_version?: string | null }
+export type AiProviderId = 'groq' | 'deepseek' | 'openrouter' | 'gemini'
+export type AiProvider = { id: AiProviderId; name: string; model: string; key_set: boolean; problem?: 'invalid' | 'credit' | null }
+export type DesktopSettings = {
+  ai_key_set: boolean
+  data_dir: string
+  restore_pending: boolean
+  app_version?: string | null
+  ai_out_of_credit?: boolean
+  ai_key_invalid?: boolean
+  ai_provider?: AiProviderId
+  providers?: AiProvider[]
+}

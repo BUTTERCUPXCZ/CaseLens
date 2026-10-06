@@ -21,6 +21,7 @@ DRAFT = DigestDraft({
     Section.DOCTRINE: (DigestBlock((AnswerSentence("The President may not make law by executive order.", ("P132",)),)),),
     Section.FACTS: (DigestBlock((AnswerSentence("The PRC reported that exam questions had leaked.", ("P9",)),)),),
     Section.ISSUE: (DigestBlock((AnswerSentence("May the President regulate review centers by order? No.", ("P64", "P65")),)),),
+    Section.RULING: (DigestBlock((AnswerSentence("The petition was granted.", ("P132",)),)),),
     Section.RATIO: (DigestBlock((AnswerSentence("Only Congress can give CHED that power.", ("P120",)),), "1. The power is Congress's"),),
 })
 
@@ -77,8 +78,9 @@ def test_a_scope_is_its_own_digest_named_in_the_header(client, services, case_id
 def test_after_the_job_the_digest_is_readable_with_its_sources_and_the_levels(client, services, case_id, jobs):
     services.build_case_digest_v2().execute(client.post(f"/cases/{case_id}/case-digest").json() and jobs.case_digests[-1])  # the worker
     body = client.get(f"/cases/{case_id}/case-digest").json()
-    assert body["state"] == "ready" and body["written"] == 4 and body["dropped"] == 0
-    assert [s["key"] for s in body["sections"]] == ["doctrine", "facts", "issue", "ratio"]
+    assert body["state"] == "ready" and body["written"] == 5 and body["dropped"] == 0
+    assert body["current"] is True  # written by today's prompt and checks (an older digest would say False until written again)
+    assert [s["key"] for s in body["sections"]] == ["doctrine", "facts", "issue", "ruling", "ratio"]
     ratio = body["sections"][-1]["blocks"][0]
     assert ratio["heading"] == "1. The power is Congress's" and ratio["sentences"][0]["cites"] == ["P120"]
 
@@ -94,8 +96,8 @@ def test_the_word_file_follows_the_level_and_is_refused_until_the_digest_is_read
         return [p.text for p in docx.Document(io.BytesIO(response.content)).paragraphs if p.style.name == "Heading 1"]
 
     assert headings("short") == ["Doctrine", "Facts"]
-    assert headings("standard") == ["Doctrine", "Facts", "Issue"]
-    assert headings("full") == ["Doctrine", "Facts", "Issue", "Ratio Decidendi"]
+    assert headings("standard") == ["Doctrine", "Facts", "Issue", "Ruling"]
+    assert headings("full") == ["Doctrine", "Facts", "Issue", "Ruling", "Ratio Decidendi"]
     assert client.get(f"/cases/{case_id}/case-digest.docx", params={"level": "huge"}).status_code == 422
 
 

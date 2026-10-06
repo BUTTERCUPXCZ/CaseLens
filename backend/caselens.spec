@@ -10,7 +10,7 @@ datas = [
 binaries = []
 _WEB_ONLY = ("caselens.infrastructure.queue.actors", "caselens.infrastructure.queue.broker", "caselens.infrastructure.queue.rabbit_job_queue")
 hiddenimports = collect_submodules("caselens", filter=lambda name: name not in _WEB_ONLY) + collect_submodules("uvicorn") + ["sqlalchemy.dialects.sqlite"]
-for package in ("docx", "keyring", "google.genai", "fitz", "pymupdf", "selectolax"):
+for package in ("docx", "keyring", "google.genai", "groq", "openai", "jsonschema", "fitz", "pymupdf", "selectolax"):
     package_datas, package_binaries, package_imports = collect_all(package)
     datas += package_datas
     binaries += package_binaries

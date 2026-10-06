@@ -126,6 +126,41 @@ describe('Individual: one case, its full text, and what subject it is', () => {
     expect((started as { text: string }).text).toMatch(/^\d+ \(\d{4}\)$/) // the case's G.R. number with its year
   })
 
+  it('chooses only the row clicked when a decision and its Resolution share the number and the year, and sends that page', async () => {
+    const user = userEvent.setup()
+    const { IndividualForm } = await import('@/features/upload/IndividualForm')
+    const row = (title: string, date: string, url: string) => ({
+      title, gr_no: '88211', numbers: ['88211'], also_decided_with: [], decision_date: date, source_url: url, case_id: null, in_library: false,
+    })
+    const decision = 'https://lawphil.net/judjuris/juri1989/sep1989/gr_88211_1989.html'
+    const resolution = 'https://lawphil.net/judjuris/juri1989/oct1989/gr_88211_1989.html'
+    let started: unknown
+    server.use(
+      http.get(`${API}/catalog/search`, () =>
+        HttpResponse.json({
+          understood_as: 'number',
+          items: [row('Ferdinand E. Marcos, et al. vs. Honorable Raul Manglapus, et al.', '1989-10-27', resolution), row('Ferdinand E. Marcos vs. Raul Manglapus', '1989-09-15', decision)],
+          total: 2, limit: 20, offset: 0,
+          catalog: { state: 'ready', entries: 2, months_read: 1, months_known: 1, percent: 100 },
+          attribution: { source: 'Lawphil', notice: '' },
+        }),
+      ),
+      http.post(`${API}/bulk`, async ({ request }) => ((started = await request.json()), HttpResponse.json(progress, { status: 201 }))),
+    )
+    const onStarted = vi.fn()
+    await renderApp(<IndividualForm onStarted={onStarted} />)
+    await user.type(screen.getByLabelText('Find a case by name or G.R. number'), '88211')
+    await user.click(screen.getByRole('button', { name: 'Search' }))
+    const [first, second] = await screen.findAllByRole('button', { name: /^Choose / })
+    await user.click(second!)
+    expect(second).toHaveAttribute('aria-pressed', 'true')
+    expect(first).toHaveAttribute('aria-pressed', 'false') // same number and year, but not the one clicked
+
+    await user.click(screen.getByRole('button', { name: 'Open the case' }))
+    await waitFor(() => expect(onStarted).toHaveBeenCalled())
+    expect(started).toMatchObject({ kind: 'individual', text: '88211 (1989)', source_url: decision })
+  })
+
   it('opens one uploaded file as the case', async () => {
     const user = userEvent.setup()
     const { IndividualForm } = await import('@/features/upload/IndividualForm')
@@ -142,5 +177,24 @@ describe('Individual: one case, its full text, and what subject it is', () => {
     await user.click(screen.getByRole('button', { name: 'Open the case' }))
     await waitFor(() => expect(onStarted).toHaveBeenCalled())
     expect(files).toBe(1)
+  })
+
+  it('a file that lists several cases says to use Bulk, and leaves no empty upload behind', async () => {
+    const user = userEvent.setup()
+    const { IndividualForm } = await import('@/features/upload/IndividualForm')
+    let deleted = false
+    server.use(
+      http.post(`${API}/bulk`, () => HttpResponse.json(progress, { status: 201 })),
+      http.post(`${API}/bulk/:id/files`, () =>
+        HttpResponse.json({ detail: 'Individual is for one case. This has more than one: use Bulk for several cases.' }, { status: 400 }),
+      ),
+      http.delete(`${API}/bulk/:id`, () => ((deleted = true), new HttpResponse(null, { status: 204 }))),
+    )
+    await renderApp(<IndividualForm onStarted={vi.fn()} />)
+    await user.click(screen.getByRole('tab', { name: 'Upload the file' }))
+    await user.upload(screen.getByLabelText('The case file (PDF or Word)'), pdf('reviewer.pdf'))
+    await user.click(screen.getByRole('button', { name: 'Open the case' }))
+    expect(await screen.findByText(/use Bulk to digest all the cases/)).toBeInTheDocument()
+    expect(deleted).toBe(true)
   })
 })

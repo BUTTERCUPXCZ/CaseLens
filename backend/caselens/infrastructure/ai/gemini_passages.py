@@ -4,6 +4,7 @@ The model returns paragraph numbers, never text. The text a student sees is copi
 (`SuggestCourtPassages`), so nothing the model writes can reach the digest."""
 from caselens.application.ports.ai import PassageChecker, PassagePicker, PassageRequest
 from caselens.domain.digest import CheckResult, Verdict
+from caselens.infrastructure.ai.calls import CHECKER, WRITER
 from caselens.infrastructure.ai.gemini_answerer import _GeminiCall
 from caselens.infrastructure.config import Settings
 
@@ -65,7 +66,7 @@ _WORDS = {"facts": "FACTS", "issues": "ISSUE", "doctrine": "DOCTRINE"}
 class GeminiPassagePicker(PassagePicker):
     def __init__(self, settings: Settings, call: _GeminiCall | None = None) -> None:
         self._call = call or _GeminiCall(settings)
-        self._model = settings.gemini_writer_model
+        self._model = WRITER  # each provider picks its own writing model
 
     def pick(self, request: PassageRequest) -> dict[str, tuple[int, int] | None]:
         blocks = []
@@ -83,7 +84,7 @@ class GeminiPassagePicker(PassagePicker):
 class GeminiPassageChecker(PassageChecker):
     def __init__(self, settings: Settings, call: _GeminiCall | None = None) -> None:
         self._call = call or _GeminiCall(settings)
-        self._model = settings.gemini_checker_model
+        self._model = CHECKER
 
     def check(self, passages: dict[str, str]) -> dict[str, CheckResult]:
         blocks = [f"PART: {_WORDS[key]}\nPASSAGE:\n{text}" for key, text in passages.items()]

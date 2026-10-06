@@ -48,6 +48,7 @@ describe('friendlyError', () => {
     [400, 'Not an official Lawphil case URL: https://evil.example/a.html', /Lawphil case link/],
     [502, 'https://lawphil.net failed after 4 attempts', /isn't responding/],
     [404, 'Case 9 does not exist.', /couldn't find that/],
+    [400, 'Individual is for one case. This has more than one: use Bulk for several cases.', /use Bulk to digest all the cases/],
   ]
 
   it.each(cases)('status %i reads as a sentence the student can act on', (status, detail, expected) => {

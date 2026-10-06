@@ -2,8 +2,9 @@
 from caselens.application.ports.ai import DigestRequest, DigestWriter
 from caselens.domain.digest import AnswerSentence
 from caselens.domain.digest_v2 import DigestBlock, DigestDraft, Section
+from caselens.infrastructure.ai.calls import CHECKER, WRITER
 from caselens.infrastructure.ai.gemini_answerer import _GeminiCall, strip_inline_citations
-from caselens.infrastructure.ai.prompts.digest_v1 import CLIENT_PROMPT, DIGEST_PROMPT_VERSION, SYSTEM_RULES
+from caselens.infrastructure.ai.prompts.digest_v1 import CLIENT_PROMPT, DIGEST_PROMPT_VERSION, DIGEST_VERSION, SYSTEM_RULES
 from caselens.infrastructure.config import Settings
 
 _SENTENCE = {
@@ -47,7 +48,7 @@ def _render(request: DigestRequest) -> str:
 _REPAIR_RULES = """You are fixing sentences of a case digest that a checker rejected. You are given the decision's numbered passages (the only truth)
 and the rejected sentences, each with its section and the checker's reason. For each rejected sentence (they are numbered) write ONE replacement, giving its number in "number", that says
 only what the passages say (drop the part the checker said is not supported; keep what is supported; use the Court's own terms for legal
-concepts), with the ids of the passages it rests on in "cites". If the passages do not support any version of it, leave it out.
+concepts), with the ids of the passages it rests on in "cites". Cite only passages given above. If the passages do not support any version of it, leave it out.
 Never write an id inside the text. Keep the plain, simple language."""
 _REPAIR_SCHEMA = {
     "type": "object",
@@ -66,9 +67,14 @@ _REPAIR_SCHEMA = {
 
 
 class _Repair:
-    def repair(self, request: DigestRequest, failed: list[tuple[str, str, str]]) -> dict[int, AnswerSentence]:
-        rejected = "\n".join(f"{n}. [{section}] {text}\n   reason it was rejected: {reason}" for n, (section, text, reason) in enumerate(failed))
-        prompt = _render(request) + "\n\nREJECTED SENTENCES TO FIX:\n" + rejected
+    def repair(self, request: DigestRequest, failed: list[tuple[str, str, str, tuple[str, ...]]]) -> dict[int, AnswerSentence]:
+        """`request.sources` holds only the passages near the failed sentences (see `WriteCaseDigest._evidence`), not the decision."""
+        rejected = "\n".join(
+            f"{n}. [{section}] {text}\n   it cited: {', '.join(cites) or 'nothing'}\n   reason it was rejected: {reason}"
+            for n, (section, text, reason, cites) in enumerate(failed)
+        )
+        passages = "\n\n".join(f"[{p.id}] {p.text}" for p in request.sources)
+        prompt = f"CASE: {request.case_line}\n\nPASSAGES (the parts of the decision these sentences rely on):\n{passages}\n\nREJECTED SENTENCES TO FIX:\n{rejected}"
         data = self._call.json(self._model, _REPAIR_RULES, prompt, _REPAIR_SCHEMA, thinking_budget=self._thinking)
         fixed: dict[int, AnswerSentence] = {}
         for item in data.get("sentences", []):
@@ -83,7 +89,7 @@ class _Repair:
 class GeminiDigestWriter(_Repair, DigestWriter):
     def __init__(self, settings: Settings, call: _GeminiCall | None = None) -> None:
         self._call = call or _GeminiCall(settings)
-        self._model = settings.gemini_writer_model
+        self._model = WRITER  # each provider picks its own writing model
         budget = settings.case_digest_thinking_budget
         self._thinking = None if budget < 0 else budget
 
@@ -106,4 +112,4 @@ class GeminiDigestWriter(_Repair, DigestWriter):
         return draft
 
 
-__all__ = ["GeminiDigestWriter", "DIGEST_PROMPT_VERSION"]
+__all__ = ["GeminiDigestWriter", "DIGEST_PROMPT_VERSION", "DIGEST_VERSION"]

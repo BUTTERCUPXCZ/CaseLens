@@ -4,7 +4,13 @@ His prompt was written for a chat assistant that can browse. Here the model cann
 paragraphs and may use nothing else. Every sentence must name the paragraphs it rests on, and code and a second model
 check it. Edit the client's part only on the client's say-so."""
 
-DIGEST_PROMPT_VERSION = "digest-v2"  # v2: the shape of the client's own sample (Marcos v. Manglapus), key sentences in bold
+# v2: the shape of the client's own sample (Marcos v. Manglapus), key sentences in bold
+# v3: Topic Explained and Why only as the decision explains them (no general law in the AI's own words); no Dissents block without a dissent
+DIGEST_PROMPT_VERSION = "digest-v3"
+# What a READY digest was made with: the writer's prompt and the checking pipeline. Stored on each digest (`prompt_version`); a digest
+# with another stamp is still served (no surprise AI spend after an update) but reported as not current; "Write it again" renews it.
+# check-v2: code sorts every sentence, the second model sees only flagged and key sentences, repair sees only nearby paragraphs.
+DIGEST_VERSION = f"{DIGEST_PROMPT_VERSION}+check-v2"
 
 CLIENT_PROMPT = """You are my law school case digest tutor. Digest the case I provide while teaching me the legal topic behind it
 
@@ -61,9 +67,12 @@ ruling, the first sentence of each reasoning block, and each point to remember. 
   count cannot be checked. The dissents section names who disagreed.
 - "ratio": the Court's actual reasoning in numbered blocks (the heading of each block is the point, for example "1. The right involved is the right to return"), each with the rule, how it was applied, and why: 3 to 6 sentences per point, and where the Court gives several reasons or factors, put them in a list block after the paragraph. Include every step of the Court's reasoning, and end with what the decision says about the limits of its holding if it says so.
 - "dissents": ONE list block, one item per separate opinion that disagrees, each item starting with the justice's name and a colon
-  ("Gutierrez, Jr., J.: The issue is one of rights, not power ..."). Empty if there are none given.
-- "topic": teach the legal concept behind the case. First a paragraph block of one short sentence naming the concept (key). Then numbered blocks
-  with headings ("1. What is executive power?"): the rule, its elements or requirements, exceptions, and finally how this case shows it.
-- "why": the main lessons to remember for recitation: a list block of 3 to 6 points (key), drawn from the decision. No vote count.
-For "topic" you may explain the general concept in your own words, but every statement about THIS case must cite the passages; a general statement of law
-that is not in the passages must be kept to what the passages themselves say about the rule."""
+  ("Gutierrez, Jr., J.: The issue is one of rights, not power ..."). If no separate opinion disagrees with the majority, return no
+  "dissents" block at all: no sentence saying there is none, and no concurring opinion put here instead.
+- "topic": teach the legal concept AS THE DECISION ITSELF EXPLAINS IT. First a paragraph block of one short sentence naming the concept (key).
+  Then numbered blocks with headings ("1. What is executive power?"): the rule, its elements or requirements and its exceptions ONLY where the
+  passages state them, and finally how this case shows it. Every sentence cites the passages that state it.
+- "why": the main lessons to remember for recitation: a list block of 3 to 6 points (key), each a lesson the decision itself states. No vote count.
+THE DIGEST SAYS ONLY WHAT THE DECISION SAYS, in every section, "topic" and "why" included: no general law, no other cases, no textbook
+explanation and nothing you know from elsewhere that the passages do not contain. If the decision does not explain an element, a requirement or an
+exception, leave it out; do not fill it in. A shorter section is better than one sentence the decision does not support."""

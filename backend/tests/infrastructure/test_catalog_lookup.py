@@ -80,3 +80,15 @@ def test_search_by_number_without_a_year_still_asks_for_one_when_nothing_knows_i
 
     assert search.execute(GrNumber("999999"), None).status is SearchStatus.NEEDS_YEAR
     assert jobs.fetch_calls == []
+
+
+def test_a_number_with_a_decision_and_a_later_resolution_lists_the_decision_first():
+    """Marcos v. Manglapus (G.R. No. 88211): the Decision of September 15, 1989 and the Resolution of October 27, 1989 share the number."""
+    from datetime import date
+
+    sep, octo = IndexPage(1989, 9, f"{BASE}/judjuris/juri1989/sep1989/sep1989.html"), IndexPage(1989, 10, f"{BASE}/judjuris/juri1989/oct1989/oct1989.html")
+    decision, resolution = f"{BASE}/judjuris/juri1989/sep1989/gr_88211_1989.html", f"{BASE}/judjuris/juri1989/oct1989/gr_88211_1989.html"
+    catalog = InMemoryCatalogRepository()
+    catalog.replace_month(octo, [CatalogEntry(GrNumber("88211"), ("88211",), "Marcos vs. Manglapus", date(1989, 10, 27), resolution, octo.url)])
+    catalog.replace_month(sep, [CatalogEntry(GrNumber("88211"), ("88211",), "Marcos vs. Manglapus", date(1989, 9, 15), decision, sep.url)])
+    assert source(catalog, []).locate(GrNumber("88211"), None) == [decision, resolution]

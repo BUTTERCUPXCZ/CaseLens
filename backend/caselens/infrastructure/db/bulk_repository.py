@@ -13,13 +13,14 @@ def _item(row: BulkItemModel) -> BulkItem:
     return BulkItem(
         id=row.id, batch_id=row.batch_id, position=row.position, kind=ItemKind(row.kind), label=row.label, gr_no=row.gr_no,
         year=row.year, status=ItemStatus(row.status), message=row.message, case_id=row.case_id, reporter=row.reporter,
+        source_url=row.source_url,
     )
 
 
 def _fill(row: BulkItemModel, item: BulkItem) -> None:
     row.batch_id, row.position, row.kind, row.label = item.batch_id, item.position, item.kind.value, item.label
     row.gr_no, row.year, row.status, row.message, row.case_id = item.gr_no, item.year, item.status.value, item.message, item.case_id
-    row.reporter = item.reporter
+    row.reporter, row.source_url = item.reporter, item.source_url
 
 
 def _batch(row: BulkBatchModel) -> BulkBatch:

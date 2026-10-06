@@ -107,6 +107,11 @@ class CaseDigestV2:
     def scope_key(self) -> str:
         return scope_key(self.scope)
 
+    def is_current(self, version: str) -> bool:
+        """Written by the current prompt and checking pipeline (`version`, kept in `prompt_version`)? An older one is still served:
+        it is the cached digest until someone asks for it to be written again."""
+        return self.prompt_version == version
+
 
 @dataclass(frozen=True)
 class DigestHeader:

@@ -1,5 +1,6 @@
 import { postJson, putJson, query, request } from './client'
 import type {
+  AiProviderId,
   BatchDigestFilter,
   Bulk,
   BulkItems,
@@ -77,8 +78,9 @@ export const caseDownloadUrl = (caseId: number) => `/api/cases/${caseId}/documen
 
 // -- bulk upload ----------------------------------------------------------------
 
-export const startBulk = (text: string, subjectIds: number[], topicScope: string, kind: 'individual' | 'bulk' = 'bulk') =>
-  postJson<Bulk>('/bulk', { text, subject_ids: subjectIds, topic_scope: topicScope, kind })
+/** `sourceUrl` (Individual only): the exact Lawphil page picked, so a decision is never swapped for its Resolution with the same number. */
+export const startBulk = (text: string, subjectIds: number[], topicScope: string, kind: 'individual' | 'bulk' = 'bulk', sourceUrl?: string) =>
+  postJson<Bulk>('/bulk', { text, subject_ids: subjectIds, topic_scope: topicScope, kind, ...(sourceUrl ? { source_url: sourceUrl } : {}) })
 /** Decision files, a few at a time (the web host limits one request to about 4 MB). */
 export function addBulkFiles(batchId: number, files: File[]): Promise<BulkItems> {
   const form = new FormData()
@@ -96,7 +98,8 @@ export const getHealth = () => request<Health>('/health')
 
 /** The desktop app's Settings: the AI key (never sent back, only whether one is set), backup and restore. */
 export const getDesktopSettings = () => request<DesktopSettings>('/desktop/settings')
-export const saveAiKey = (key: string) => putJson<DesktopSettings>('/desktop/ai-key', { key })
+export const saveAiKey = (key: string, provider: AiProviderId = 'gemini') => putJson<DesktopSettings>('/desktop/ai-key', { key, provider })
+export const saveAiProvider = (provider: AiProviderId) => putJson<DesktopSettings>('/desktop/ai-provider', { provider })
 export const backupUrl = '/api/desktop/backup'
 export function restoreBackup(file: File): Promise<DesktopSettings> {
   const form = new FormData()

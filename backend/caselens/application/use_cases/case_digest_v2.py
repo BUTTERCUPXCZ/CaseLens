@@ -7,20 +7,30 @@ from caselens.application.ports.gateways import JobQueue
 from caselens.application.ports.repositories import CaseRepository, UnitOfWork
 from caselens.application.use_cases.build_digest_request import OpinionText, build_digest_request
 from caselens.application.use_cases.write_case_digest import WriteCaseDigest
-from caselens.domain.digest_v2 import CaseDigestV2, DigestState, clean_scope, scope_key
+from caselens.domain.digest_v2 import SECTION_TITLES, CaseDigestV2, DigestState, Section, clean_scope, scope_key
 from caselens.domain.entities import Case
-from caselens.domain.errors import AiCreditError, AiUnavailableError, CaseNotFoundError, DigestNotFoundError
+from caselens.domain.errors import AiUnavailableError, CaseNotFoundError, DigestNotFoundError
 
 logger = logging.getLogger(__name__)
 
 
 def _reason(exc: AiUnavailableError) -> str:
     """What the student reads: a credit problem says so (asking again cannot help); anything else is a passing outage."""
-    return AiCreditError.STUDENT_MESSAGE if isinstance(exc, AiCreditError) else _SERVICE_DOWN
+    return getattr(exc, "STUDENT_MESSAGE", _SERVICE_DOWN)  # a key / credit problem says what to do; anything else is a passing outage
 
-_NO_WRITER = "Written digests are not set up on this server."
+_NO_WRITER = "No AI key is saved yet, so digests cannot be written. Add an AI key (Groq, DeepSeek, OpenRouter or Gemini) in Settings, then click Try again."
 OVER_LIMIT_MESSAGE = "The limit for case digests this month has been reached. It will continue when the limit resets, or when it is raised."
-_SERVICE_DOWN = "The writing service did not answer. Try again in a moment."
+_SERVICE_DOWN = "The AI is busy or did not answer just now. This is not a problem with your file: wait a few minutes, then click Try again. Adding a second AI's key in Settings lets another AI take over next time."
+
+
+def missing_core_message(sections: list[Section]) -> str:
+    """ "We could not back the Doctrine and the Ruling ..." in the student's words."""
+    names = [SECTION_TITLES[s] for s in sections]
+    listed = names[0] if len(names) == 1 else ", ".join(names[:-1]) + " and " + names[-1]
+    return (
+        f"We could not back the {listed} of this digest with the decision's own paragraphs, so it was not finished. "
+        "Nothing unchecked is shown. Click Try again to write it once more."
+    )
 
 
 def opinions_of(case: Case) -> list[OpinionText]:
@@ -123,11 +133,20 @@ class BuildCaseDigestV2:
             logger.warning("case %s digest %s: not written: %s", case.id, digest_id, exc)
             return self._finish(digest, DigestState.FAILED, _reason(exc))
         after = self._usage()
+        calls = result.calls
+        logger.info(
+            "case %s digest %s: %d AI calls (writer %d, checker %d, repair %d); %d of %d sentences sent to the checker; %d kept, %d dropped",
+            case.id, digest_id, calls.total, calls.writer, calls.checker, calls.repair, result.checked, result.written, result.kept, len(result.dropped),
+        )
+        for line in result.dropped:
+            logger.info("case %s digest %s: dropped %s (%s)", case.id, digest_id, line.section.value, line.reason[:100])
+        if result.missing_core:
+            # Never shown as finished without its core: an older draft (if any) stays as it was, and the student is told plainly.
+            digest.input_tokens, digest.output_tokens = after[0] - before[0], after[1] - before[1]
+            return self._finish(digest, DigestState.FAILED, missing_core_message(result.missing_core))
         digest.draft, digest.written, digest.dropped = result.draft, result.written, len(result.dropped)
         digest.model, digest.prompt_version = self._model, self._prompt_version
         digest.input_tokens, digest.output_tokens = after[0] - before[0], after[1] - before[1]
-        for line in result.dropped:
-            logger.info("case %s digest %s: dropped %s (%s)", case.id, digest_id, line.section.value, line.reason[:100])
         return self._finish(digest, DigestState.READY, None)
 
     def _finish(self, digest: CaseDigestV2, state: DigestState, error: str | None) -> CaseDigestV2:

@@ -11,6 +11,7 @@ import {
   restoreBackup,
   retryBulk,
   saveAiKey,
+  saveAiProvider,
   setCaseSubjects,
   startBulk,
   startCatalogBuild,
@@ -18,7 +19,7 @@ import {
 import { chunkFiles } from '@/features/bulk/chunkFiles'
 
 import { keys } from './queries'
-import type { CaseQuestion, DesktopSettings } from './types'
+import type { AiProviderId, CaseQuestion, DesktopSettings } from './types'
 
 /** The student pastes a case's own Lawphil link and we save that case straight away. */
 export function useFetchByLink() {
@@ -79,12 +80,19 @@ export function useStartBulk() {
       topicScope: string
       files: File[]
       kind?: 'individual' | 'bulk'
+      sourceUrl?: string
       onProgress?: (sent: number, total: number) => void
     }) => {
-      const batch = await startBulk(input.text, input.subjectIds, input.topicScope, input.kind ?? 'bulk')
+      const batch = await startBulk(input.text, input.subjectIds, input.topicScope, input.kind ?? 'bulk', input.sourceUrl)
       let sent = 0
       for (const group of chunkFiles(input.files)) {
-        await addBulkFiles(batch.id, group)
+        try {
+          await addBulkFiles(batch.id, group)
+        } catch (error) {
+          // Refused before anything was added (and no G.R. numbers typed): remove the empty upload, so "My uploads" has no blank rows.
+          if (sent === 0 && !input.text.trim()) await deleteBulk(batch.id).catch(() => undefined)
+          throw error
+        }
         sent += group.length
         input.onProgress?.(sent, input.files.length)
       }
@@ -146,7 +154,16 @@ export function useSectionEdits(caseId: number, scope: string, batchId: number, 
 export function useSaveAiKey() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: saveAiKey,
+    mutationFn: ({ key, provider }: { key: string; provider: AiProviderId }) => saveAiKey(key, provider),
+    onSuccess: (settings: DesktopSettings) => queryClient.setQueryData(keys.desktopSettings, settings),
+  })
+}
+
+/** Which AI writes first; the others with a key take over when it cannot answer. */
+export function useSaveAiProvider() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: saveAiProvider,
     onSuccess: (settings: DesktopSettings) => queryClient.setQueryData(keys.desktopSettings, settings),
   })
 }

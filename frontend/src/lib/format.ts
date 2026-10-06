@@ -55,6 +55,12 @@ export function toTitleCase(text: string): string {
 
 const ABBREVIATIONS = new Set(['inc', 'co', 'corp', 'ltd', 'jr', 'sr', 'bros', 'al'])
 
+// What a caption adds to a party's name that is not the name (the twin of `_strip_party_notes` in the backend's case_names.py): an aside in
+// brackets ("(formerly AASJS)", with a footnote number glued after it), and the people acting for an organisation ("OFFICERS/MEMBERS ...").
+const ASIDE = /\s*\([^()]*\)\d*/g
+const ACTING_FOR = /\s+(?:(?:officers?|members?)\s*(?:\/|and)\s*(?:officers?|members?)|represented\s+by)\b.*$/i
+const stripPartyNotes = (side: string) => side.replace(ASIDE, '').replace(ACTING_FOR, '').replace(/^[\s,;]+|[\s,;]+$/g, '')
+
 /** Drop trailing commas and spaces, and a sentence-ending period, but keep the period of an
  *  abbreviation that belongs to the name ("Inc.", "Jr."). */
 function trimEnd(text: string): string {
@@ -81,12 +87,12 @@ export function shortCaseName(title: string | null | undefined): string {
   // "vs" is the divider when the caption has one; a lone "V." can be a middle initial ("RADITO V. PADRIGANO").
   const parts = /\s+vs\.?\s+/i.test(title) ? title.split(/\s+vs\.?\s+/i) : title.split(/\s+v\.?\s+/i)
   if (parts.length < 2) {
-    const only = lead(title.replace(/,\s*(Petitioners?|Respondents?).*$/i, '').trim())
+    const only = lead(stripPartyNotes(title.replace(/,\s*(Petitioners?|Respondents?).*$/i, '').trim()))
     return `${toTitleCase(only.name)}${only.more ? ' et al.' : ''}`
   }
 
   const clean = (side: string) =>
-    trimEnd(side.replace(/,?\s*(Petitioners?|Respondents?|Appellants?|Appellees?|Plaintiffs?|Defendants?)\b.*$/i, ''))
+    trimEnd(stripPartyNotes(side.replace(/,?\s*(Petitioners?|Respondents?|Appellants?|Appellees?|Plaintiffs?|Defendants?)\b.*$/i, '')))
 
   const first = lead(clean(parts[0]))
   const secondFull = clean(parts.slice(1).join(' vs. '))

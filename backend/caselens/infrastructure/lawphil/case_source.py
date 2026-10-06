@@ -45,7 +45,10 @@ class LawphilCaseSource(CaseLocator, CaseFetcher):
 
     def locate(self, gr_no: GrNumber, claimed_year: int | None) -> list[str]:
         if self._catalog is not None:
-            from_catalog = list(dict.fromkeys(e.source_url for e in self._catalog.find_by_number(gr_no)))
+            # Oldest first: a number's Decision comes before the Resolutions on it (a motion for reconsideration is decided later),
+            # and the Decision is the case a student means. An undated row goes last.
+            entries = sorted(self._catalog.find_by_number(gr_no), key=lambda e: (e.decision_date is None, e.decision_date or date.min))
+            from_catalog = list(dict.fromkeys(e.source_url for e in entries))
             if from_catalog:
                 return from_catalog
         if claimed_year is None:

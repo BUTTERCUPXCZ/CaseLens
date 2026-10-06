@@ -1,5 +1,6 @@
-"""The client's AI key, kept in the computer's password store (Windows Credential Manager, the Mac Keychain). It is never written
-to the database or shown back. Where no password store works (some Linux setups), it falls back to a file only the user can read."""
+"""The client's AI keys (one per provider: Gemini, Groq, DeepSeek), kept in the computer's password store (Windows Credential
+Manager, the Mac Keychain). They are never written to the database or shown back. Where no password store works (some Linux
+setups), each falls back to a file only the user can read. The chosen provider is a small file in the app's folder."""
 import logging
 import os
 from pathlib import Path
@@ -7,48 +8,54 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 _SERVICE = "CaseLens"
-_ACCOUNT = "gemini-api-key"
-_FILE = "ai-key.txt"
+_PROVIDERS = ("gemini", "groq", "deepseek", "openrouter")
+_PROVIDER_FILE = "ai-provider.txt"
 
 
-def _fallback(data_dir: str | None) -> Path | None:
-    return Path(data_dir) / _FILE if data_dir else None
+def _account(provider: str) -> str:
+    return f"{provider}-api-key"  # "gemini-api-key" is the name the first versions used: an existing key keeps working
 
 
-def read_ai_key(data_dir: str | None) -> str | None:
+def _fallback(data_dir: str | None, provider: str) -> Path | None:
+    if not data_dir:
+        return None
+    return Path(data_dir) / ("ai-key.txt" if provider == "gemini" else f"ai-key-{provider}.txt")
+
+
+def read_ai_key(data_dir: str | None, provider: str = "gemini") -> str | None:
     try:
         import keyring
 
-        key = keyring.get_password(_SERVICE, _ACCOUNT)
+        key = keyring.get_password(_SERVICE, _account(provider))
         if key:
             return key
     except Exception:  # noqa: BLE001  no password store on this computer
         logger.info("password store not available; using the key file")
-    path = _fallback(data_dir)
+    path = _fallback(data_dir, provider)
     if path and path.exists():
         return path.read_text(encoding="utf-8").strip() or None
     return None
 
 
-def save_ai_key(data_dir: str | None, key: str | None) -> None:
+def save_ai_key(data_dir: str | None, key: str | None, provider: str = "gemini") -> None:
     """Keep the key (None removes it)."""
     try:
         import keyring
 
         if key:
-            keyring.set_password(_SERVICE, _ACCOUNT, key)
+            keyring.set_password(_SERVICE, _account(provider), key)
         else:
             try:
-                keyring.delete_password(_SERVICE, _ACCOUNT)
+                keyring.delete_password(_SERVICE, _account(provider))
             except Exception:  # noqa: BLE001  nothing was stored
                 pass
-        path = _fallback(data_dir)
+        path = _fallback(data_dir, provider)
         if path and path.exists():
             path.unlink()  # a key once kept in the file is moved to the password store
         return
     except Exception:  # noqa: BLE001
         logger.info("password store not available; keeping the key in a private file")
-    path = _fallback(data_dir)
+    path = _fallback(data_dir, provider)
     if path is None:
         raise RuntimeError("No place to keep the key.")
     if key:
@@ -59,3 +66,17 @@ def save_ai_key(data_dir: str | None, key: str | None) -> None:
             out.write(key)
     elif path.exists():
         path.unlink()
+
+
+def read_provider(data_dir: str | None) -> str | None:
+    path = Path(data_dir) / _PROVIDER_FILE if data_dir else None
+    if path and path.exists():
+        chosen = path.read_text(encoding="utf-8").strip()
+        return chosen if chosen in _PROVIDERS else None
+    return None
+
+
+def save_provider(data_dir: str, provider: str) -> None:
+    if provider not in _PROVIDERS:
+        raise ValueError(f"Unknown AI provider: {provider}")
+    (Path(data_dir) / _PROVIDER_FILE).write_text(provider, encoding="utf-8")

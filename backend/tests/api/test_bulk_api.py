@@ -206,3 +206,23 @@ def test_my_uploads_names_the_cases_each_upload_gave(client, services, jobs):
     listed = next(b for b in client.get("/bulk").json() if b["id"] == batch["id"])
     assert listed["case_total"] == 1 and listed["cases"][0]["gr_no"] == "180046"
     assert listed["cases"][0]["name"].startswith("Review Center Association of the Philippines")
+
+
+def test_individual_opens_the_exact_lawphil_page_picked_not_the_newest_page_for_the_number(db_session, jobs):
+    """A decision and its later Resolution share the G.R. number and the year: the page the student picked decides, not the number."""
+    newest = "https://lawphil.net/judjuris/juri2009/oct2009/gr_180046_2009.html"  # what the number alone would open first
+    source = FixtureCaseSource({OFFICIAL_URL: official_html()}, {"180046": [newest]})
+    services = Services(db_session, case_locator=source, case_fetcher=source, jobs=jobs)
+    app = create_app()
+    app.dependency_overrides[get_services] = lambda: services
+    client = TestClient(app)
+
+    batch = client.post("/bulk", json={"text": "180046 (2009)", "kind": "individual", "source_url": OFFICIAL_URL}).json()
+    work(services, jobs)
+    item = client.get(f"/bulk/{batch['id']}/items").json()["items"][0]
+    assert item["status"] == "found" and source.fetch_calls == [OFFICIAL_URL] and source.locate_calls == []
+
+
+def test_a_picked_page_is_only_for_individual_and_only_a_lawphil_case_page(client):
+    assert client.post("/bulk", json={"text": "180046", "kind": "bulk", "source_url": OFFICIAL_URL}).status_code == 400
+    assert client.post("/bulk", json={"text": "180046", "kind": "individual", "source_url": "https://example.com/x.html"}).status_code == 422

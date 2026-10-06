@@ -27,6 +27,12 @@ describe('shortCaseName', () => {
     )
   })
 
+  it('names an organisation, not the officers acting for it, and drops a bracketed aside (ABAKADA v. Purisima, GR 166715)', () => {
+    const title =
+      'ABAKADA GURO PARTY LIST (formerly AASJS)1 OFFICERS/MEMBERS SAMSON S. ALCANTARA, ED VINCENT S. ALBANO, ROMEO R. ROBISO, RENE B. GOROSPE and EDWIN R. SANDOVAL, petitioners, vs. HON. CESAR V. PURISIMA, in his capacity as Secretary of Finance, HON. GUILLERMO L. PARAYNO, JR., in his capacity as Commissioner of the Bureau of Internal Revenue, and HON. ALBERTO D. LINA, in his Capacity as Commissioner of Bureau of Customs, respondents.'
+    expect(shortCaseName(title)).toBe('Abakada Guro Party List v. Hon. Cesar V. Purisima et al.')
+  })
+
   it('handles a single respondent without et al. (synthetic)', () => {
     expect(shortCaseName('ALPHA CORP, Petitioner, vs. BETA INC., Respondent.')).toBe('Alpha Corp v. Beta Inc.')
   })

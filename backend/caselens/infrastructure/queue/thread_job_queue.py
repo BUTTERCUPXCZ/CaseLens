@@ -1,12 +1,35 @@
 import logging
+import time
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
+
+from sqlalchemy.exc import OperationalError
 
 from caselens.application.ports.gateways import JobQueue
 from caselens.application.ports.locks import JobLockRepository
 from caselens.infrastructure.queue import jobs, lock_keys
 
 logger = logging.getLogger(__name__)
+
+_BUSY_RETRIES = (2, 5, 10)  # seconds to wait before trying a job again when the database was busy
+
+
+def _database_busy(exc: BaseException) -> bool:
+    """SQLite (the desktop app) refuses a write while another job is writing: "database is locked". The jobs are safe to run
+    again from the start (a finished step is skipped), so the job simply runs again a moment later."""
+    return isinstance(exc, OperationalError) and "database is locked" in str(exc)
+
+
+def _with_retry_when_busy(job: Callable[..., None], *args: object) -> None:
+    for wait in (*_BUSY_RETRIES, None):
+        try:
+            job(*args)
+            return
+        except Exception as exc:
+            if wait is None or not _database_busy(exc):
+                raise
+            logger.info("%s: the database was busy; trying again in %ss", job.__name__, wait)
+            time.sleep(wait)
 
 
 class ThreadJobQueue(JobQueue):
@@ -73,7 +96,7 @@ class ThreadJobQueue(JobQueue):
 
         def task() -> None:
             try:
-                job(*args)
+                _with_retry_when_busy(job, *args)
             except Exception:
                 logger.exception("background job %s failed", job.__name__)
                 if lock is not None and free_on_failure:

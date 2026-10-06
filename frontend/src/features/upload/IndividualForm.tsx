@@ -22,7 +22,8 @@ const ACCEPT = {
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
 }
 
-type Picked = { title: string; text: string }
+/** The exact Lawphil page chosen: a decision and its later Resolution share the G.R. number and the year, so the page identifies it. */
+type Picked = { title: string; text: string; sourceUrl: string }
 
 function FindOnLawphil({ picked, onPick }: { picked: Picked | null; onPick: (next: Picked) => void }) {
   const [draft, setDraft] = useState('')
@@ -58,7 +59,7 @@ function FindOnLawphil({ picked, onPick }: { picked: Picked | null; onPick: (nex
         <ul className="divide-y divide-border border-y border-border" aria-label="Matching decisions">
           {results.data.items.map((item: CatalogItem) => {
             const text = `${item.gr_no}${item.decision_date ? ` (${item.decision_date.slice(0, 4)})` : ''}`
-            const on = picked?.text === text
+            const on = picked?.sourceUrl === item.source_url
             return (
               <li key={item.source_url} className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-3">
                 <div className="min-w-0 flex-1 basis-64">
@@ -67,7 +68,7 @@ function FindOnLawphil({ picked, onPick }: { picked: Picked | null; onPick: (nex
                     G.R. No. {item.gr_no} &middot; {formatDate(item.decision_date)}
                   </p>
                 </div>
-                <Button variant={on ? 'default' : 'outline'} aria-pressed={on} aria-label={individualCopy.chooseLabel(item.title)} onClick={() => onPick({ title: item.title, text })}>
+                <Button variant={on ? 'default' : 'outline'} aria-pressed={on} aria-label={individualCopy.chooseLabel(item.title)} onClick={() => onPick({ title: item.title, text, sourceUrl: item.source_url })}>
                   {on ? <CircleCheck data-icon="inline-start" aria-hidden /> : null}
                   {on ? individualCopy.chosen : individualCopy.choose}
                 </Button>
@@ -148,7 +149,7 @@ export function IndividualForm({ onStarted }: { onStarted: (batchId: number) => 
     setMissing(false)
     start.mutate(
       how === 'find'
-        ? { kind: 'individual', text: picked!.text, subjectIds: tags, topicScope: scope.trim(), files: [] }
+        ? { kind: 'individual', text: picked!.text, sourceUrl: picked!.sourceUrl, subjectIds: tags, topicScope: scope.trim(), files: [] }
         : { kind: 'individual', text: '', subjectIds: tags, topicScope: scope.trim(), files: [file!] },
       { onSuccess: (batch) => onStarted(batch.id) },
     )

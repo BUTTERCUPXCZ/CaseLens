@@ -127,7 +127,7 @@ def _many(n):
 def test_the_check_groups_are_judged_at_the_same_time_and_the_result_keeps_the_writers_order():
     import time
 
-    lines = _many(70)  # three groups of up to 25
+    lines = _many(90)  # three groups of up to 40 (these sentences are flagged: words of their own that P6 does not have)
     checker = SlowChecker(unsupported={lines[30][0]})
     started = time.monotonic()
     result = run(ScriptedDigestWriter(draft(*lines)), checker, repair=False)
@@ -145,3 +145,97 @@ def test_a_check_group_that_fails_still_fails_the_digest():
     lines = _many(60)
     with pytest.raises(AiUnavailableError):
         run(ScriptedDigestWriter(draft(*lines)), SlowChecker(seconds=0.01, fail_on=lines[40][0]), repair=False)
+
+
+# -- fewer AI calls: code sorts every sentence, the second model sees only what code cannot settle ---------------------------------
+
+PLAIN = ("In February 1986, Ferdinand E. Marcos was deposed from the presidency.", ["P6"])  # P6's own words: code finds nothing wrong
+PLAIN_TOO = ("The President has decided to bar the Marcoses from returning.", ["P9"])
+
+
+def test_when_code_finds_nothing_wrong_the_digest_costs_one_call():
+    checker = VerdictChecker()
+    result = run(ScriptedDigestWriter(draft(PLAIN, PLAIN_TOO)), checker)
+    assert texts(result) == [PLAIN[0], PLAIN_TOO[0]]
+    assert checker.seen == [] and (result.calls.writer, result.calls.checker, result.calls.repair) == (1, 0, 0) and result.checked == 0
+
+
+def test_only_flagged_sentences_and_bold_key_sentences_reach_the_checker_in_one_call():
+    key = AnswerSentence(PLAIN_TOO[0], ("P9",), key=True)  # a sentence the student must not miss is always judged
+    flagged = AnswerSentence("The President always has the power to bar the Marcoses from returning.", ("P9",))
+    writer = ScriptedDigestWriter(DigestDraft({Section.FACTS: (DigestBlock((AnswerSentence(*PLAIN[:1], tuple(PLAIN[1])), key, flagged)),)}))
+    checker = VerdictChecker()
+    result = run(writer, checker)
+    assert checker.seen == [[key.text, flagged.text]] and result.calls.checker == 1 and result.checked == 2
+    assert texts(result) == [PLAIN[0], key.text, flagged.text]
+
+
+def test_checking_everything_is_still_one_setting_away():
+    checker = VerdictChecker()
+    run(ScriptedDigestWriter(draft(PLAIN, PLAIN_TOO)), checker, check_mode="all")
+    assert checker.seen == [[PLAIN[0], PLAIN_TOO[0]]]
+
+
+LONG = DigestRequest(
+    (SOURCES[0],) + tuple(SourcePassage(f"P{n}", f"Paragraph {n} of the decision says the petition raises issue number {n}.") for n in range(1, 41)),
+    "Marcos v. Manglapus, G.R. No. 88211",
+)
+
+
+def test_the_repair_sees_only_the_failed_sentences_and_the_paragraphs_near_what_they_cited():
+    good = ("Paragraph 3 of the decision says the petition raises issue number 3.", ["P3"])
+    bad = ("Paragraph 20 says the petition raises issue number 99.", ["P20"])  # 99 is nowhere in the decision
+    writer = ScriptedDigestWriter(draft(good, bad), repairs={0: AnswerSentence("Paragraph 20 says the petition raises issue number 20.", ("P20",))})
+    result = WriteCaseDigest(writer, VerdictChecker()).execute(LONG)
+
+    assert len(writer.requests) == 1  # the digest is written once, never again
+    assert [f[1] for f in writer.repair_calls[0]] == [bad[0]] and writer.repair_calls[0][0][3] == ("P20",)  # only the failed one, with its cites
+    assert [s.id for s in writer.repair_requests[0].sources] == ["C1", "P18", "P19", "P20", "P21", "P22"]  # not the 40 paragraphs
+    assert texts(result) == [good[0], "Paragraph 20 says the petition raises issue number 20."] and result.calls.repair == 1
+
+
+def test_a_rewrite_code_rejects_is_dropped_without_asking_the_checker():
+    checker = VerdictChecker()
+    writer = ScriptedDigestWriter(draft(("The President feared a coup in 1999.", ["P9"])), repairs={0: AnswerSentence("Still wrong in 1999.", ("P9",))})
+    result = run(writer, checker)
+    assert texts(result) == [] and checker.seen == [] and result.calls.total == 2  # the writer and the repair, no checker
+
+
+def test_a_rewrite_code_cannot_settle_is_judged_alone_not_the_whole_digest_again():
+    flagged = "The President always has the power to bar the Marcoses from returning."
+    checker = VerdictChecker(unsupported={flagged})
+    rewrite = AnswerSentence("The President, citing stability, will always bar the Marcoses from returning.", ("P9",))
+    result = run(ScriptedDigestWriter(draft(PLAIN, (flagged, ["P9"])), repairs={0: rewrite}), checker)
+    assert checker.seen == [[flagged], [rewrite.text]]  # the first pass, then only the rewrite: never the full digest
+    assert texts(result) == [PLAIN[0], rewrite.text] and result.calls.checker == 2
+
+
+def test_the_core_sections_left_empty_are_reported():
+    result = run(ScriptedDigestWriter(draft(PLAIN)))
+    assert result.missing_core == [Section.DOCTRINE, Section.ISSUE, Section.RULING]
+
+
+def test_topic_explained_is_always_judged_even_when_code_finds_nothing_wrong():
+    """Topic Explained can sound right in the paragraph's own words yet teach more than the decision says: the second model always reads it."""
+    topic = AnswerSentence(PLAIN_TOO[0], ("P9",))
+    facts = AnswerSentence(PLAIN[0], tuple(PLAIN[1]))
+    checker = VerdictChecker()
+    writer = ScriptedDigestWriter(DigestDraft({Section.FACTS: (DigestBlock((facts,)),), Section.TOPIC: (DigestBlock((topic,)),)}))
+    result = run(writer, checker)
+    assert checker.seen == [[topic.text]]  # the Facts line that passes code is not sent; the Topic line is
+    assert texts(result, Section.TOPIC) == [topic.text]
+
+
+def test_a_topic_line_the_decision_does_not_back_is_left_out():
+    general = "The President has decided to bar the Marcoses from returning, as executive power always allows in every case."
+    checker = VerdictChecker(unsupported={general})
+    result = run(ScriptedDigestWriter(draft((general, ["P9"]), section=Section.TOPIC)), checker, repair=False)
+    assert texts(result, Section.TOPIC) == [] and "checker" in result.dropped[0].reason
+
+
+def test_the_writer_is_told_the_digest_says_only_what_the_decision_says():
+    from caselens.infrastructure.ai.prompts.digest_v1 import DIGEST_VERSION, SYSTEM_RULES
+
+    assert "in your own words" not in SYSTEM_RULES and "ONLY WHAT THE DECISION SAYS" in SYSTEM_RULES
+    assert 'no "dissents" block at all' in SYSTEM_RULES.replace("\n  ", " ")
+    assert DIGEST_VERSION.startswith("digest-v3")  # digests written before this are shown as not current

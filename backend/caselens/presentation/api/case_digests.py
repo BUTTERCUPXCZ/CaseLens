@@ -11,6 +11,7 @@ from caselens.composition import Services
 from caselens.domain.digest_v2 import LEVEL_SECTIONS, clean_scope, SECTION_TITLES, CaseDigestV2, DigestHeader, Level, Section
 from caselens.domain.entities import Case
 from caselens.domain.section_edits import section_text, with_edits
+from caselens.infrastructure.ai.prompts.digest_v1 import DIGEST_VERSION
 from caselens.presentation.dependencies import get_services
 
 router = APIRouter(tags=["case digests"])
@@ -57,6 +58,7 @@ class CaseDigestOut(BaseModel):
     sections: list[DigestSectionOut]
     levels: dict[str, list[str]]  # which sections each download level prints
     updated_at: datetime | None
+    current: bool = True  # written by the current prompt and checks; False: an older digest, kept until "Write it again"
 
     @classmethod
     def build(cls, case: Case, digest: CaseDigestV2 | None, header: DigestHeader, edits: dict[Section, str] | None = None) -> "CaseDigestOut":
@@ -82,6 +84,7 @@ class CaseDigestOut(BaseModel):
             sections=sections,
             levels={level.value: [s.value for s in sections_] for level, sections_ in LEVEL_SECTIONS.items()},
             updated_at=digest.updated_at if digest else None,
+            current=digest.is_current(DIGEST_VERSION) if digest else True,
         )
 
 

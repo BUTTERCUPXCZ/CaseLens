@@ -39,6 +39,17 @@ def title_case(text: str) -> str:
     return "".join(out)
 
 
+# What a caption adds to a party's name that is not the name: an aside in brackets ("(formerly AASJS)", with a footnote number glued after
+# it), and the people acting for an organisation ("OFFICERS/MEMBERS SAMSON S. ALCANTARA, ...", "represented by its President, ...").
+_ASIDE = re.compile(r"\s*\([^()]*\)\d*")
+_ACTING_FOR = re.compile(r"\s+(?:(?:officers?|members?)\s*(?:/|and)\s*(?:officers?|members?)|represented\s+by)\b.*$", re.IGNORECASE)
+
+
+def _strip_party_notes(side: str) -> str:
+    """ "ABAKADA GURO PARTY LIST (formerly AASJS)1 OFFICERS/MEMBERS SAMSON S. ALCANTARA, ..." -> "ABAKADA GURO PARTY LIST" """
+    return _ACTING_FOR.sub("", _ASIDE.sub("", side)).strip(" ,;")
+
+
 def _trim_end(text: str) -> str:
     trimmed = re.sub(r"[,\s]+$", "", text)
     if trimmed.endswith("."):
@@ -62,11 +73,11 @@ def short_case_name(title: str | None) -> str:
     # "vs" is the divider when the caption has one; a lone "V." can be a middle initial ("RADITO V. PADRIGANO").
     parts = re.split(r"\s+vs\.?\s+", title, flags=re.IGNORECASE) if re.search(r"\s+vs\.?\s+", title, flags=re.IGNORECASE) else re.split(r"\s+v\.?\s+", title, flags=re.IGNORECASE)
     if len(parts) < 2:
-        name, more = _lead(re.sub(rf",\s*{_PARTY_ROLES}.*$", "", title, flags=re.IGNORECASE).strip())
+        name, more = _lead(_strip_party_notes(re.sub(rf",\s*{_PARTY_ROLES}.*$", "", title, flags=re.IGNORECASE).strip()))
         return f"{title_case(name)}{' et al.' if more else ''}"
 
     def clean(side: str) -> str:
-        return _trim_end(re.sub(rf",?\s*{_PARTY_ROLES}\b.*$", "", side, flags=re.IGNORECASE))
+        return _trim_end(_strip_party_notes(re.sub(rf",?\s*{_PARTY_ROLES}\b.*$", "", side, flags=re.IGNORECASE)))
 
     first, first_more = _lead(clean(parts[0]))
     second, second_more = _lead(clean(" vs. ".join(parts[1:])))
@@ -76,7 +87,8 @@ def short_case_name(title: str | None) -> str:
 _ORGANISATION_WORDS = re.compile(
     r"\b(?:Association|Corporation|Corp|Company|Co|Inc|Union|Bank|Commission|Department|Republic|People|City|Municipality|Province|Congress|Senate|"
     r"House|Court|Office|Board|Authority|Agency|Foundation|Club|Federation|Center|Centre|Institute|University|College|School|Hospital|Philippines|"
-    r"Government|Bureau|Council|Society|Cooperative|Partnership|Enterprises|Industries|Services|Insurance)\b",
+    r"Government|Bureau|Council|Society|Cooperative|Partnership|Enterprises|Industries|Services|Insurance|Party|Partylist|List|Alliance|"
+    r"Coalition|Movement|Organization|Organisation|Group|Network)\b",
     re.IGNORECASE,
 )
 _TITLES = r"(?:Honorable|Hon\.|Atty\.|Attorney|Secretary|Executive Secretary|Director|Commissioner|Judge|Justice|Mayor|Governor|Dr\.|Engr\.)"

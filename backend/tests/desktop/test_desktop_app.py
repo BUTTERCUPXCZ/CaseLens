@@ -27,6 +27,10 @@ def _library(path: Path):
 class _Settings:
     def __init__(self, data_dir: Path, key: str | None = None) -> None:
         self.caselens_data_dir, self.gemini_api_key = str(data_dir), key
+        self.groq_api_key = self.deepseek_api_key = self.openrouter_api_key = None
+        self.ai_provider = "gemini"
+        self.groq_model, self.deepseek_model, self.gemini_writer_model = "openai/gpt-oss-120b", "deepseek-flash", "gemini-3.5-flash"
+        self.openrouter_model = "deepseek/deepseek-v4.1-flash"
 
 
 @pytest.fixture
@@ -49,7 +53,10 @@ def desktop(tmp_path, screens, monkeypatch) -> TestClient:
     getter.cache_clear = lambda: None
     monkeypatch.setattr(desktop_api, "get_settings", getter)
     monkeypatch.setattr(desktop_api, "engine", engine)
-    monkeypatch.setattr(desktop_api, "save_ai_key", lambda _folder, key: setattr(settings, "gemini_api_key", key))
+    monkeypatch.setattr(desktop_api, "save_ai_key", lambda _folder, key, provider="gemini": setattr(settings, f"{provider}_api_key", key))
+    monkeypatch.setattr(desktop_api, "save_provider", lambda _folder, provider: setattr(settings, "ai_provider", provider))
+    monkeypatch.setattr(desktop_api, "check_gemini_key", lambda key: key != "not-a-real-key")  # no calls to Google in tests
+    monkeypatch.setattr(desktop_api, "check_key", lambda provider, key: key != "not-a-real-key")
     yield TestClient(create_desktop_app(screens), base_url=LOCAL, headers={"Origin": LOCAL})
     engine.dispose()
 
@@ -190,3 +197,38 @@ def test_a_new_version_copies_the_library_first_and_keeps_the_last_three(tmp_pat
         backup_before_update(tmp_path, version)
     assert sorted(p.name for p in (tmp_path / "backups").iterdir()) == ["before-1.3.0.db", "before-1.4.0.db", "before-1.5.0.db"]
     assert (tmp_path / "version.txt").read_text() == "1.5.0"
+
+
+def test_a_key_google_refuses_is_not_saved_and_says_why(desktop):
+    refused = desktop.put("/api/desktop/ai-key", json={"key": "not-a-real-key"})
+    assert refused.status_code == 400 and "not a valid Gemini API key" in refused.json()["detail"]
+    assert desktop.get("/api/desktop/settings").json()["ai_key_set"] is False
+
+
+def test_settings_say_when_the_saved_key_is_refused_or_out_of_credit(desktop):
+    from caselens.infrastructure.ai import calls, gemini_answerer
+
+    calls.forget_key_problem()
+    gemini_answerer._note_key_problem("invalid")
+    assert desktop.get("/api/desktop/settings").json()["ai_key_invalid"] is True
+    gemini_answerer._note_key_problem("credit")
+    body = desktop.get("/api/desktop/settings").json()
+    assert body["ai_out_of_credit"] is True and body["ai_key_invalid"] is False
+    desktop.put("/api/desktop/ai-key", json={"key": "a-new-working-key"})  # a new key: the warning goes
+    assert desktop.get("/api/desktop/settings").json()["ai_out_of_credit"] is False
+
+
+def test_each_provider_has_its_own_key_and_the_chosen_one_writes_first(desktop):
+    from caselens.infrastructure.ai import calls
+
+    calls.forget_key_problem()
+    assert desktop.put("/api/desktop/ai-key", json={"provider": "groq", "key": "gsk_working"}).status_code == 200
+    body = desktop.put("/api/desktop/ai-provider", json={"provider": "groq"}).json()
+    assert body["ai_provider"] == "groq" and body["ai_key_set"] is True
+    groq = next(p for p in body["providers"] if p["id"] == "groq")
+    assert groq == {"id": "groq", "name": "Groq", "model": "openai/gpt-oss-120b", "key_set": True, "problem": None}
+    assert next(p for p in body["providers"] if p["id"] == "deepseek")["key_set"] is False
+
+    refused = desktop.put("/api/desktop/ai-key", json={"provider": "deepseek", "key": "not-a-real-key"})
+    assert refused.status_code == 400 and "DeepSeek says" in refused.json()["detail"]
+    assert desktop.put("/api/desktop/ai-provider", json={"provider": "openai"}).status_code == 422  # only the three

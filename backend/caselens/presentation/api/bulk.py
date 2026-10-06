@@ -21,6 +21,8 @@ class BulkStartIn(BaseModel):
     subject_ids: list[int] = Field(default_factory=list, max_length=20)  # the tags for every case of this upload (may be none)
     topic_scope: str = Field("", max_length=300)  # narrows every digest of this upload to one doctrine or issue
     kind: Literal["individual", "bulk"] = "bulk"  # individual: one case, opened for its full text
+    # Individual only: the exact Lawphil page picked from the search (a decision and its Resolution share the number and year).
+    source_url: str | None = Field(None, max_length=500, pattern=r"^https://(www\.)?lawphil\.net/judjuris/.+\.html$")
 
 
 class BulkCountsOut(BaseModel):
@@ -111,7 +113,7 @@ def _items_out(services: Services, items: list[BulkItem], scope: str) -> list[Bu
 def start_bulk(body: BulkStartIn, services: Services = Depends(get_services)) -> BulkOut:
     """Start a bulk upload. Pasted G.R. numbers are queued at once; send decision files next with POST /bulk/{id}/files. Each number or
     file becomes ONE main case; the cases a decision only cites are never added."""
-    batch = services.start_bulk_batch().execute(body.text, body.subject_ids, body.topic_scope, body.kind)
+    batch = services.start_bulk_batch().execute(body.text, body.subject_ids, body.topic_scope, body.kind, body.source_url)
     return BulkOut.from_view(services.get_bulk_batch().execute(batch.id), services)
 
 

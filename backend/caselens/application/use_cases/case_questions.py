@@ -8,7 +8,7 @@ from caselens.application.ports.questions import CaseQuestionRepository
 from caselens.application.ports.repositories import CaseRepository, UnitOfWork
 from caselens.application.use_cases.answer_case_question import AnswerCaseQuestion, decision_sources
 from caselens.domain.case_question import MAX_QUESTION, CaseQuestion, QuestionState
-from caselens.domain.errors import AiCreditError, AiUnavailableError, CaseNotFoundError, DomainError
+from caselens.domain.errors import AiUnavailableError, CaseNotFoundError, DomainError
 from caselens.domain.services.heading_sections import HeadingSections
 
 logger = logging.getLogger(__name__)
@@ -16,11 +16,11 @@ logger = logging.getLogger(__name__)
 
 def _reason(exc: AiUnavailableError) -> str:
     """What the student reads: a credit problem says so (asking again cannot help); anything else is a passing outage."""
-    return AiCreditError.STUDENT_MESSAGE if isinstance(exc, AiCreditError) else _SERVICE_DOWN
+    return getattr(exc, "STUDENT_MESSAGE", _SERVICE_DOWN)  # a key / credit problem says what to do; anything else is a passing outage
 
 _MAX_SENTENCES = 4
-_NO_ANSWERER = "Written answers are not set up on this server."
-_SERVICE_DOWN = "The writing service did not answer. Ask again in a moment."
+_NO_ANSWERER = "No AI key is saved yet, so questions cannot be answered. Add an AI key (Groq, DeepSeek, OpenRouter or Gemini) in Settings, then ask again."
+_SERVICE_DOWN = "The AI is busy or did not answer just now. Wait a few minutes, then ask again."
 DAILY_LIMIT_MESSAGE = "The limit for questions today has been reached. Ask again tomorrow."
 
 

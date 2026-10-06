@@ -456,6 +456,7 @@ class ScriptedDigestWriter(DigestWriter):
 
     def __init__(self, draft, repairs=None):
         self.draft, self.repairs, self.repair_calls, self.requests = draft, repairs or {}, [], []
+        self.repair_requests = []  # what each repair was given to work from (only the passages near the failed sentences)
 
     def write(self, request):
         self.requests.append(request)
@@ -463,6 +464,7 @@ class ScriptedDigestWriter(DigestWriter):
 
     def repair(self, request, failed):
         self.repair_calls.append(failed)
+        self.repair_requests.append(request)
         return {n: sentence for n, sentence in self.repairs.items() if n < len(failed)}
 
 

@@ -51,6 +51,7 @@ from caselens.application.use_cases.retry_upload import RetryUpload
 from caselens.application.use_cases.search_case import SearchCaseByGrNumber
 from caselens.application.use_cases.subjects import GetSubjects, ListSubjects, SetCaseSubjects
 from caselens.domain.services.citation_extractor import GrCitationExtractor
+from caselens.domain.services.claim_validator import ClaimValidator
 from caselens.domain.services.gr_list_parser import GrListParser
 from caselens.domain.services.main_case_identifier import MainCaseIdentifier
 from caselens.domain.services.digest_field_factory import DigestFieldFactory
@@ -75,9 +76,9 @@ from caselens.infrastructure.ai.gemini_answerer import (
     PROMPT_VERSION,
     GeminiAnswerChecker,
     GeminiAnswerWriter,
-    _GeminiCall,
 )
-from caselens.infrastructure.ai.gemini_digest import DIGEST_PROMPT_VERSION, GeminiDigestWriter
+from caselens.infrastructure.ai.calls import ai_configured, make_ai_call, writer_model_name
+from caselens.infrastructure.ai.gemini_digest import DIGEST_VERSION, GeminiDigestWriter
 from caselens.infrastructure.ai.gemini_passages import PASSAGE_PROMPT_VERSION, GeminiPassageChecker, GeminiPassagePicker
 from caselens.infrastructure.docx_case_export import DocxCaseExporter
 from caselens.infrastructure.docx_digest_export import DocxCaseDigestExporter
@@ -309,10 +310,10 @@ class Services:
         """The AI that writes digest answers, or None when no key is set (the digest then works without it)."""
         if self._answer_writer is not None and self._answer_checker is not None:
             return AnswerCaseQuestion(self._answer_writer, self._answer_checker)
-        enabled = self._ai_enabled if self._ai_enabled is not None else bool(self._settings.gemini_api_key)
+        enabled = self._ai_enabled if self._ai_enabled is not None else ai_configured(self._settings)
         if not enabled:
             return None
-        call = _GeminiCall(self._settings)
+        call = make_ai_call(self._settings)  # the chosen provider, the others with a key behind it
         return AnswerCaseQuestion(
             GeminiAnswerWriter(self._settings, call), GeminiAnswerChecker(self._settings, call)
         )
@@ -323,23 +324,30 @@ class Services:
             return SuggestCourtPassages(self._passage_picker, self._passage_checker)
         if self._answer_writer is not None or self._answer_checker is not None:
             return None  # a caller that supplies its own answerer (a test) gets passage suggestions only by supplying a picker too
-        enabled = self._ai_enabled if self._ai_enabled is not None else bool(self._settings.gemini_api_key)
+        enabled = self._ai_enabled if self._ai_enabled is not None else ai_configured(self._settings)
         if not enabled:
             return None
-        call = _GeminiCall(self._settings)
+        call = make_ai_call(self._settings)  # the chosen provider, the others with a key behind it
         return SuggestCourtPassages(GeminiPassagePicker(self._settings, call), GeminiPassageChecker(self._settings, call))
 
     def _case_digest_ai(self) -> tuple[WriteCaseDigest | None, "Callable[[], tuple[int, int]]"]:
         """The AI that writes case digests, plus a probe of the tokens used so far; (None, ...) when no key is set."""
         none_used = lambda: (0, 0)  # noqa: E731
         if self._digest_writer is not None and self._answer_checker is not None:  # a test supplies its own
-            return WriteCaseDigest(self._digest_writer, self._answer_checker), none_used
-        enabled = self._ai_enabled if self._ai_enabled is not None else bool(self._settings.gemini_api_key)
+            return WriteCaseDigest(self._digest_writer, self._answer_checker, self._claims(), check_mode=self._settings.case_digest_check_mode), none_used
+        enabled = self._ai_enabled if self._ai_enabled is not None else ai_configured(self._settings)
         if not enabled or self._answer_writer is not None:
             return None, none_used
-        call = _GeminiCall(self._settings)
-        writer = WriteCaseDigest(GeminiDigestWriter(self._settings, call), GeminiAnswerChecker(self._settings, call))
+        call = make_ai_call(self._settings)  # the chosen provider, the others with a key behind it
+        writer = WriteCaseDigest(
+            GeminiDigestWriter(self._settings, call), GeminiAnswerChecker(self._settings, call), self._claims(),
+            check_mode=self._settings.case_digest_check_mode,
+        )
         return writer, lambda: (call.usage["input_tokens"], call.usage["output_tokens"])
+
+    def _claims(self) -> ClaimValidator:
+        """The code checks that decide which digest sentences the second model must still judge."""
+        return ClaimValidator(self._settings.case_digest_coverage_min)
 
     def start_bulk_batch(self) -> StartBulkBatch:
         return StartBulkBatch(GrListParser(), self._subjects, self._bulk, self._job_queue(), self._uow)
@@ -349,7 +357,7 @@ class Services:
         return AddBulkFiles(reader, MainCaseIdentifier(), self._bulk, self._job_queue(), self._uow)
 
     def resolve_bulk_item(self) -> ResolveBulkItem:
-        return ResolveBulkItem(self._bulk, self.fetch_case_by_gr_number(), self._cases, self.request_case_digest_v2(), self._uow)
+        return ResolveBulkItem(self._bulk, self.fetch_case_by_gr_number(), self._cases, self.request_case_digest_v2(), self._uow, self.ingest_case())
 
     def get_bulk_batch(self) -> GetBulkBatch:
         return GetBulkBatch(self._bulk, self._cases)
@@ -404,7 +412,7 @@ class Services:
         writer, usage = self._case_digest_ai()
         return BuildCaseDigestV2(
             self._cases, self._case_digests, self._uow, writer,
-            model=self._settings.gemini_writer_model, prompt_version=DIGEST_PROMPT_VERSION,
+            model=writer_model_name(self._settings), prompt_version=DIGEST_VERSION,
             monthly_limit=self._settings.case_digest_monthly_limit, usage=usage,
         )
 
@@ -424,7 +432,7 @@ class Services:
             self._uploads,
             self._uow,
             self._answerer(),
-            model=self._settings.gemini_writer_model,
+            model=writer_model_name(self._settings),
             prompt_version=f"{PROMPT_VERSION}+{PASSAGE_PROMPT_VERSION}",
             ai_allowed=self._ai_budget_left,
             parallel=self._settings.digest_parallel_answers,

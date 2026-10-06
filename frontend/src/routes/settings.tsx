@@ -1,12 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Navigate } from '@tanstack/react-router'
-import { CircleCheck, Download, KeyRound, RefreshCw, Upload } from 'lucide-react'
+import { AlertTriangle, CircleCheck, Download, KeyRound, RefreshCw, Upload } from 'lucide-react'
 import { useRef, useState, type FormEvent } from 'react'
 
 import { backupUrl } from '@/api/endpoints'
-import { useRestoreBackup, useSaveAiKey } from '@/api/mutations'
+import { useRestoreBackup, useSaveAiKey, useSaveAiProvider } from '@/api/mutations'
 import { desktopSettingsQuery, healthQuery } from '@/api/queries'
-import type { DesktopSettings } from '@/api/types'
+import type { AiProvider, DesktopSettings } from '@/api/types'
 import { PageHeader } from '@/components/PageHeader'
 import { ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
@@ -55,50 +55,109 @@ function DesktopSettingsPage() {
   )
 }
 
+/** Which AI writes (Groq, DeepSeek, OpenRouter or Gemini) and each one's key. The chosen one writes first; the others that have a key take
+ *  over when it cannot answer (busy, out of allowance), so digests keep coming. */
 function AiKey({ settings }: { settings: DesktopSettings }) {
-  const [key, setKey] = useState('')
-  const [done, setDone] = useState<string | null>(null)
-  const save = useSaveAiKey()
-  const send = (value: string, message: string) =>
-    save.mutate(value, {
-      onSuccess: () => {
-        setKey('')
-        setDone(message)
-      },
-    })
-  const submit = (event: FormEvent) => {
-    event.preventDefault()
-    if (key.trim()) send(key.trim(), settingsCopy.aiSaved)
-  }
+  const choose = useSaveAiProvider()
+  const providers = settings.providers ?? []
   return (
     <section aria-labelledby="ai-title">
       <h2 id="ai-title" className="mb-2 text-xl font-semibold">
         {settingsCopy.aiTitle}
       </h2>
-      <p className="mb-3 text-base leading-relaxed">{settingsCopy.aiHelp}</p>
-      <p className="mb-4 flex items-center gap-2 text-base font-medium">
-        {settings.ai_key_set ? <CircleCheck className="size-5 text-match" aria-hidden /> : <KeyRound className="size-5 text-muted-foreground" aria-hidden />}
-        {settings.ai_key_set ? settingsCopy.aiSet : settingsCopy.aiNotSet}
+      <p className="mb-4 text-base leading-relaxed">{settingsCopy.aiHelp}</p>
+      <fieldset className="space-y-3">
+        <legend className="sr-only">{settingsCopy.aiChoose}</legend>
+        {providers.map((provider) => (
+          <ProviderCard
+            key={provider.id}
+            provider={provider}
+            chosen={settings.ai_provider === provider.id}
+            onChoose={() => choose.mutate(provider.id)}
+            choosing={choose.isPending}
+          />
+        ))}
+      </fieldset>
+      {choose.error ? (
+        <p role="alert" className="mt-2 text-base text-problem">
+          {friendlyError(choose.error)}
+        </p>
+      ) : null}
+    </section>
+  )
+}
+
+function ProviderCard({ provider, chosen, onChoose, choosing }: { provider: AiProvider; chosen: boolean; onChoose: () => void; choosing: boolean }) {
+  const [key, setKey] = useState('')
+  const [done, setDone] = useState<string | null>(null)
+  const save = useSaveAiKey()
+  const words = settingsCopy.providers[provider.id]
+  const send = (value: string, message: string) =>
+    save.mutate(
+      { key: value, provider: provider.id },
+      {
+        onSuccess: () => {
+          setKey('')
+          setDone(message)
+        },
+      },
+    )
+  const submit = (event: FormEvent) => {
+    event.preventDefault()
+    if (key.trim()) send(key.trim(), settingsCopy.aiSaved)
+  }
+  const inputId = `ai-key-${provider.id}`
+  return (
+    <div className={['rounded-lg border px-4 py-4', chosen ? 'border-primary bg-accent/40' : 'border-border'].join(' ')}>
+      <label className="flex cursor-pointer items-start gap-3">
+        <input type="radio" name="ai-provider" className="mt-1.5 size-4 accent-primary" checked={chosen} disabled={choosing} onChange={onChoose} />
+        <span className="min-w-0 flex-1">
+          <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span className="text-base font-semibold">{provider.name}</span>
+            {provider.id === 'groq' ? <span className="rounded-full border border-border px-2 py-0.5 text-xs font-medium">{settingsCopy.aiRecommended}</span> : null}
+            {chosen ? <span className="text-sm text-muted-foreground">{settingsCopy.aiWritesFirst}</span> : null}
+          </span>
+          <span className="tabular block text-sm text-muted-foreground">{provider.model}</span>
+          <span className="mt-1 block text-sm leading-relaxed">{words.about}</span>
+        </span>
+      </label>
+
+      <p className="mt-3 flex items-center gap-2 text-sm font-medium">
+        {provider.key_set ? <CircleCheck className="size-4 text-match" aria-hidden /> : <KeyRound className="size-4 text-muted-foreground" aria-hidden />}
+        {provider.key_set ? settingsCopy.aiSet : settingsCopy.aiNotSet}
       </p>
-      <form onSubmit={submit} className="flex flex-wrap items-end gap-2">
+      {provider.problem ? (
+        <div role="alert" className="mt-3 flex gap-3 rounded-lg border border-problem/30 bg-problem-wash px-4 py-3">
+          <AlertTriangle className="mt-0.5 size-5 shrink-0 text-problem" aria-hidden />
+          <div>
+            <p className="font-medium text-problem">{provider.problem === 'invalid' ? settingsCopy.aiInvalidTitle(provider.name) : settingsCopy.aiOutTitle(provider.name)}</p>
+            <p className="mt-1 text-base leading-relaxed">{provider.problem === 'invalid' ? words.invalid : words.out}</p>
+            <a href={words.billing} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block text-base underline">
+              {settingsCopy.aiOutLink}
+            </a>
+          </div>
+        </div>
+      ) : null}
+
+      <form onSubmit={submit} className="mt-3 flex flex-wrap items-end gap-2">
         <div className="min-w-0 flex-1 basis-64">
-          <label htmlFor="ai-key" className="mb-1 block text-sm font-medium">
-            {settingsCopy.aiLabel}
+          <label htmlFor={inputId} className="mb-1 block text-sm font-medium">
+            {settingsCopy.aiLabel(provider.name)}
           </label>
-          <Input id="ai-key" type="password" autoComplete="off" spellCheck={false} value={key} placeholder={settingsCopy.aiPlaceholder} onChange={(event) => setKey(event.target.value)} />
+          <Input id={inputId} type="password" autoComplete="off" spellCheck={false} value={key} placeholder={words.placeholder} onChange={(event) => setKey(event.target.value)} />
         </div>
         <Button type="submit" disabled={save.isPending || !key.trim()}>
-          {settings.ai_key_set ? settingsCopy.aiReplace : settingsCopy.aiSave}
+          {save.isPending ? settingsCopy.aiChecking : provider.key_set ? settingsCopy.aiReplace : settingsCopy.aiSave}
         </Button>
-        {settings.ai_key_set ? (
+        {provider.key_set ? (
           <Button type="button" variant="outline" disabled={save.isPending} onClick={() => send('', settingsCopy.aiRemoved)}>
             {settingsCopy.aiRemove}
           </Button>
         ) : null}
       </form>
       <p className="mt-2 text-sm">
-        <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" className="underline">
-          {settingsCopy.aiGetOne}
+        <a href={words.keys} target="_blank" rel="noopener noreferrer" className="underline">
+          {settingsCopy.aiGetOne(provider.name)}
         </a>
       </p>
       {save.error ? (
@@ -110,7 +169,7 @@ function AiKey({ settings }: { settings: DesktopSettings }) {
           {done}
         </p>
       ) : null}
-    </section>
+    </div>
   )
 }
 

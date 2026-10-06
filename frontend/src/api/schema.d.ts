@@ -1035,6 +1035,8 @@ export interface components {
              * @enum {string}
              */
             kind: "individual" | "bulk";
+            /** Source Url */
+            source_url?: string | null;
         };
         /** CaseDetailOut */
         CaseDetailOut: {
@@ -1131,6 +1133,11 @@ export interface components {
             };
             /** Updated At */
             updated_at: string | null;
+            /**
+             * Current
+             * @default true
+             */
+            current: boolean;
         };
         /** CasePageOut */
         CasePageOut: {

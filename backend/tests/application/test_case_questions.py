@@ -65,7 +65,7 @@ def test_a_service_that_is_down_says_so_and_a_repeated_message_is_harmless():
 
 def test_without_an_ai_the_question_fails_with_a_plain_reason():
     w = World(with_ai=False)
-    assert "not set up" in w.answer.execute(w.ask.execute(w.case.id, "Why?").id).error
+    assert "No AI key is saved yet" in w.answer.execute(w.ask.execute(w.case.id, "Why?").id).error
 
 
 def test_over_the_daily_limit_the_question_is_kept_with_the_reason_and_never_queued():

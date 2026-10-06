@@ -1,6 +1,7 @@
 from functools import lru_cache
 
 from pathlib import Path
+from typing import Literal
 
 from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -42,6 +43,24 @@ class Settings(BaseSettings):
     gemini_checker_model: str = "gemini-3.5-flash"  # judges what the writer drafted, in a separate call
     gemini_timeout_seconds: float = 120.0
     gemini_max_retries: int = 3
+    # Tried in this order when the asked model stays overloaded (Google's 503 "model is overloaded"); same family and price.
+    gemini_fallback_models: list[str] = ["gemini-3.7-flash", "gemini-3.6-flash", "gemini-3.8-flash"]
+    # Groq and DeepSeek (OpenAI-style APIs). `ai_provider` writes first; the others with a key take over when it cannot answer.
+    ai_provider: str = "gemini"  # groq | deepseek | gemini (the desktop app reads the client's choice from its folder)
+    groq_api_key: str | None = None
+    groq_model: str = "openai/gpt-oss-120b"  # strict JSON schema, 131K context, $0.15 in / $0.60 out per 1M tokens (Oct 2026)
+    groq_checker_model: str = "openai/gpt-oss-120b"
+    groq_reasoning_effort: str = "medium"  # low | medium | high (gpt-oss): thinking before answering, billed as output
+    deepseek_api_key: str | None = None
+    deepseek_model: str = "deepseek-flash"  # DeepSeek V4.1 Flash; JSON object mode (the schema goes in the prompt)
+    deepseek_checker_model: str = "deepseek-flash"
+    # OpenRouter (OpenAI-style API), with DeepSeek V4.1 Flash: a whole decision fits; thinking (reasoning) is on, billed as output.
+    # Any OpenRouter model id can be set here instead (for example "openrouter/free" for its free models).
+    openrouter_api_key: str | None = None
+    openrouter_model: str = "deepseek/deepseek-v4.1-flash"
+    openrouter_checker_model: str = "deepseek/deepseek-v4.1-flash"
+    openrouter_reasoning: bool = True
+    ai_timeout_seconds: float = 180.0
     auto_digest_on_upload: bool = True  # start a digest for every case a reviewer cites as soon as it is checked
     digest_parallel_answers: int = 3  # how many answers of one digest are written at the same time
     question_daily_limit: int = 500  # questions the AI assistant may answer per day (a cost guard)
@@ -50,6 +69,11 @@ class Settings(BaseSettings):
     case_digest_monthly_limit: int = 2500
     # Tokens the model may spend thinking before it writes a case digest (billed as output). -1 = the model's own default (dynamic).
     case_digest_thinking_budget: int = -1
+    # Which digest sentences the second model judges: "risky_and_key" (those code flags, plus the bold key sentences) or "all" (every
+    # cited sentence, as before; costs about 4 more calls per digest). Code checks every sentence either way.
+    case_digest_check_mode: Literal["risky_and_key", "all"] = "risky_and_key"
+    # A sentence with less than this share of its own words in the paragraphs it cites is sent to the second model (0 to 1).
+    case_digest_coverage_min: float = 0.6
 
     @field_validator("database_url")
     @classmethod
@@ -81,10 +105,14 @@ class Settings(BaseSettings):
         if "digest_threads" not in self.model_fields_set:
             self.digest_threads = 12
         self.access_code = None
-        if not self.gemini_api_key:  # the key the client pasted in Settings, from the computer's password store
-            from caselens.desktop.ai_key import read_ai_key
+        # The keys the client pasted in Settings (the computer's password store) and the provider they chose.
+        from caselens.desktop.ai_key import read_ai_key, read_provider
 
-            self.gemini_api_key = read_ai_key(self.caselens_data_dir)
+        for provider in ("gemini", "groq", "deepseek", "openrouter"):
+            if not getattr(self, f"{provider}_api_key"):
+                setattr(self, f"{provider}_api_key", read_ai_key(self.caselens_data_dir, provider))
+        if "ai_provider" not in self.model_fields_set:
+            self.ai_provider = read_provider(self.caselens_data_dir) or "groq"
         return self
 
 

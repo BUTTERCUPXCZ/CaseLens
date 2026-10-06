@@ -20,6 +20,17 @@ from tests.fakes import (
 from tests.helpers import parse_digest_case
 
 ERMITA_PARAGRAPH = None  # filled from the real decision below
+# A digest is only finished with its core (Doctrine, Facts, Issue, Ruling): the scripted drafts below get backed lines for the parts they leave out.
+CORE = {
+    Section.DOCTRINE: (DigestBlock((AnswerSentence("The President may not make law by executive order.", ("P132",)),)),),
+    Section.FACTS: (DigestBlock((AnswerSentence("The PRC reported the leakage of the nursing exams.", ("P9",)),)),),
+    Section.ISSUE: (DigestBlock((AnswerSentence("May the President regulate review centers by order?", ("P132",)),)),),
+    Section.RULING: (DigestBlock((AnswerSentence("The petition was granted.", ("P132",)),)),),
+}
+
+
+def with_core(draft: DigestDraft) -> DigestDraft:
+    return DigestDraft({**{s: b for s, b in CORE.items() if s not in draft.sections}, **draft.sections})
 
 
 class World:
@@ -32,7 +43,7 @@ class World:
         self.related.source_url = "https://lawphil.net/other"
         self.related.main_case_id = self.case.id
         self.related = self.cases.add(self.related)
-        self.draft = draft or DigestDraft({Section.FACTS: (DigestBlock((AnswerSentence("The PRC reported the leakage of the nursing exams.", ("P9",)),)),)})
+        self.draft = with_core(draft or DigestDraft({}))
         self.writer = ScriptedDigestWriter(self.draft)
         self.checker = VerdictChecker()
         write = WriteCaseDigest(self.writer, self.checker) if with_writer else None
@@ -76,7 +87,7 @@ def test_the_job_writes_the_digest_and_keeps_the_checked_sentences():
     digest = w.build(w.case.id)
     assert digest.state is DigestState.READY and digest.model == "m" and digest.prompt_version == "v"
     assert [s.text for s in digest.draft.sections[Section.FACTS][0].sentences] == ["The PRC reported the leakage of the nursing exams."]
-    assert digest.written == 1 and digest.dropped == 0
+    assert digest.written == 4 and digest.dropped == 0  # the facts line, and the doctrine, issue and ruling every finished digest has
 
 
 def test_what_the_checks_reject_is_counted_but_never_in_the_digest():
@@ -110,7 +121,7 @@ def test_without_an_ai_the_digest_fails_with_a_plain_reason_and_asking_again_ret
     w = World(with_writer=False)
     w.request.execute(w.case.id)
     digest = w.build(w.case.id)
-    assert digest.state is DigestState.FAILED and "not set up" in digest.error
+    assert digest.state is DigestState.FAILED and "No AI key is saved yet" in digest.error and "Settings" in digest.error
     assert w.request.execute(w.case.id).state is DigestState.PENDING  # a failed digest is retried by asking again
     assert len(w.jobs.case_digests) == 2
 
@@ -167,3 +178,35 @@ def test_the_opinions_of_a_decision_are_read_from_the_case():
     case = parse_digest_case("gr_180046_2009.html")
     opinions = opinions_of(case)
     assert [(o.author, o.kind) for o in opinions] == [("BRION", "concurring")] and len(opinions[0].paragraphs) > 5
+
+
+def test_a_ready_digest_asked_for_again_costs_no_ai_call():
+    w = World()
+    w.request.execute(w.case.id)
+    w.build(w.case.id)
+    queued, written = list(w.jobs.case_digests), len(w.writer.requests)
+    again = w.request.execute(w.case.id)  # opened again, or the same case in another bulk upload
+    assert again.state is DigestState.READY and w.jobs.case_digests == queued and len(w.writer.requests) == written
+
+
+def test_a_digest_made_by_an_older_prompt_is_served_says_so_and_is_renewed_only_when_asked():
+    w = World()
+    w.request.execute(w.case.id)
+    old = w.build(w.case.id)  # stamped "v" by this world's builder
+    assert old.is_current("v") and not old.is_current("v-next")
+    served = w.request.execute(w.case.id)  # no surprise spending after an update: still the cached digest
+    assert served.id == old.id and served.state is DigestState.READY and len(w.jobs.case_digests) == 1
+    renewed = w.request.execute(w.case.id, regenerate=True)
+    assert renewed.state is DigestState.PENDING and w.jobs.case_digests == [old.id, old.id]
+
+
+def test_a_digest_whose_core_the_checks_could_not_back_fails_and_keeps_the_older_text():
+    w = World()
+    w.request.execute(w.case.id)
+    first = w.build(w.case.id)
+    w.writer.draft = DigestDraft({Section.FACTS: CORE[Section.FACTS], Section.DOCTRINE: (DigestBlock((AnswerSentence("Made up in 1999.", ("P9",)),)),)})
+    w.request.execute(w.case.id, regenerate=True)
+    failed = w.build(w.case.id)
+    assert failed.state is DigestState.FAILED
+    assert "Doctrine, Issue and Ruling" in failed.error and "Try again" in failed.error
+    assert failed.draft.sections == first.draft.sections  # the older digest is not replaced by one missing its core

@@ -71,6 +71,7 @@ class DigestWriter(ABC):
         """Draft every section of the digest, each sentence citing passage ids. Raises AiUnavailableError."""
 
     @abstractmethod
-    def repair(self, request: DigestRequest, failed: list[tuple[str, str, str]]) -> dict[int, AnswerSentence]:
-        """Rewrite sentences that did not pass (section, text, reason) so each says only what its cited passages say, or leave
-        it out. Returns the replacements by the position of the failed sentence in `failed`. Raises AiUnavailableError."""
+    def repair(self, request: DigestRequest, failed: list[tuple[str, str, str, tuple[str, ...]]]) -> dict[int, AnswerSentence]:
+        """Rewrite sentences that did not pass (section, text, reason, the ids it cited) so each says only what its cited passages say,
+        or leave it out. `request.sources` holds only the passages near the failed sentences, never the whole decision. Returns the
+        replacements by the position of the failed sentence in `failed`. Raises AiUnavailableError."""

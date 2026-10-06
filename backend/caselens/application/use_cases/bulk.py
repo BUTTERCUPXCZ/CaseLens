@@ -8,7 +8,8 @@ from caselens.application.ports.repositories import CaseRepository, SubjectRepos
 from caselens.application.use_cases.case_digest_v2 import RequestCaseDigestV2
 from caselens.application.use_cases.fetch_case_by_gr_number import FetchCaseByGrNumber
 from caselens.domain.bulk import UPLOAD_KINDS, BulkBatch, BulkCounts, BulkItem, ItemKind, ItemStatus
-from caselens.domain.errors import CaseNotFoundError, CaseParseError, DomainError, SourceUnavailableError
+from caselens.application.use_cases.ingest_case import IngestCase
+from caselens.domain.errors import CaseNotFoundError, CaseParseError, DomainError, InvalidSourceUrlError, SourceUnavailableError
 from caselens.domain.services.case_names import short_case_name
 from caselens.domain.services.gr_list_parser import GrListParser
 from caselens.domain.services.main_case_identifier import MainCaseIdentifier, ReviewerCaseFinder
@@ -26,6 +27,7 @@ _NO_CASE_IN_FILE = (
 )
 _ONE_CASE = "Individual is for one case. This has more than one: use Bulk for several cases."
 _LAWPHIL_DOWN = "Lawphil did not answer, or its page could not be read. Press Retry to try again."
+_NOT_A_LAWPHIL_PAGE = "That is not a Lawphil case page, so it was not opened."
 
 
 def _not_found(item: BulkItem) -> str:
@@ -56,9 +58,15 @@ class StartBulkBatch:
         self._jobs = jobs
         self._uow = uow
 
-    def execute(self, text: str, subject_ids: Sequence[int] = (), topic_scope: str = "", kind: str = "bulk") -> BulkBatch:
+    def execute(
+        self, text: str, subject_ids: Sequence[int] = (), topic_scope: str = "", kind: str = "bulk", source_url: str | None = None
+    ) -> BulkBatch:
+        """`source_url`: the exact Lawphil page the student picked (Individual only). It decides which page is opened, since a decision
+        and its later Resolution can share the number and even the year."""
         if kind not in UPLOAD_KINDS:
             raise DomainError(f"Unknown kind of upload: {kind}.")
+        if source_url is not None and kind != "individual":
+            raise DomainError("A picked Lawphil page is only for Individual (one case).")
         tags = tuple(dict.fromkeys(subject_ids))
         for subject_id in tags:
             if self._subjects.get(subject_id) is None:
@@ -71,6 +79,10 @@ class StartBulkBatch:
         ]
         if kind == "individual" and len(items) > 1:
             raise DomainError(_ONE_CASE)
+        if source_url is not None:
+            if len(items) != 1 or items[0].gr_no is None:
+                raise DomainError("Give the G.R. number of the Lawphil page you picked.")
+            items[0].source_url = source_url
         batch = self._bulk.add_batch(BulkBatch(subject_ids=tags, topic_scope=clean_scope(topic_scope), kind=kind, items=items))
         self._uow.commit()  # commit first so the worker sees the items
         for item in batch.items:
@@ -136,12 +148,14 @@ class ResolveBulkItem:
         cases: CaseRepository,
         digests: RequestCaseDigestV2,
         uow: UnitOfWork,
+        ingest: IngestCase | None = None,
     ) -> None:
         self._bulk = bulk
         self._fetch = fetch
         self._cases = cases
         self._digests = digests
         self._uow = uow
+        self._ingest = ingest
 
     def execute(self, item_id: int) -> BulkItem:
         item = self._bulk.get_item(item_id)
@@ -149,11 +163,14 @@ class ResolveBulkItem:
             return item  # type: ignore[return-value]  # already settled (a message delivered twice)
         batch = self._bulk.get_batch(item.batch_id)
         number = GrNumber(item.gr_no)
-        existed = self._fetch.find_stored(number) is not None
+        picked = item.source_url if self._ingest is not None else None  # the exact page the student chose, not "the newest page for the number"
+        existed = (self._cases.get_by_source_url(picked) if picked else self._fetch.find_stored(number)) is not None
         try:
-            case = self._fetch.execute(number, item.year)
+            case = self._ingest.execute(picked) if picked and self._ingest else self._fetch.execute(number, item.year)
         except CaseNotFoundError:
             return self._settle(item, ItemStatus.NOT_FOUND, _not_found(item))
+        except InvalidSourceUrlError:
+            return self._settle(item, ItemStatus.UNREADABLE, _NOT_A_LAWPHIL_PAGE)
         except (SourceUnavailableError, CaseParseError) as exc:
             logger.warning("bulk item %s (G.R. No. %s): %s", item.id, item.gr_no, exc)
             return self._settle(item, ItemStatus.FAILED, _LAWPHIL_DOWN)

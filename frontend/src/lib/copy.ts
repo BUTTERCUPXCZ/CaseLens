@@ -69,6 +69,10 @@ export function friendlyError(error: unknown): string {
     case 0:
       return "We can't reach CaseLens right now. Check your connection and try again."
     case 400:
+      if (detail.includes('Individual is for one case')) {
+        return 'This file lists more than one case. Individual is for one case: use Bulk to digest all the cases in it.'
+      }
+      if (detail.includes('files at a time') || detail.includes('not a valid')) return detail
       return detail.includes('official Lawphil')
         ? "That doesn't look like a Lawphil case link. It should start with https://lawphil.net/judjuris/ and end in .html"
         : 'That request was not valid. Please check it and try again.'
@@ -383,19 +387,60 @@ export const updateCopy = {
 /** Settings: only in the desktop app (the client's own computer). */
 export const settingsCopy = {
   title: 'Settings',
-  description: 'Your AI key and your library backups. Everything else stays on this computer.',
-  aiTitle: 'AI key',
-  aiHelp: 'CaseLens uses your Gemini key to write digests and answer questions. It is kept in this computer’s password store and never shown again.',
-  aiSet: 'An AI key is saved.',
-  aiNotSet: 'No AI key yet. Digests and questions wait until you add one.',
-  aiLabel: 'Gemini API key',
+  description: 'Your AI keys and your library backups. Everything else stays on this computer.',
+  aiTitle: 'AI for digests and questions',
+  aiHelp: 'Choose which AI writes first and paste its key. If it is busy or out of allowance, another one that has a key takes over, so digests keep coming. Keys are kept in this computer’s password store and never shown again.',
+  aiChoose: 'Which AI writes first',
+  aiRecommended: 'Recommended',
+  aiWritesFirst: 'Writes first',
+  aiSet: 'Key saved.',
+  aiNotSet: 'No key yet.',
+  aiLabel: (name: string) => `${name} API key`,
   aiPlaceholder: 'Paste your key here',
   aiSave: 'Save key',
   aiReplace: 'Replace key',
   aiRemove: 'Remove key',
-  aiSaved: 'Key saved. New digests use it now.',
+  aiChecking: 'Checking the key…',
+  aiSaved: 'Key checked and saved. New digests use it now.',
   aiRemoved: 'Key removed.',
-  aiGetOne: 'Get a key at Google AI Studio',
+  aiGetOne: (name: string) => `Get a ${name} key`,
+  aiOutTitle: (name: string) => `Your ${name} key has run out of credit`,
+  aiInvalidTitle: (name: string) => `${name} does not accept this key`,
+  aiOutLink: 'Open its usage and billing page',
+  providers: {
+    groq: {
+      about: 'Fast and low-cost (about $0.03 per digest). Needs Groq’s pay-as-you-go plan for long cases: the free plan allows too few words per minute.',
+      placeholder: 'gsk_…',
+      keys: 'https://console.groq.com/keys',
+      billing: 'https://console.groq.com/settings/billing',
+      invalid: 'The key may be mistyped or deleted. Copy it again from console.groq.com → API Keys (it starts with “gsk_”), paste it below and click Replace key. Then click Try again on the failed digests.',
+      out: 'Groq refused because the key has no credit or plan for this. Add a payment method in Groq’s billing page, then click Try again on the failed digests.',
+    },
+    deepseek: {
+      about: 'Low-cost (about $0.03–0.06 per digest), very long cases fit. Top up a small balance in DeepSeek first.',
+      placeholder: 'sk-…',
+      keys: 'https://platform.deepseek.com/api_keys',
+      billing: 'https://platform.deepseek.com/top_up',
+      invalid: 'The key may be mistyped or deleted. Copy it again from platform.deepseek.com → API keys (it starts with “sk-”), paste it below and click Replace key. Then click Try again on the failed digests.',
+      out: 'DeepSeek refused because the balance is empty. Top up in DeepSeek, then click Try again on the failed digests.',
+    },
+    openrouter: {
+      about: 'DeepSeek V4.1 Flash through OpenRouter: low-cost, and long cases fit. Add credit in OpenRouter first.',
+      placeholder: 'sk-or-…',
+      keys: 'https://openrouter.ai/settings/keys',
+      billing: 'https://openrouter.ai/settings/credits',
+      invalid: 'The key may be mistyped or deleted. Copy it again from openrouter.ai → Keys (it starts with “sk-or-”), paste it below and click Replace key. Then click Try again on the failed digests.',
+      out: 'OpenRouter refused because the account has no credit left. Add credit in OpenRouter, or use another AI above. Then click Try again on the failed digests.',
+    },
+    gemini: {
+      about: 'Google’s AI. A free key allows only about 3 digests a day; turn on billing in Google AI Studio for more.',
+      placeholder: 'AIza…',
+      keys: 'https://aistudio.google.com/apikey',
+      billing: 'https://aistudio.google.com/usage',
+      invalid: 'The key may be mistyped, deleted, or not a Gemini key. Copy a Gemini API key from Google AI Studio (it starts with “AIza”), paste it below and click Replace key. Then click Try again on the failed digests.',
+      out: 'The key has no credit, or a free key used up today’s allowance. Turn on billing in Google AI Studio, or use another AI above. Then click Try again on the failed digests.',
+    },
+  },
   backupTitle: 'Back up your library',
   backupHelp: 'Saves every case, digest, upload and edit as one file. Keep it on a USB drive or in cloud storage.',
   backupButton: 'Download a backup',
@@ -524,6 +569,7 @@ export const digestPageCopy = {
   start: 'Write the digest',
   failedTitle: 'The digest could not be written',
   retry: 'Try again',
+  openSettings: 'Open Settings',
   rewrite: 'Write it again',
   downloadTitle: 'Download',
   downloadShort: 'Facts and Doctrine',

@@ -34,6 +34,9 @@ class BulkItem:
     case_id: int | None = None  # the MAIN case it ended in
     id: int | None = None
     reporter: str | None = None  # the reporter citation the file printed ("177 SCRA 668"), shown on the digest's citation line
+    # The exact Lawphil page the student picked (Individual): a decision and its later Resolution share the number and the year,
+    # so the page decides which one is opened, not the number.
+    source_url: str | None = None
 
 
 UPLOAD_KINDS = ("individual", "bulk")

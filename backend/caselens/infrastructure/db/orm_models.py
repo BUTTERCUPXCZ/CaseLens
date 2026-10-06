@@ -400,5 +400,6 @@ class BulkItemModel(Base):
     message: Mapped[str | None] = mapped_column(Text)
     case_id: Mapped[int | None] = mapped_column(ForeignKey("cases.id", ondelete="SET NULL"), index=True)
     reporter: Mapped[str | None] = mapped_column(String(64))  # "177 SCRA 668", when the file printed it
+    source_url: Mapped[str | None] = mapped_column(Text)  # the exact Lawphil page the student picked (Individual)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), server_default=func.now())

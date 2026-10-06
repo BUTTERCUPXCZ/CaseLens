@@ -279,6 +279,23 @@ Every AI sentence goes through these steps:
 4. If nothing is left, the field stays empty and says why. It never shows a guess.
 ```
 
+**Case digests (the client's format)** use the same idea with fewer AI calls (`WriteCaseDigest`, `ClaimValidator`):
+
+```
+WRITER (1 call, the whole decision)
+   -> CODE sorts every sentence: INVALID (fails) / SUSPICIOUS / PASS
+   -> CHECKER (1 call): only SUSPICIOUS sentences and the bold key sentences, each with its cited paragraphs written once
+   -> REPAIR (1 call, only if something failed): only the failed sentences, with the paragraphs near what they cited
+   -> CODE sorts the rewrites; a suspicious or key rewrite gets one more small checker call; what fails is dropped
+   -> Doctrine, Facts, Issue or Ruling empty?  -> FAILED ("Try again"), never shown as finished
+```
+
+Before this, a digest of about 94 sentences cost about 7 calls (1 writer, 4 checker calls over every sentence, a repair that resent
+the whole decision, a re-check). Now: 2 calls when nothing fails, 3 to 4 when something does, 0 for a case already digested (the
+digest is kept per case and topic scope, stamped with `DIGEST_VERSION`; an older one is served, marked `current: false`, until
+"Write it again"). Settings: `CASE_DIGEST_CHECK_MODE` (`risky_and_key` or `all`), `CASE_DIGEST_COVERAGE_MIN` (default 0.6).
+A request the AI refuses as such (a 400 that is not about the key, credit or rate) is not retried and not sent to the next provider.
+
 On screen, an AI answer is marked **"Drafted from the decision. Check it."** and shows its sources ("Based on paragraphs 7, 65").
 
 Test result: 43 of 48 sentences kept on 8 real decisions. A person read all of them. None was wrong. One was a little too strong (it was fixed).

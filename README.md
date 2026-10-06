@@ -33,10 +33,13 @@ CaseLens does the repeating work and keeps the law accurate:
 
 The AI only writes explanations. It never writes Facts, Issue, Ruling or Doctrine. Every AI sentence passes:
 
-1. **Writer** (Gemini) writes sentences and names the decision paragraphs each one uses.
-2. **Code check:** the paragraphs must exist, every number must be in the cited paragraph, every name must be in the decision.
-3. **Checker** (a second Gemini model) must say "supported". Anything else is dropped.
-4. If nothing is left, the field stays empty and says why.
+1. **Writer** (the AI chosen in Settings: Groq, DeepSeek or Gemini) writes sentences and names the decision paragraphs each one uses.
+2. **Code check** sorts every sentence. *Invalid* (a paragraph that does not exist, a number or name the decision never mentions) fails at once. *Suspicious* (a number or name not in the cited paragraph, few of the paragraph's own words, "always"/"only", a negation, a party's argument written as the Court's holding) goes to the checker. The bold key sentences (doctrine, main issue, disposition, points to remember) always go to the checker.
+3. **Checker** (a second AI call, shown each sentence and only its cited paragraphs) must say "supported".
+4. What fails is rewritten once from its own paragraphs (not the whole decision) and faces the same checks; what still fails is dropped and counted.
+5. If the Doctrine, Facts, Issue or Ruling ends up empty, the digest is marked failed ("Try again"), never shown as finished.
+
+A plain digest costs 2 AI calls (writer, one checker call) instead of about 7; a case digested before costs none. `CASE_DIGEST_CHECK_MODE=all` sends every sentence to the checker, as before.
 
 On 8 real decisions, 43 of 48 drafted sentences were kept and a person read every one against the decision text: none was unsupported.
 

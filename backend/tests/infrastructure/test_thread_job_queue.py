@@ -102,3 +102,38 @@ def test_the_desktop_app_writes_twelve_digests_at_once_and_the_website_four(tmp_
     desktop = Settings(_env_file=None, caselens_desktop=True, caselens_data_dir=str(tmp_path), gemini_api_key="k")
     assert desktop.digest_threads == 12
     assert Settings(_env_file=None, caselens_desktop=True, caselens_data_dir=str(tmp_path), gemini_api_key="k", digest_threads=6).digest_threads == 6
+
+
+def test_a_job_that_finds_the_database_busy_runs_again(monkeypatch, locks):
+    """Desktop app: SQLite says "database is locked" while another job writes; the job runs again instead of failing."""
+    from sqlalchemy.exc import OperationalError
+
+    from caselens.infrastructure.queue import thread_job_queue
+
+    monkeypatch.setattr(thread_job_queue, "_BUSY_RETRIES", (0, 0))
+    tries = []
+
+    def busy_then_fine(item_id):
+        tries.append(item_id)
+        if len(tries) < 3:
+            raise OperationalError("UPDATE bulk_items ...", {}, Exception("database is locked"))
+
+    monkeypatch.setattr(jobs, "resolve_bulk_item", busy_then_fine)
+    queue = ThreadJobQueue(locks)
+    queue.enqueue_bulk_item(4)
+    finish(queue)
+    assert tries == [4, 4, 4]
+
+
+def test_other_failures_are_not_retried(monkeypatch, locks):
+    tries = []
+
+    def broken(item_id):
+        tries.append(item_id)
+        raise ValueError("a real bug")
+
+    monkeypatch.setattr(jobs, "resolve_bulk_item", broken)
+    queue = ThreadJobQueue(locks)
+    queue.enqueue_bulk_item(4)
+    finish(queue)
+    assert tries == [4]
