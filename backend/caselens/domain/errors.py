@@ -34,6 +34,12 @@ class AiUnavailableError(DomainError):
     """The AI service could not be reached, refused the key, or returned something unusable."""
 
 
+class AiCreditError(AiUnavailableError):
+    """The AI service refused because the account has no credit or billing left (Gemini 402): nothing helps until it is topped up."""
+
+    STUDENT_MESSAGE = "The AI service has run out of credit, so nothing new can be written for now. Please tell the person who runs CaseLens."
+
+
 class DigestNotFoundError(DomainError):
     """No digest with this id (or none yet for this case)."""
 

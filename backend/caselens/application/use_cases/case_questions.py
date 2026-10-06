@@ -8,10 +8,15 @@ from caselens.application.ports.questions import CaseQuestionRepository
 from caselens.application.ports.repositories import CaseRepository, UnitOfWork
 from caselens.application.use_cases.answer_case_question import AnswerCaseQuestion, decision_sources
 from caselens.domain.case_question import MAX_QUESTION, CaseQuestion, QuestionState
-from caselens.domain.errors import AiUnavailableError, CaseNotFoundError, DomainError
+from caselens.domain.errors import AiCreditError, AiUnavailableError, CaseNotFoundError, DomainError
 from caselens.domain.services.heading_sections import HeadingSections
 
 logger = logging.getLogger(__name__)
+
+
+def _reason(exc: AiUnavailableError) -> str:
+    """What the student reads: a credit problem says so (asking again cannot help); anything else is a passing outage."""
+    return AiCreditError.STUDENT_MESSAGE if isinstance(exc, AiCreditError) else _SERVICE_DOWN
 
 _MAX_SENTENCES = 4
 _NO_ANSWERER = "Written answers are not set up on this server."
@@ -85,7 +90,7 @@ class AnswerQueuedQuestion:
             answer = self._answerer.answer(AnswerRequest(asked.question, tuple(sources), _MAX_SENTENCES))
         except AiUnavailableError as exc:
             logger.warning("question %s: not answered: %s", question_id, exc)
-            return self._finish(asked, QuestionState.FAILED, _SERVICE_DOWN)
+            return self._finish(asked, QuestionState.FAILED, _reason(exc))
         for line in answer.dropped:
             logger.info("question %s: dropped a sentence (%s)", question_id, line.reason[:100])
         asked.sentences = answer.sentences

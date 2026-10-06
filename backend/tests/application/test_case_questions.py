@@ -83,3 +83,11 @@ def test_an_empty_or_too_long_question_and_an_unknown_case_are_refused():
         w.ask.execute(w.case.id, "x" * 501)
     with pytest.raises(CaseNotFoundError):
         w.ask.execute(999, "Why?")
+
+
+def test_when_the_ai_account_has_no_credit_left_the_student_is_told_so_not_to_ask_again():
+    from caselens.domain.errors import AiCreditError
+
+    w = World(writer_error=AiCreditError("Gemini refused the request (402): prepayment credits are depleted"))
+    failed = w.answer.execute(w.ask.execute(w.case.id, "What power did the President use?").id)
+    assert failed.state is QuestionState.FAILED and "run out of credit" in failed.error

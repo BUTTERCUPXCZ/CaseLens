@@ -143,6 +143,8 @@ export const listProgress = {
 /** The page shown before the app opens, when the owner set an access code. */
 export const accessCopy = {
   opening: 'Opening CaseLens…',
+  waking: 'Waking up the server, this can take up to a minute…',
+  wakingHelp: 'The server sleeps when nobody has used CaseLens for a while. Please keep this page open.',
   intro: 'This app is shared with a few people. Enter the access code you were given.',
   label: 'Access code',
   submit: 'Open CaseLens',

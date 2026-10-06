@@ -10,7 +10,7 @@ from google.genai import types
 
 from caselens.application.ports.ai import AnswerChecker, AnswerRequest, AnswerWriter
 from caselens.domain.digest import AnswerSentence, CheckResult, SourcePassage, Verdict
-from caselens.domain.errors import AiUnavailableError
+from caselens.domain.errors import AiCreditError, AiUnavailableError
 from caselens.infrastructure.config import Settings
 
 PROMPT_VERSION = "answer-v3"
@@ -104,6 +104,8 @@ class _GeminiCall:
                 self._count(response)
                 return json.loads(response.text)
             except genai_errors.ClientError as exc:
+                if exc.code == 402:  # prepaid credit used up: retrying cannot help
+                    raise AiCreditError(f"Gemini refused the request ({exc.code}): {exc.message}") from exc
                 if exc.code != 429:
                     raise AiUnavailableError(f"Gemini refused the request ({exc.code}): {exc.message}") from exc
                 last_problem = "rate limited"

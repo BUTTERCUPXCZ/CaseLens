@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Scale } from 'lucide-react'
-import { useState, type FormEvent, type ReactNode } from 'react'
+import { Loader2, Scale } from 'lucide-react'
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 
 import { ApiError, postJson, request } from '@/api/client'
 import { Button } from '@/components/ui/button'
@@ -9,6 +9,25 @@ import { Label } from '@/components/ui/label'
 import { accessCopy } from '@/lib/copy'
 
 type Access = { required: boolean; granted: boolean }
+
+/** While the first answer from the server is on its way. A free server sleeps when nobody uses it and needs up to a minute to wake: after a
+ *  few seconds the page says so, so nobody thinks it is broken. */
+function Opening() {
+  const [slow, setSlow] = useState(false)
+  useEffect(() => {
+    const timer = setTimeout(() => setSlow(true), 3000)
+    return () => clearTimeout(timer)
+  }, [])
+  return (
+    <div role="status" className="p-8">
+      <p className="flex items-center gap-2 text-base text-muted-foreground">
+        <Loader2 className="size-4 animate-spin" aria-hidden />
+        {slow ? accessCopy.waking : accessCopy.opening}
+      </p>
+      {slow ? <p className="mt-1 max-w-prose text-sm text-muted-foreground">{accessCopy.wakingHelp}</p> : null}
+    </div>
+  )
+}
 
 /** When the owner of the app set an access code, nothing opens until it is entered. With no code set (a laptop, a test),
  *  this shows the app straight away. If the server cannot be reached, the app opens and shows its own errors. */
@@ -24,7 +43,7 @@ export function AccessGate({ children }: { children: ReactNode }) {
   const [problem, setProblem] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
-  if (isPending) return <p className="p-8 text-muted-foreground">{accessCopy.opening}</p>
+  if (isPending) return <Opening />
   if (!data || !data.required || data.granted) return <>{children}</>
 
   async function submit(event: FormEvent) {

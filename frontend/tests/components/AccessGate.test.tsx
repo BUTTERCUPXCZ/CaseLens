@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { AccessGate } from '@/components/AccessGate'
 
@@ -51,5 +51,23 @@ describe('the access code page', () => {
     server.use(http.get(`${API}/access`, () => HttpResponse.error()))
     show()
     expect(await screen.findByText('the app')).toBeInTheDocument()
+  })
+})
+
+describe('while the server wakes up', () => {
+  it('says so after a few seconds, so nobody thinks the site is broken', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    server.use(http.get(`${API}/access`, () => new Promise(() => undefined))) // the sleeping server has not answered yet
+    render(
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <AccessGate>
+          <p>app</p>
+        </AccessGate>
+      </QueryClientProvider>,
+    )
+    expect(screen.getByRole('status')).toHaveTextContent('Opening CaseLens…')
+    await act(async () => vi.advanceTimersByTime(3500))
+    expect(screen.getByRole('status')).toHaveTextContent('Waking up the server, this can take up to a minute…')
+    vi.useRealTimers()
   })
 })

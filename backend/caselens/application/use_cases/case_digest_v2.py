@@ -9,9 +9,14 @@ from caselens.application.use_cases.build_digest_request import OpinionText, bui
 from caselens.application.use_cases.write_case_digest import WriteCaseDigest
 from caselens.domain.digest_v2 import CaseDigestV2, DigestState, clean_scope, scope_key
 from caselens.domain.entities import Case
-from caselens.domain.errors import AiUnavailableError, CaseNotFoundError, DigestNotFoundError
+from caselens.domain.errors import AiCreditError, AiUnavailableError, CaseNotFoundError, DigestNotFoundError
 
 logger = logging.getLogger(__name__)
+
+
+def _reason(exc: AiUnavailableError) -> str:
+    """What the student reads: a credit problem says so (asking again cannot help); anything else is a passing outage."""
+    return AiCreditError.STUDENT_MESSAGE if isinstance(exc, AiCreditError) else _SERVICE_DOWN
 
 _NO_WRITER = "Written digests are not set up on this server."
 OVER_LIMIT_MESSAGE = "The limit for case digests this month has been reached. It will continue when the limit resets, or when it is raised."
@@ -114,7 +119,7 @@ class BuildCaseDigestV2:
             result = self._writer.execute(build_digest_request(case, opinions_of(case), tags, digest.scope))
         except AiUnavailableError as exc:
             logger.warning("case %s digest %s: not written: %s", case.id, digest_id, exc)
-            return self._finish(digest, DigestState.FAILED, _SERVICE_DOWN)
+            return self._finish(digest, DigestState.FAILED, _reason(exc))
         after = self._usage()
         digest.draft, digest.written, digest.dropped = result.draft, result.written, len(result.dropped)
         digest.model, digest.prompt_version = self._model, self._prompt_version
