@@ -16,11 +16,13 @@ test('the start page is Individual, the first line of the client’s sketch, and
   await expect(page.getByRole('group', { name: 'Subject Tags (optional)' }).getByRole('button')).toHaveCount(11)
   await expect(page.getByLabel('Topic scope')).toBeVisible()
   await expect(page.getByRole('button', { name: 'Open the case' })).toBeVisible()
+  const desktop = (await (await page.request.get('/api/health')).json()).desktop === true
   await expect(page.getByRole('navigation', { name: 'Main' }).getByRole('link')).toHaveText([
     'Individual',
     'Bulk',
     'Case library',
     'How to use it',
+    ...(desktop ? ['Settings'] : []), // the desktop app only
   ])
   await expectAccessible(page)
 })
@@ -344,4 +346,21 @@ test('Back on a case returns to the library even after its digest was opened fir
   await page.getByRole('button', { name: 'Back to the case' }).click()
   await page.getByRole('button', { name: 'Back', exact: true }).click()
   await expect(page).toHaveURL(/\/library\?.*q=Review/) // the library as the student left it, not the digest or the decision
+})
+
+test('the desktop app has Settings: the AI key is never shown, and a backup downloads', async ({ page }) => {
+  test.skip((await (await page.request.get('/api/health')).json()).desktop !== true, 'desktop app only')
+  await page.goto('/settings')
+  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible()
+  await expect(page.getByLabel('Gemini API key')).toHaveAttribute('type', 'password')
+  const download = page.waitForEvent('download')
+  await page.getByRole('link', { name: 'Download a backup' }).click()
+  expect((await download).suggestedFilename()).toMatch(/^caselens-backup-\d{4}-\d{2}-\d{2}\.db$/)
+  await expectAccessible(page)
+})
+
+test('the website has no Settings page', async ({ page }) => {
+  test.skip((await (await page.request.get('/api/health')).json()).desktop === true, 'website only')
+  await page.goto('/settings')
+  await expect(page).toHaveURL(/\/library/)
 })

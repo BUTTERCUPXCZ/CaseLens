@@ -4,3 +4,10 @@ __pycache__/
 .env
 .pytest_cache/
 uploads_data/
+
+# desktop app build output (PyInstaller work folder)
+build/
+# local SQLite libraries (desktop mode in development, tests): never commit
+*.db
+*.db-wal
+*.db-shm

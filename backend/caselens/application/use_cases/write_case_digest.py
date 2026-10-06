@@ -1,5 +1,6 @@
 import logging
 import re
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field, replace
 
 from caselens.application.ports.ai import AnswerChecker, DigestRequest, DigestWriter
@@ -10,6 +11,7 @@ from caselens.domain.services.answer_validator import AnswerValidator
 logger = logging.getLogger(__name__)
 
 _CHECK_BATCH = 25  # sentences judged per call: a short list is judged more carefully than a long one
+_CHECKS_AT_ONCE = 6  # the groups do not depend on each other, so they are judged at the same time (one group's wait, not all of them)
 # An honest "the decision does not say" has nothing to cite. It is allowed only if it makes no other claim.
 _NOT_STATED = re.compile(
     r"\b(?:not|never) (?:stated|said|discussed|addressed|mentioned|given|specified|shown|explained)\b|\bdoes not (?:say|state|discuss|address|mention|specify)\b|"
@@ -97,9 +99,14 @@ class WriteCaseDigest:
                 verdicts[(section, b, i)] = sentence  # an honest "not stated" has nothing to judge
             else:
                 to_check.append((section, b, i, sentence))
-        for start in range(0, len(to_check), _CHECK_BATCH):
-            batch = to_check[start : start + _CHECK_BATCH]
-            for (section, b, i, sentence), check in zip(batch, self._checker.check([e[3] for e in batch], sources), strict=True):
+        batches = [to_check[start : start + _CHECK_BATCH] for start in range(0, len(to_check), _CHECK_BATCH)]
+        if len(batches) > 1:
+            with ThreadPoolExecutor(max_workers=min(len(batches), _CHECKS_AT_ONCE), thread_name_prefix="digest-check") as pool:
+                answers = list(pool.map(lambda batch: self._checker.check([e[3] for e in batch], sources), batches))
+        else:
+            answers = [self._checker.check([e[3] for e in batch], sources) for batch in batches]
+        for batch, checks in zip(batches, answers, strict=True):  # in the original order, so the result is the same as one by one
+            for (section, b, i, sentence), check in zip(batch, checks, strict=True):
                 if check.verdict is Verdict.SUPPORTED:
                     verdicts[(section, b, i)] = sentence
                 else:

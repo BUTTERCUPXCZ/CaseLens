@@ -1,0 +1,16 @@
+{
+  "name": "caselens-desktop",
+  "private": true,
+  "version": "1.0.0",
+  "description": "CaseLens for Windows and Mac: the Tauri window plus the bundled backend.",
+  "scripts": {
+    "tauri": "tauri",
+    "build:frontend": "npm --prefix ../frontend run build",
+    "build:backend": "cd ../backend && python -m PyInstaller caselens.spec --noconfirm",
+    "build:all": "npm run build:frontend && npm run build:backend && tauri build",
+    "dev": "tauri dev"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  }
+}

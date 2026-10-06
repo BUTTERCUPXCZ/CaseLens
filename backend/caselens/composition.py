@@ -95,7 +95,6 @@ from caselens.infrastructure.lawphil.url_scheme import LawphilUrlScheme
 from caselens.infrastructure.db.job_lock_repository import SqlJobLockRepository
 from caselens.infrastructure.db.session import engine
 from caselens.infrastructure.queue import lock_keys
-from caselens.infrastructure.queue.rabbit_job_queue import RabbitJobQueue
 
 
 @lru_cache
@@ -110,8 +109,9 @@ def _job_queue() -> JobQueue:
     if get_settings().queue_backend == "threads":
         from caselens.infrastructure.queue.thread_job_queue import ThreadJobQueue  # imported here: it needs Services
 
-        return ThreadJobQueue(locks)  # jobs run inside this process: no RabbitMQ and no workers
+        return ThreadJobQueue(locks, digest_threads=get_settings().digest_threads)  # jobs run inside this process: no RabbitMQ, no workers
     from caselens.infrastructure.queue import actors  # imported here: it connects the broker
+    from caselens.infrastructure.queue.rabbit_job_queue import RabbitJobQueue  # the desktop app ships without RabbitMQ
 
     return RabbitJobQueue(locks, actors)
 
@@ -261,7 +261,7 @@ class Services:
         return DownloadCatalogCases(SqlCatalogRepository(self._session), self.ingest_case(), self._session.rollback)
 
     def list_batch_cases(self) -> ListBatchCases:
-        return ListBatchCases(self._bulk, self._cases)
+        return ListBatchCases(self._bulk, self._cases, self._case_digests)
 
     def list_cases(self) -> ListCases:
         return ListCases(self._cases)

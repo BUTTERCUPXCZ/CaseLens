@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class ThreadJobQueue(JobQueue):
     """Runs the jobs as threads inside the API process: for a host with no separate workers (a free web service).
 
-    Same rules as `RabbitJobQueue`: one lawphil thread (so "1 request per second" holds), a few digest threads,
+    Same rules as `RabbitJobQueue`: one lawphil thread (so "1 request per second" holds), digest threads, two question threads,
     and "only one at a time" locks kept in PostgreSQL. There is no retry and no message that survives a restart:
     work that was running when the process stopped is found again by `recovery.requeue_unfinished_work`."""
 
@@ -20,6 +20,8 @@ class ThreadJobQueue(JobQueue):
         self._locks = locks
         self._lawphil = ThreadPoolExecutor(max_workers=1, thread_name_prefix="lawphil")
         self._digests = ThreadPoolExecutor(max_workers=digest_threads, thread_name_prefix="digests")
+        # Questions have their own line: a student's question is answered in seconds even while a bulk upload's digests run.
+        self._questions = ThreadPoolExecutor(max_workers=2, thread_name_prefix="questions")
 
     def enqueue_resolve_upload(self, upload_id: int) -> None:
         self._run(self._lawphil, jobs.resolve_upload, upload_id)
@@ -43,7 +45,7 @@ class ThreadJobQueue(JobQueue):
             self._run(self._digests, jobs.build_case_digest, digest_id, lock=key, free_on_failure=True)
 
     def enqueue_case_question(self, question_id: int) -> None:
-        self._run(self._digests, jobs.answer_case_question, question_id)
+        self._run(self._questions, jobs.answer_case_question, question_id)
 
     def enqueue_refresh_catalog(self) -> bool:
         if not self._locks.acquire(lock_keys.CATALOG_REFRESH_KEY, lock_keys.CATALOG_REFRESH_LOCK_SECONDS):

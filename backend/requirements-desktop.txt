@@ -1,0 +1,4 @@
+# Only for the desktop app build (Tauri + a bundled backend): the system password store for the AI key, and the packager.
+-r requirements.txt
+keyring>=25
+pyinstaller>=6.10

@@ -1,7 +1,9 @@
+import { useQuery } from '@tanstack/react-query'
 import { Link, useRouterState } from '@tanstack/react-router'
-import { BookOpen, FileSearch, Layers, Library, Scale } from 'lucide-react'
+import { BookOpen, FileSearch, Layers, Library, Scale, Settings } from 'lucide-react'
 
-import { bulkPageCopy, guideCopy, individualCopy, libraryCopy } from '@/lib/copy'
+import { healthQuery } from '@/api/queries'
+import { bulkPageCopy, guideCopy, individualCopy, libraryCopy, settingsCopy } from '@/lib/copy'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import {
   Sidebar,
@@ -22,8 +24,15 @@ const NAV = [
   { to: '/guide', label: guideCopy.navLabel, icon: BookOpen, matches: (path: string) => path.startsWith('/guide') },
 ] as const
 
+/** The desktop app also has Settings (the AI key, backups); the website has nothing to set. */
+const DESKTOP_NAV = [
+  { to: '/settings', label: settingsCopy.title, icon: Settings, matches: (path: string) => path.startsWith('/settings') },
+] as const
+
 export function AppSidebar() {
   const path = useRouterState({ select: (state) => state.location.pathname })
+  const desktop = useQuery(healthQuery()).data?.desktop === true
+  const nav = desktop ? [...NAV, ...DESKTOP_NAV] : NAV
 
   return (
     <Sidebar>
@@ -39,7 +48,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <nav aria-label="Main">
               <SidebarMenu>
-                {NAV.map((item) => {
+                {nav.map((item) => {
                   const active = item.matches(path)
                   return (
                     <SidebarMenuItem key={item.label}>

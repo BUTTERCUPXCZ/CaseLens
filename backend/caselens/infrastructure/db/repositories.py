@@ -1,7 +1,6 @@
 import re
 
-from sqlalchemy import any_, delete, func, literal, or_, select, update
-from sqlalchemy.dialects.postgresql import insert as pg_insert
+from sqlalchemy import delete, func, or_, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -19,6 +18,7 @@ from caselens.domain.errors import DuplicateCaseError
 from caselens.domain.subjects import Subject, SubjectCount
 from caselens.domain.value_objects import Disposition, DocType, GrNumber, MatchStatus
 from caselens.infrastructure.db import mappers
+from caselens.infrastructure.db.portable import insert_for, list_contains, list_overlaps
 from caselens.infrastructure.db.orm_models import (
     CaseFootnoteModel,
     CaseModel,
@@ -184,7 +184,7 @@ class SqlCaseRepository(CaseRepository):
         # By the page's own first number, or by any number a joint decision prints.
         models = self._session.scalars(
             select(CaseModel)
-            .where(or_(CaseModel.gr_no == str(gr_no), literal(str(gr_no)) == any_(CaseModel.numbers)))
+            .where(or_(CaseModel.gr_no == str(gr_no), list_contains(self._session, CaseModel.numbers, str(gr_no))))
             .order_by(CaseModel.id)
         )
         return [mappers.case_to_entity(m) for m in models]
@@ -227,7 +227,7 @@ class SqlCaseRepository(CaseRepository):
         if not wanted:
             return []
         rows = self._session.execute(
-            _select_summaries().where(or_(CaseModel.numbers.overlap(wanted), CaseModel.gr_no.in_(wanted))).order_by(CaseModel.id)
+            _select_summaries().where(or_(list_overlaps(self._session, CaseModel.numbers, wanted), CaseModel.gr_no.in_(wanted))).order_by(CaseModel.id)
         )
         return _with_tags(self._session, rows)
 
@@ -242,7 +242,7 @@ class SqlCaseRepository(CaseRepository):
     def add_subjects(self, case_id: int, subject_ids: Sequence[int], source: str) -> None:
         if subject_ids:
             self._session.execute(
-                pg_insert(CaseSubjectModel)
+                insert_for(self._session)(CaseSubjectModel)
                 .values([{"case_id": case_id, "subject_id": i, "source": source} for i in dict.fromkeys(subject_ids)])
                 .on_conflict_do_nothing(index_elements=["case_id", "subject_id"])
             )

@@ -16,6 +16,7 @@ import { Route as IndividualRouteImport } from './routes/individual'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as LookupRouteImport } from './routes/lookup'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as CasesIndexRouteImport } from './routes/cases.index'
 import { Route as CasesCaseIdRouteImport } from './routes/cases.$caseId'
@@ -57,6 +58,11 @@ const LookupRoute = LookupRouteImport.update({
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UploadRoute = UploadRouteImport.update({
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/library': typeof LibraryRoute
   '/lookup': typeof LookupRoute
   '/search': typeof SearchRoute
+  '/settings': typeof SettingsRoute
   '/upload': typeof UploadRoute
   '/cases/$caseId': typeof CasesCaseIdRoute
   '/reviews/$batchId': typeof ReviewsBatchIdRoute
@@ -119,6 +126,7 @@ export interface FileRoutesByTo {
   '/library': typeof LibraryRoute
   '/lookup': typeof LookupRoute
   '/search': typeof SearchRoute
+  '/settings': typeof SettingsRoute
   '/upload': typeof UploadRoute
   '/cases/$caseId': typeof CasesCaseIdRoute
   '/reviews/$batchId': typeof ReviewsBatchIdRoute
@@ -136,6 +144,7 @@ export interface FileRoutesById {
   '/library': typeof LibraryRoute
   '/lookup': typeof LookupRoute
   '/search': typeof SearchRoute
+  '/settings': typeof SettingsRoute
   '/upload': typeof UploadRoute
   '/cases/$caseId': typeof CasesCaseIdRoute
   '/reviews/$batchId': typeof ReviewsBatchIdRoute
@@ -154,6 +163,7 @@ export interface FileRouteTypes {
     | '/library'
     | '/lookup'
     | '/search'
+    | '/settings'
     | '/upload'
     | '/cases/$caseId'
     | '/reviews/$batchId'
@@ -170,6 +180,7 @@ export interface FileRouteTypes {
     | '/library'
     | '/lookup'
     | '/search'
+    | '/settings'
     | '/upload'
     | '/cases/$caseId'
     | '/reviews/$batchId'
@@ -186,6 +197,7 @@ export interface FileRouteTypes {
     | '/library'
     | '/lookup'
     | '/search'
+    | '/settings'
     | '/upload'
     | '/cases/$caseId'
     | '/reviews/$batchId'
@@ -203,6 +215,7 @@ export interface RootRouteChildren {
   LibraryRoute: typeof LibraryRoute
   LookupRoute: typeof LookupRoute
   SearchRoute: typeof SearchRoute
+  SettingsRoute: typeof SettingsRoute
   UploadRoute: typeof UploadRoute
   CasesCaseIdRoute: typeof CasesCaseIdRoute
   ReviewsBatchIdRoute: typeof ReviewsBatchIdRoute
@@ -261,6 +274,13 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/upload': {
@@ -323,6 +343,7 @@ const rootRouteChildren: RootRouteChildren = {
   LibraryRoute: LibraryRoute,
   LookupRoute: LookupRoute,
   SearchRoute: SearchRoute,
+  SettingsRoute: SettingsRoute,
   UploadRoute: UploadRoute,
   CasesCaseIdRoute: CasesCaseIdRoute,
   ReviewsBatchIdRoute: ReviewsBatchIdRoute,

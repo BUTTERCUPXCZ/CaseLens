@@ -4,9 +4,11 @@ import { useEffect } from 'react'
 import { Scale } from 'lucide-react'
 
 import { AppSidebar } from '@/components/AppSidebar'
+import { DesktopTitleBar } from '@/components/DesktopTitleBar'
 import { Button } from '@/components/ui/button'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { inDesktopWindow } from '@/lib/desktop'
 import { RIGHT_DOCK_ID } from '@/lib/dock'
 import { isCasePage, rememberPlace } from '@/lib/returnPlace'
 
@@ -23,6 +25,7 @@ function RootLayout() {
   }, [location.pathname, location.href])
   return (
       <TooltipProvider>
+        {inDesktopWindow ? <DesktopTitleBar /> : null}
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
@@ -31,7 +34,7 @@ function RootLayout() {
         </a>
         <SidebarProvider>
           <AppSidebar />
-          <SidebarInset>
+          <SidebarInset className="min-w-0">
             {/* On a phone: the menu button and the name. On a laptop the menu is always on the left, so there is no header bar. */}
             <header className="sticky top-0 z-20 border-b bg-background/95 px-4 py-3 backdrop-blur-sm md:hidden">
               <div className="flex items-center gap-3">
@@ -48,7 +51,7 @@ function RootLayout() {
           </SidebarInset>
           {/* A panel docked to the right edge of the window, full height. A page puts its panel in here (see `RIGHT_DOCK_ID`);
               while nothing is in it, it is hidden and takes no room. */}
-          <aside id={RIGHT_DOCK_ID} className="sticky top-0 hidden h-svh w-[24rem] shrink-0 border-l border-border bg-card empty:hidden xl:block" />
+          <aside id={RIGHT_DOCK_ID} className="sticky top-0 hidden h-[calc(100svh-var(--titlebar-height))] w-[24rem] shrink-0 border-l border-border bg-card empty:hidden min-[90rem]:block" />
         </SidebarProvider>
       </TooltipProvider>
   )

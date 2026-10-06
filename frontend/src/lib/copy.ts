@@ -362,6 +362,32 @@ export const navCopy = {
   toUploads: 'Back to My uploads',
 }
 
+/** Settings: only in the desktop app (the client's own computer). */
+export const settingsCopy = {
+  title: 'Settings',
+  description: 'Your AI key and your library backups. Everything else stays on this computer.',
+  aiTitle: 'AI key',
+  aiHelp: 'CaseLens uses your Gemini key to write digests and answer questions. It is kept in this computer’s password store and never shown again.',
+  aiSet: 'An AI key is saved.',
+  aiNotSet: 'No AI key yet. Digests and questions wait until you add one.',
+  aiLabel: 'Gemini API key',
+  aiPlaceholder: 'Paste your key here',
+  aiSave: 'Save key',
+  aiReplace: 'Replace key',
+  aiRemove: 'Remove key',
+  aiSaved: 'Key saved. New digests use it now.',
+  aiRemoved: 'Key removed.',
+  aiGetOne: 'Get a key at Google AI Studio',
+  backupTitle: 'Back up your library',
+  backupHelp: 'Saves every case, digest, upload and edit as one file. Keep it on a USB drive or in cloud storage.',
+  backupButton: 'Download a backup',
+  restoreTitle: 'Restore from a backup',
+  restoreHelp: 'Replaces the library on this computer with a backup file. The current library is kept beside it, just in case.',
+  restoreButton: 'Choose a backup file',
+  restoreWaiting: 'Backup ready. Close CaseLens and open it again to finish the restore.',
+  whereTitle: 'Where your library is',
+}
+
 /** The pieces of the Individual and Bulk forms: the file drop, the Subject Tags and the Topic scope. */
 export const uploadCopy = {
   title: 'New digest',
@@ -428,6 +454,11 @@ export const reviewsCopy = {
   stateNothing: 'No case was found',
   crumbLibrary: 'Case library',
   casesTitle: 'Cases in this upload',
+  progress: (ready: number, total: number) => `${ready} of ${total} ${total === 1 ? 'digest' : 'digests'} ready`,
+  progressHelp: 'Open a ready case now; the others appear as they are finished.',
+  filterLabel: 'Show',
+  filters: { all: 'All', ready: 'Ready', writing: 'Being written', failed: 'Could not be written' },
+  filterEmpty: { all: '', ready: 'No digest is ready yet. The first one takes about 2 minutes.', writing: 'Every digest is finished.', failed: '' },
   pickCase: 'Choose a case to read its digest.',
   waitingFirst: 'Your cases will appear here as each one is found.',
   nothingAdded: 'No case was added from this upload.',
@@ -471,7 +502,7 @@ export const digestPageCopy = {
   saveFailed: 'We could not save your text. Try again.',
   pageTitle: 'Case digest',
   writing: 'Writing the digest…',
-  writingHelp: 'This takes a few minutes. You can leave this page; it will be here when you come back.',
+  writingHelp: 'This takes about 2 minutes. You can read other cases meanwhile; this one appears here by itself when it is done.',
   start: 'Write the digest',
   failedTitle: 'The digest could not be written',
   retry: 'Try again',

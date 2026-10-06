@@ -173,6 +173,41 @@
   --redpen: oklch(0.72 0.17 25);
 }
 
+/* The desktop app draws its own title bar (DesktopTitleBar); everything fixed to the window's top edge moves down below it. */
+:root {
+  --titlebar-height: 0px;
+}
+:root.has-titlebar {
+  --titlebar-height: 2.25rem;
+}
+/* Only the part below the bar scrolls, so the scrollbar starts under the bar instead of running beside it. */
+.has-titlebar body {
+  height: 100svh;
+  overflow: hidden;
+}
+.has-titlebar #root {
+  position: fixed;
+  inset: var(--titlebar-height) 0 0 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.has-titlebar [data-slot='sidebar-wrapper'] {
+  min-height: calc(100svh - var(--titlebar-height));
+}
+/* Side panels (the AI assistant in a smaller window) and their dimmed backdrop open below the bar, never over it. */
+.has-titlebar [data-slot='sheet-overlay'],
+.has-titlebar [data-slot='dialog-overlay'],
+.has-titlebar [data-slot='sheet-content'][data-side='right'],
+.has-titlebar [data-slot='sheet-content'][data-side='left'] {
+  top: var(--titlebar-height);
+  height: auto;
+  bottom: 0;
+}
+.has-titlebar [data-slot='sidebar-container'] {
+  top: var(--titlebar-height);
+  height: calc(100svh - var(--titlebar-height));
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

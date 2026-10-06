@@ -1142,6 +1142,10 @@ export interface components {
             limit: number;
             /** Offset */
             offset: number;
+            /** State Counts */
+            state_counts?: {
+                [key: string]: number;
+            } | null;
         };
         /** CaseSummaryOut */
         CaseSummaryOut: {
@@ -2249,6 +2253,8 @@ export interface operations {
                 no_subject?: boolean;
                 /** @description Only what this bulk upload gave: its main cases, each once */
                 batch_id?: number | null;
+                /** @description With batch_id: only the cases whose digest is in this state */
+                digest_state?: ("ready" | "writing" | "failed") | null;
                 limit?: number;
                 offset?: number;
             };

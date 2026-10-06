@@ -1,4 +1,5 @@
-"""Database tests run on their own database (`caselens_test`), never the dev one.
+"""Database tests run on their own database (`caselens_test`), never the dev one: PostgreSQL (the web version) or, with a
+`sqlite:///...` DATABASE_URL, a fresh SQLite file (the desktop app), so both databases are tested by the same tests.
 
 The schema is built by the real Alembic migrations, so a test failure also catches a
 broken migration. Each test runs inside a transaction that is rolled back.
@@ -23,9 +24,28 @@ BACKEND_DIR = Path(__file__).resolve().parent.parent
 TEST_DB_NAME = "caselens_test"
 
 
+def _sqlite_test_engine(dev_url) -> Engine:
+    """The desktop app's database: a fresh SQLite file next to the dev one, built by the desktop migrations."""
+    from caselens.infrastructure.db.session import make_engine
+    from caselens.infrastructure.db.sqlite_schema import upgrade_sqlite
+
+    folder = Path(dev_url.database).resolve().parent if dev_url.database else Path(".")
+    path = folder / "caselens_test.db"
+    for leftover in (path, path.with_name(path.name + "-wal"), path.with_name(path.name + "-shm")):
+        leftover.unlink(missing_ok=True)
+    url = f"sqlite:///{path.as_posix()}"
+    upgrade_sqlite(url)
+    return make_engine(url)
+
+
 @pytest.fixture(scope="session")
 def test_engine() -> Iterator[Engine]:
     dev_url = make_url(get_settings().database_url)
+    if dev_url.get_backend_name() == "sqlite":
+        engine = _sqlite_test_engine(dev_url)
+        yield engine
+        engine.dispose()
+        return
     admin = create_engine(dev_url, isolation_level="AUTOCOMMIT")
     with admin.connect() as connection:
         exists = connection.scalar(
@@ -58,3 +78,10 @@ def db_session(test_engine: Engine) -> Iterator[Session]:
         session.close()
         outer.rollback()
         connection.close()
+
+
+@pytest.fixture
+def postgres_only(test_engine: Engine) -> None:
+    """For tests of PostgreSQL-only features (row-level security, the web version's migrations, its query plans)."""
+    if test_engine.dialect.name != "postgresql":
+        pytest.skip("PostgreSQL only: the desktop app's SQLite database has no such feature")

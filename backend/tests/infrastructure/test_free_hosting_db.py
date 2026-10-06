@@ -13,7 +13,7 @@ from tests.fakes import FakeJobQueue, InMemoryJobLocks
 pytestmark = pytest.mark.db
 
 
-def test_every_table_has_row_level_security_on(db_session):
+def test_every_table_has_row_level_security_on(db_session, postgres_only):
     off = db_session.execute(
         text("SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND NOT rowsecurity")
     ).scalars().all()
@@ -95,7 +95,7 @@ def test_digests_that_waited_for_the_monthly_limit_start_again_as_far_as_the_lim
     assert SqlCaseDigestRepository(db_session).get(case.id).state is DigestState.PENDING
 
 
-def test_migration_0013_goes_down_and_up_again_keeping_the_tags(test_engine):
+def test_migration_0013_goes_down_and_up_again_keeping_the_tags(test_engine, postgres_only):
     """The tags migration can be undone (one tag per case comes back) and redone, on a copy of the test schema."""
     from alembic import command
     from alembic.config import Config

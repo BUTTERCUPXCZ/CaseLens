@@ -187,6 +187,8 @@ class CasePageOut(BaseModel):
     total: int
     limit: int
     offset: int
+    # One upload's list only: how many of its cases are ready / being written / failed (for the filter above the list).
+    state_counts: dict[str, int] | None = None
 
     @classmethod
     def from_page(cls, page: CasePage, digest_states: dict[int, str] | None = None) -> "CasePageOut":

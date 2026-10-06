@@ -114,9 +114,11 @@ class BuildCaseDigestV2:
             return self._finish(digest, DigestState.FAILED, OVER_LIMIT_MESSAGE)
 
         tags = ", ".join(s.name for s in case.subjects) or None
+        request = build_digest_request(case, opinions_of(case), tags, digest.scope)
+        self._uow.commit()  # end the read before the AI call (minutes): SQLite refuses a late save from a read held that long
         before = self._usage()
         try:
-            result = self._writer.execute(build_digest_request(case, opinions_of(case), tags, digest.scope))
+            result = self._writer.execute(request)
         except AiUnavailableError as exc:
             logger.warning("case %s digest %s: not written: %s", case.id, digest_id, exc)
             return self._finish(digest, DigestState.FAILED, _reason(exc))

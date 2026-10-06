@@ -179,7 +179,7 @@ def test_recent_uploads_list_shows_how_each_review_came_out(client, services):
 
 
 def test_library_lists_pages_and_searches_stored_cases(client, services):
-    assert client.get("/library/cases").json() == {"items": [], "total": 0, "limit": 20, "offset": 0}
+    assert client.get("/library/cases").json() == {"items": [], "total": 0, "limit": 20, "offset": 0, "state_counts": None}
 
     services.fetch_case_by_gr_number().execute(GrNumber("180046"), 2009)
 
@@ -284,8 +284,12 @@ def test_unknown_ids_are_404(client):
     assert client.get("/uploads/999999").status_code == 404
 
 
-def test_health(client):
-    assert client.get("/health").json() == {"status": "ok", "db": "ok", "pg_trgm": True}
+def test_health(client, db_session):
+    body = client.get("/health").json()
+    if db_session.get_bind().dialect.name == "postgresql":
+        assert body == {"status": "ok", "db": "ok", "pg_trgm": True, "database": "postgresql", "desktop": False}
+    else:  # the desktop app
+        assert body == {"status": "ok", "db": "ok", "pg_trgm": False, "database": "sqlite", "desktop": False}
 
 
 def test_deleting_a_review_removes_it_and_its_digests_but_keeps_the_case(client, services):

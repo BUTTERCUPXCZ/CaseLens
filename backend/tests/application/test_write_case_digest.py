@@ -99,3 +99,49 @@ def test_every_level_prints_the_header_sections_the_client_asked_for(level):
     sections = LEVEL_SECTIONS[level]
     assert Section.DOCTRINE in sections and Section.FACTS in sections  # all three levels start with Doctrine and Facts
     assert (Section.RATIO in sections) is (level is Level.FULL) and (Section.ISSUE in sections) is (level is not Level.SHORT)
+
+
+class SlowChecker(VerdictChecker):
+    """Takes a while per group, like the real model; can fail on the group that holds a given sentence."""
+
+    def __init__(self, unsupported=(), seconds=0.3, fail_on=None):
+        super().__init__(unsupported)
+        self.seconds, self.fail_on = seconds, fail_on
+
+    def check(self, sentences, sources):
+        import time
+
+        time.sleep(self.seconds)
+        if self.fail_on and any(s.text == self.fail_on for s in sentences):
+            from caselens.domain.errors import AiUnavailableError
+
+            raise AiUnavailableError("the checker did not answer")
+        return super().check(sentences, sources)
+
+
+def _many(n):
+    words = ["first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth"]
+    return [(f"In February 1986, Marcos was deposed, as the {words[k % 10]} line of part {words[k // 10]} says.", ["P6"]) for k in range(n)]
+
+
+def test_the_check_groups_are_judged_at_the_same_time_and_the_result_keeps_the_writers_order():
+    import time
+
+    lines = _many(70)  # three groups of up to 25
+    checker = SlowChecker(unsupported={lines[30][0]})
+    started = time.monotonic()
+    result = run(ScriptedDigestWriter(draft(*lines)), checker, repair=False)
+    elapsed = time.monotonic() - started
+
+    assert len(checker.seen) == 3
+    assert elapsed < 0.6  # about one group's wait (0.3 s), not three (0.9 s)
+    assert texts(result) == [text for text, _ in lines if text != lines[30][0]]  # same order as written, the unsupported one gone
+    assert [d.text for d in result.dropped] == [lines[30][0]]
+
+
+def test_a_check_group_that_fails_still_fails_the_digest():
+    from caselens.domain.errors import AiUnavailableError
+
+    lines = _many(60)
+    with pytest.raises(AiUnavailableError):
+        run(ScriptedDigestWriter(draft(*lines)), SlowChecker(seconds=0.01, fail_on=lines[40][0]), repair=False)

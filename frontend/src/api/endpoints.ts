@@ -1,5 +1,6 @@
 import { postJson, putJson, query, request } from './client'
 import type {
+  BatchDigestFilter,
   Bulk,
   BulkItems,
   BulkItemStatus,
@@ -7,7 +8,9 @@ import type {
   CaseDigest,
   CaseQuestion,
   CaseSummary,
+  DesktopSettings,
   DigestLevel,
+  Health,
   SubjectChoice,
   SubjectCount,
   CatalogBuild,
@@ -25,7 +28,7 @@ export const searchCases = (grNo: string, year?: number) =>
 
 export const fetchCaseByUrl = (url: string) => postJson<CaseDetail>('/cases/fetch', { url })
 
-export const getLibrary = (params: { q?: string; batch_id?: number; subject_id?: number; no_subject?: boolean; limit?: number; offset?: number }) =>
+export const getLibrary = (params: { q?: string; batch_id?: number; digest_state?: BatchDigestFilter; subject_id?: number; no_subject?: boolean; limit?: number; offset?: number }) =>
   request<CasePage>(`/library/cases${query({ ...params, no_subject: params.no_subject ? 'true' : undefined })}`)
 
 /** The filter rail: every subject with how many cases are filed under it, and those with none yet. */
@@ -88,3 +91,15 @@ export const getBulkItems = (id: number, params: { status?: BulkItemStatus; limi
 export const getRecentBulk = (limit = 10, offset = 0) => request<Bulk[]>(`/bulk${query({ limit, offset })}`)
 export const deleteBulk = (id: number) => request<void>(`/bulk/${id}`, { method: 'DELETE' })
 export const retryBulk = (id: number) => postJson<{ requeued: number }>(`/bulk/${id}/retry`, {})
+
+export const getHealth = () => request<Health>('/health')
+
+/** The desktop app's Settings: the AI key (never sent back, only whether one is set), backup and restore. */
+export const getDesktopSettings = () => request<DesktopSettings>('/desktop/settings')
+export const saveAiKey = (key: string) => putJson<DesktopSettings>('/desktop/ai-key', { key })
+export const backupUrl = '/api/desktop/backup'
+export function restoreBackup(file: File): Promise<DesktopSettings> {
+  const form = new FormData()
+  form.append('file', file)
+  return request<DesktopSettings>('/desktop/restore', { method: 'POST', body: form })
+}

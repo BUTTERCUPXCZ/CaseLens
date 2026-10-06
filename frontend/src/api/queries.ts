@@ -1,11 +1,15 @@
 import { queryOptions } from '@tanstack/react-query'
 
+import type { BatchDigestFilter } from './types'
+
 import {
   getBulk,
   getBulkItems,
   getCase,
   getCaseDigest,
   getCaseQuestions,
+  getDesktopSettings,
+  getHealth,
   getRecentBulk,
   getSubjectCounts,
   getSubjectList,
@@ -26,7 +30,7 @@ export const keys = {
   uploads: ['uploads'] as const,
   upload: (id: number) => ['upload', id] as const,
   library: (q: string, page: number, subject: SubjectFilter) => ['library', q, page, subject] as const,
-  batchCases: (id: number, page: number) => ['library', 'batch', id, page] as const,
+  batchCases: (id: number, page: number, state: BatchDigestFilter | undefined = undefined) => ['library', 'batch', id, page, state ?? null] as const,
   subjects: ['subjects'] as const,
   subjectList: ['subject-list'] as const,
   caseDigest: (id: number, scope = '', batchId: number | null = null) => ['case-digest', id, scope.trim().toLowerCase(), batchId] as const,
@@ -42,6 +46,8 @@ export const keys = {
   catalogStatus: ['catalog-status'] as const,
   finishedReviewer: (uploadId: number) => ['finished-reviewer', uploadId] as const,
   digest: (id: number) => ['digest', id] as const,
+  health: ['health'] as const,
+  desktopSettings: ['desktop-settings'] as const,
 }
 
 /** Polls while any citation is still being checked, and stops by itself when it is done. */
@@ -147,10 +153,10 @@ export const bulkItemsQuery = (id: number, status: string | undefined, page: num
   })
 
 /** What a bulk upload gave: its main cases, each once. Asked again while the upload or its digests are still being worked on. */
-export const batchCasesQuery = (id: number, page: number, live: boolean) =>
+export const batchCasesQuery = (id: number, page: number, live: boolean, state?: BatchDigestFilter) =>
   queryOptions({
-    queryKey: keys.batchCases(id, page),
-    queryFn: () => getLibrary({ batch_id: id, limit: PAGE_SIZE, offset: page * PAGE_SIZE }),
+    queryKey: keys.batchCases(id, page, state),
+    queryFn: () => getLibrary({ batch_id: id, digest_state: state, limit: PAGE_SIZE, offset: page * PAGE_SIZE }),
     refetchInterval: live ? BULK_POLL_MS : false,
     placeholderData: (previous) => previous,
   })
@@ -164,3 +170,8 @@ export const reviewsQuery = (page: number) =>
     placeholderData: (previous) => previous,
     refetchInterval: (query) => (query.state.data?.some((b) => !b.finished || b.counts.digests_pending > 0) ? BULK_POLL_MS : false),
   })
+
+/** Which kind of CaseLens this is (the website or the desktop app). It never changes while the app runs. */
+export const healthQuery = () => queryOptions({ queryKey: keys.health, queryFn: getHealth, staleTime: Infinity })
+
+export const desktopSettingsQuery = () => queryOptions({ queryKey: keys.desktopSettings, queryFn: getDesktopSettings })

@@ -1,3 +1,5 @@
+from typing import Literal
+
 from fastapi import APIRouter, Depends, Query
 
 from caselens.composition import Services
@@ -13,6 +15,7 @@ def library_cases(
     subject_id: int | None = Query(None, description="Only the cases filed under this subject"),
     no_subject: bool = Query(False, description="Only the cases with no subject yet"),
     batch_id: int | None = Query(None, description="Only what this bulk upload gave: its main cases, each once"),
+    digest_state: Literal["ready", "writing", "failed"] | None = Query(None, description="With batch_id: only the cases whose digest is in this state"),
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
     services: Services = Depends(get_services),
@@ -20,9 +23,9 @@ def library_cases(
     """One row per main case, newest decision first. Lighter than GET /cases/{id}: no full text. A Resolution or a repeat of the same
     case is never listed on its own."""
     if batch_id is not None:
-        page = services.list_batch_cases().execute(batch_id, limit, offset)
-    else:
-        page = services.list_cases().execute(q, limit, offset, subject_id, no_subject)
+        batch_page = services.list_batch_cases().execute(batch_id, limit, offset, digest_state)
+        return CasePageOut.from_page(batch_page, batch_page.states).model_copy(update={"state_counts": batch_page.counts})
+    page = services.list_cases().execute(q, limit, offset, subject_id, no_subject)
     return CasePageOut.from_page(page, services.case_digest_states([c.id for c in page.items]))
 
 

@@ -127,3 +127,34 @@ def test_the_results_of_a_batch_show_each_main_case_once_in_the_order_given():
 
     assert [c.id for c in page.items] == [second.id, first.id] and page.total == 2
     assert ListBatchCases(bulk, cases).execute(batch.id, 1, 1).items[0].id == first.id
+
+
+def test_an_uploads_cases_can_be_narrowed_to_the_ready_ones_while_the_rest_are_written():
+    """With 50 cases the student studies the finished digests first: the list filters by digest state (for this upload's
+    topic scope, not the standard digest), and says how many are in each state."""
+    from caselens.application.use_cases.list_cases import ListBatchCases
+    from caselens.domain.bulk import BulkBatch, BulkItem, ItemKind, ItemStatus
+    from caselens.domain.digest_v2 import CaseDigestV2, DigestState
+    from tests.fakes import InMemoryBulkRepository, InMemoryCaseDigestRepository, InMemoryCaseRepository
+    from tests.helpers import parse_digest_case
+
+    cases = InMemoryCaseRepository()
+    first = cases.add(parse_digest_case("gr_180046_2009.html"))
+    second = cases.add(parse_digest_case("gr_173931_2009.html"))
+    bulk = InMemoryBulkRepository()
+    batch = bulk.add_batch(BulkBatch(topic_scope="Delegation of powers", items=[
+        BulkItem(0, 0, ItemKind.GR_NUMBER, "180046", "180046", status=ItemStatus.FOUND, case_id=first.id),
+        BulkItem(0, 0, ItemKind.GR_NUMBER, "173931", "173931", status=ItemStatus.FOUND, case_id=second.id),
+    ]))
+    digests = InMemoryCaseDigestRepository()
+    digests.save(CaseDigestV2(first.id, "Delegation of powers", DigestState.READY))
+    digests.save(CaseDigestV2(second.id, "", DigestState.READY))  # the standard digest: not this upload's
+    digests.save(CaseDigestV2(second.id, "Delegation of powers", DigestState.PENDING))
+    listing = ListBatchCases(bulk, cases, digests)
+
+    everything = listing.execute(batch.id, 20, 0)
+    assert everything.states == {first.id: "ready", second.id: "pending"}
+    assert everything.counts == {"ready": 1, "writing": 1, "failed": 0}
+    ready = listing.execute(batch.id, 20, 0, "ready")
+    assert [c.id for c in ready.items] == [first.id] and ready.total == 1
+    assert [c.id for c in listing.execute(batch.id, 20, 0, "writing").items] == [second.id]

@@ -7,11 +7,12 @@ import { z } from 'zod'
 
 import { orNotFound } from '@/api/orNotFound'
 import { batchCasesQuery, bulkQuery, PAGE_SIZE } from '@/api/queries'
-import type { Bulk, CaseSummary } from '@/api/types'
+import type { BatchDigestFilter, Bulk, CaseSummary } from '@/api/types'
 import { BackButton } from '@/components/BackButton'
 import { Disclaimer } from '@/components/Disclaimer'
 import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
 import { AssistantPanel } from '@/features/assistant/AssistantPanel'
@@ -81,6 +82,35 @@ function CaseList({ cases, selected, onSelect }: { cases: CaseSummary[]; selecte
   )
 }
 
+const FILTERS = ['all', 'ready', 'writing', 'failed'] as const
+type Filter = (typeof FILTERS)[number]
+
+/** "All · Ready · Being written": with many cases, the ready ones are one click away while the rest are still being written. */
+function CaseFilter({ value, counts, total, onChange }: { value: Filter; counts: Record<string, number>; total: number; onChange: (next: Filter) => void }) {
+  const count = (filter: Filter) => (filter === 'all' ? total : (counts[filter] ?? 0))
+  return (
+    <div role="group" aria-label={reviewsCopy.filterLabel} className="mb-3 flex flex-wrap gap-1.5">
+      {FILTERS.filter((f) => f !== 'failed' || count(f) > 0 || value === f).map((filter) => {
+        const on = value === filter
+        return (
+          <button
+            key={filter}
+            type="button"
+            aria-pressed={on}
+            onClick={() => onChange(filter)}
+            className={[
+              'rounded-full border px-2.5 py-0.5 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-ring',
+              on ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:bg-muted',
+            ].join(' ')}
+          >
+            {reviewsCopy.filters[filter]} <span className="tabular">{count(filter)}</span>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 function Header({ bulk }: { bulk: Bulk }) {
   const c = bulk.counts
   const title = reviewTitle(bulk)
@@ -129,6 +159,14 @@ function Header({ bulk }: { bulk: Bulk }) {
       <p className="mt-0.5 text-sm text-muted-foreground">
         {bulkCopy.total(c.total)} · {reviewsCopy.cases(c.found, c.digests_ready)}
       </p>
+      {/* While digests are written: how far along, so the student knows they can start on the ready ones. */}
+      {c.found > 1 && c.digests_ready < c.found && (c.digests_pending > 0 || !bulk.finished) ? (
+        <div className="mt-4 max-w-md">
+          <p className="tabular mb-1.5 text-sm font-medium">{reviewsCopy.progress(c.digests_ready, c.found)}</p>
+          <Progress value={(100 * c.digests_ready) / c.found} aria-label={reviewsCopy.progress(c.digests_ready, c.found)} className="h-1.5" />
+          <p className="mt-1.5 text-sm text-muted-foreground">{reviewsCopy.progressHelp}</p>
+        </div>
+      ) : null}
     </header>
   )
 }
@@ -141,10 +179,11 @@ function ReviewPage() {
   const navigate = Route.useNavigate()
   const wide = useWideScreen()
   const [page, setPage] = useState(0)
+  const [filter, setFilter] = useState<Filter>('all')
   const [sheetOpen, setSheetOpen] = useState(false)
   const { data: bulk } = useQuery(bulkQuery(batchId))
   const live = bulk ? !bulk.finished || bulk.counts.digests_pending > 0 : true
-  const cases = useQuery(batchCasesQuery(batchId, page, live))
+  const cases = useQuery(batchCasesQuery(batchId, page, live, filter === 'all' ? undefined : (filter as BatchDigestFilter)))
   const queryClient = useQueryClient()
   const found = bulk?.counts.found
   const ready = bulk?.counts.digests_ready
@@ -158,7 +197,8 @@ function ReviewPage() {
 
   if (!bulk) return null
   const items = cases.data?.items ?? []
-  const selected = items.find((c) => c.id === search.case) ?? items[0] ?? null
+  // The case the student picked; until they pick one, the first READY case (the first case may still be being written).
+  const selected = items.find((c) => c.id === search.case) ?? items.find((c) => c.digest_state === 'ready') ?? items[0] ?? null
   const total = cases.data?.total ?? 0
   const last = Math.min((page + 1) * PAGE_SIZE, total)
   const assistant = <AssistantPanel caseId={selected?.id ?? null} caseName={selected ? shortCaseName(selected.title) : null} batchId={batchId} />
@@ -167,12 +207,25 @@ function ReviewPage() {
   return (
     <>
       <Header bulk={bulk} />
-      <div className="grid gap-8 lg:grid-cols-[15rem_minmax(0,1fr)]">
+      <div className="grid gap-8 xl:grid-cols-[15rem_minmax(0,1fr)]">
         <nav aria-label={reviewsCopy.casesTitle} className="space-y-6">
           <div>
             <h2 className="mb-2 text-sm font-semibold tracking-wide text-muted-foreground uppercase">{reviewsCopy.casesTitle}</h2>
+            {cases.data?.state_counts && (bulk.counts.found > 1 || filter !== 'all') ? (
+              <CaseFilter
+                value={filter}
+                counts={cases.data.state_counts}
+                total={Object.values(cases.data.state_counts).reduce((sum, n) => sum + n, 0)}
+                onChange={(next) => {
+                  setFilter(next)
+                  setPage(0)
+                }}
+              />
+            ) : null}
             {!cases.data ? (
               <Skeleton className="h-24 w-full" aria-label="Loading the cases" />
+            ) : total === 0 && filter !== 'all' ? (
+              <p className="text-base text-muted-foreground">{reviewsCopy.filterEmpty[filter]}</p>
             ) : total === 0 ? (
               <p className="text-base text-muted-foreground">{bulk.finished ? reviewsCopy.nothingAdded : reviewsCopy.waitingFirst}</p>
             ) : (
@@ -206,15 +259,9 @@ function ReviewPage() {
                     {bulk.kind === 'individual' ? decisionCopy.read : reviewsCopy.fullText}
                   </Link>
                 </Button>
-                {!wide ? (
-                  <Button size="sm" onClick={() => setSheetOpen(true)}>
-                    <MessageCircleQuestion data-icon="inline-start" aria-hidden />
-                    {assistantCopy.open}
-                  </Button>
-                ) : null}
               </div>
               <CaseDigestPanel key={`${selected.id}|${bulk.topic_scope}`} caseId={selected.id} scope={bulk.topic_scope} batchId={batchId} />
-              <Disclaimer className="mt-10 max-w-prose" />
+              <Disclaimer className={`mt-10 max-w-prose ${wide ? '' : 'mb-20'}`} />{/* room under it for the floating assistant button */}
             </>
           ) : (
             <p className="text-base text-muted-foreground">{total === 0 ? '' : reviewsCopy.pickCase}</p>
@@ -223,6 +270,13 @@ function ReviewPage() {
       </div>
 
       {wide && dock ? createPortal(assistant, dock) : null}
+      {/* In a smaller window the assistant is one tap away wherever the student has scrolled to: a button that floats in the corner. */}
+      {!wide && selected && !sheetOpen ? (
+        <Button size="lg" className="fixed right-6 bottom-6 z-40 rounded-full shadow-lg" onClick={() => setSheetOpen(true)}>
+          <MessageCircleQuestion data-icon="inline-start" aria-hidden />
+          {assistantCopy.open}
+        </Button>
+      ) : null}
       {!wide ? (
         <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
           <SheetContent side="right" className="w-full p-0 sm:max-w-md">

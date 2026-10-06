@@ -1,6 +1,8 @@
 """Gemini adapters for `AnswerWriter` and `AnswerChecker`. This is the only module that imports the SDK."""
 import json
+import logging
 import re
+import threading
 import time
 from collections.abc import Callable
 
@@ -12,6 +14,8 @@ from caselens.application.ports.ai import AnswerChecker, AnswerRequest, AnswerWr
 from caselens.domain.digest import AnswerSentence, CheckResult, SourcePassage, Verdict
 from caselens.domain.errors import AiCreditError, AiUnavailableError
 from caselens.infrastructure.config import Settings
+
+logger = logging.getLogger(__name__)
 
 PROMPT_VERSION = "answer-v3"
 
@@ -86,6 +90,7 @@ class _GeminiCall:
         self._max_retries = settings.gemini_max_retries
         self._sleep = sleep
         self.usage = {"calls": 0, "input_tokens": 0, "output_tokens": 0}  # for measuring what a digest costs
+        self._usage_lock = threading.Lock()  # a digest's check groups run at the same time
 
     def json(self, model: str, system: str, prompt: str, schema: dict, *, thinking_budget: int | None = None) -> dict:
         """`thinking_budget` caps the tokens the model may spend thinking before it answers (0 = none). Thinking is billed as output: a long digest
@@ -100,8 +105,9 @@ class _GeminiCall:
         last_problem = "no attempt made"
         for attempt in range(self._max_retries + 1):
             try:
+                started = time.monotonic()
                 response = self._client.models.generate_content(model=model, contents=prompt, config=config)
-                self._count(response)
+                self._count(response, model, time.monotonic() - started)
                 return json.loads(response.text)
             except genai_errors.ClientError as exc:
                 if exc.code == 402:  # prepaid credit used up: retrying cannot help
@@ -121,11 +127,17 @@ class _GeminiCall:
         raise AiUnavailableError(f"Gemini failed after {self._max_retries + 1} attempts ({last_problem}).")
 
 
-    def _count(self, response) -> None:
+    def _count(self, response, model: str = "", seconds: float = 0.0) -> None:
         meta = getattr(response, "usage_metadata", None)
-        self.usage["calls"] += 1
-        self.usage["input_tokens"] += (getattr(meta, "prompt_token_count", 0) or 0)
-        self.usage["output_tokens"] += (getattr(meta, "candidates_token_count", 0) or 0) + (getattr(meta, "thoughts_token_count", 0) or 0)
+        tokens_in = getattr(meta, "prompt_token_count", 0) or 0
+        tokens_out = getattr(meta, "candidates_token_count", 0) or 0
+        thinking = getattr(meta, "thoughts_token_count", 0) or 0
+        with self._usage_lock:
+            self.usage["calls"] += 1
+            self.usage["input_tokens"] += tokens_in
+            self.usage["output_tokens"] += tokens_out + thinking
+        # Where the time goes (no text, no key): the numbers to compare when making digests faster.
+        logger.info("gemini %s: %.1fs, %s in, %s out, %s thinking", model, seconds, tokens_in, tokens_out, thinking)
 
 
 _INLINE_CITE = re.compile(r"\s*[\[(]\s*((?:[PSR]\d+)(?:\s*[,;]\s*[PSR]\d+)*)\s*[\])]")

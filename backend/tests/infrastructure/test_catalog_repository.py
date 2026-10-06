@@ -187,7 +187,7 @@ def test_a_broken_month_is_recorded_but_not_counted_as_read(db_session):
     assert repo.read_months() == set()  # it will be tried again
 
 
-def test_search_over_60_000_rows_is_fast_and_uses_the_indexes(db_session):
+def test_search_over_60_000_rows_is_fast_and_uses_the_indexes(db_session, postgres_only):
     """(synthetic) the real catalog is about this size. The rows go into TEMPORARY tables that
     shadow the real ones for this test only: they are private to the session, so no other run
     sees them and autovacuum never has to clean up after them (it made this test take
@@ -222,6 +222,33 @@ def test_search_over_60_000_rows_is_fast_and_uses_the_indexes(db_session):
     title_plan = "\n".join(r[0] for r in db_session.execute(text("EXPLAIN SELECT 1 FROM catalog_entries WHERE title ILIKE '%garcia%'")))
     assert "Index" in number_plan and "Seq Scan" not in number_plan, number_plan
     assert "Bitmap Index Scan" in title_plan and "Seq Scan" not in title_plan, title_plan  # the trigram GIN index
+
+
+def test_on_the_desktop_app_search_over_60_000_rows_is_still_quick(db_session, test_engine):
+    """(synthetic) SQLite has no trigram index, so a name search reads every row; on the real catalog's size it must still answer
+    well under a second."""
+    if test_engine.dialect.name != "sqlite":
+        pytest.skip("SQLite only: PostgreSQL is measured, with its indexes, by the test above")
+    db_session.execute(text("""
+        WITH RECURSIVE g(n) AS (SELECT 100000 UNION ALL SELECT n + 1 FROM g WHERE n < 160000)
+        INSERT INTO catalog_entries (id, source_url, link_number, label_key, title, decision_date, year, month, index_url)
+        SELECT n, 'https://lawphil.net/x/gr_' || n || '.html', CAST(n AS TEXT), CAST(n AS TEXT),
+               CASE n % 7 WHEN 0 THEN 'Juan' WHEN 1 THEN 'Maria' WHEN 2 THEN 'People of the Philippines' WHEN 3 THEN 'Court of Appeals'
+                          WHEN 4 THEN 'Santos' WHEN 5 THEN 'Reyes' ELSE 'Bank of the Philippine Islands' END
+                 || ' ' || CASE n % 5 WHEN 0 THEN 'Cruz' WHEN 1 THEN 'Garcia' WHEN 2 THEN 'Lopez' WHEN 3 THEN 'Ramos' ELSE 'Torres' END
+                 || ' vs. ' || CASE n % 3 WHEN 0 THEN 'Aquino' WHEN 1 THEN 'Mendoza' ELSE 'Bautista' END || ' ' || n,
+               date('1987-01-01', '+' || (n % 14000) || ' days'), 1987 + (n % 40), 1 + n % 12, 'https://lawphil.net/x/index.html'
+        FROM g
+    """))
+    db_session.execute(text("INSERT INTO catalog_numbers (id, entry_id, number) SELECT id, id, link_number FROM catalog_entries"))
+    assert db_session.scalar(text("SELECT count(*) FROM catalog_entries")) >= 60_000
+
+    repo = SqlCatalogRepository(db_session)
+    for typed in ("garcia aquino", "G.R. No. 1234", "santos lopez 1500"):
+        started = time.perf_counter()
+        page = search(repo, typed, limit=20)
+        elapsed_ms = (time.perf_counter() - started) * 1000
+        assert page.total > 0 and elapsed_ms < 800, (typed, elapsed_ms)
 
 
 def test_a_month_that_lawphil_lists_but_does_not_serve_does_not_leave_the_catalog_unfinished(db_session):

@@ -86,6 +86,7 @@ class AnswerQueuedQuestion:
         paragraphs = case.full_text.split("\n")
         start = HeadingSections.body_start(paragraphs) or 0
         sources = [s for s in decision_sources(paragraphs, start, len(paragraphs) - 1) if s.text.strip()]
+        self._uow.commit()  # end the read before the AI call (minutes): SQLite refuses a late save from a read held that long
         try:
             answer = self._answerer.answer(AnswerRequest(asked.question, tuple(sources), _MAX_SENTENCES))
         except AiUnavailableError as exc:

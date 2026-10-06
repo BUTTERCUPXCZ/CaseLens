@@ -37,3 +37,10 @@ export type BulkItem = Schemas['BulkItemOut']
 export type BulkItems = Schemas['BulkItemsOut']
 export type BulkItemStatus = BulkItem['status']
 export type CaseQuestion = Schemas['QuestionOut']
+
+/** An upload's case list can be narrowed to the cases whose digest is ready, still being written, or failed. */
+export type BatchDigestFilter = 'ready' | 'writing' | 'failed'
+
+/** The desktop app only (its routes are not in the web version's OpenAPI document). */
+export type Health = { status: string; database: 'postgresql' | 'sqlite'; desktop?: boolean }
+export type DesktopSettings = { ai_key_set: boolean; data_dir: string; restore_pending: boolean }

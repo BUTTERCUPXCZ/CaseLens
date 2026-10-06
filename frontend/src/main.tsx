@@ -5,6 +5,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
 import { AccessGate } from './components/AccessGate'
+import { inDesktopWindow } from './lib/desktop'
 import { routeTree } from './routeTree.gen'
 import './index.css'
 
@@ -19,6 +20,9 @@ window.addEventListener('vite:preloadError', () => {
   }
   window.location.reload()
 })
+
+// The desktop app has no system title bar: ours takes the top strip of the window (see index.css).
+if (inDesktopWindow) document.documentElement.classList.add('has-titlebar')
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -36,6 +40,7 @@ const router = createRouter({
   context: { queryClient },
   defaultPreload: 'intent',
   scrollRestoration: true,
+  scrollToTopSelectors: ['#root'], // the desktop app scrolls this, not the window (index.css)
 })
 
 declare module '@tanstack/react-router' {

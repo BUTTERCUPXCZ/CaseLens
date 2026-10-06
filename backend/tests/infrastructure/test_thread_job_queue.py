@@ -29,6 +29,7 @@ def queue(locks):
 def finish(queue: ThreadJobQueue) -> None:
     queue._lawphil.shutdown(wait=True)
     queue._digests.shutdown(wait=True)
+    queue._questions.shutdown(wait=True)
 
 
 def test_each_job_runs_with_its_arguments(queue, calls):
@@ -74,3 +75,30 @@ def test_a_failing_job_frees_its_lock_and_does_not_stop_the_next_job(queue, lock
     finish(queue)
     assert locks.is_held(lock_keys.fetch_case_key("9", 2001)) is False
     assert ("resolve_upload", 1) in calls
+
+
+def test_a_question_is_answered_even_while_every_digest_thread_is_busy(monkeypatch, locks):
+    """During a bulk upload all digest threads are busy for minutes; a student's question must not wait behind them."""
+    import threading
+
+    release, answered = threading.Event(), threading.Event()
+    monkeypatch.setattr(jobs, "build_case_digest", lambda *_: release.wait(5))
+    monkeypatch.setattr(jobs, "answer_case_question", lambda *_: answered.set())
+    queue = ThreadJobQueue(locks, digest_threads=2)
+    for digest_id in (1, 2, 3):
+        queue.enqueue_case_digest(digest_id)
+    queue.enqueue_case_question(9)
+    try:
+        assert answered.wait(2)  # answered while the digests still run
+    finally:
+        release.set()
+        finish(queue)
+
+
+def test_the_desktop_app_writes_twelve_digests_at_once_and_the_website_four(tmp_path):
+    from caselens.infrastructure.config import Settings
+
+    assert Settings(_env_file=None, database_url="sqlite:///x.db").digest_threads == 4
+    desktop = Settings(_env_file=None, caselens_desktop=True, caselens_data_dir=str(tmp_path), gemini_api_key="k")
+    assert desktop.digest_threads == 12
+    assert Settings(_env_file=None, caselens_desktop=True, caselens_data_dir=str(tmp_path), gemini_api_key="k", digest_threads=6).digest_threads == 6

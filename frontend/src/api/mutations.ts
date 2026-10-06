@@ -8,7 +8,9 @@ import {
   fetchCaseByUrl,
   putBackDigestSection,
   requestCaseDigest,
+  restoreBackup,
   retryBulk,
+  saveAiKey,
   setCaseSubjects,
   startBulk,
   startCatalogBuild,
@@ -16,7 +18,7 @@ import {
 import { chunkFiles } from '@/features/bulk/chunkFiles'
 
 import { keys } from './queries'
-import type { CaseQuestion } from './types'
+import type { CaseQuestion, DesktopSettings } from './types'
 
 /** The student pastes a case's own Lawphil link and we save that case straight away. */
 export function useFetchByLink() {
@@ -138,4 +140,21 @@ export function useSectionEdits(caseId: number, scope: string, batchId: number, 
     save: useMutation({ mutationFn: ({ section, text }: { section: string; text: string }) => editDigestSection(batchId, digestId, section, text), onSuccess: refresh }),
     putBack: useMutation({ mutationFn: (section: string) => putBackDigestSection(batchId, digestId, section), onSuccess: refresh }),
   }
+}
+
+/** The desktop app's Settings: the answer is the new settings, shown at once. */
+export function useSaveAiKey() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: saveAiKey,
+    onSuccess: (settings: DesktopSettings) => queryClient.setQueryData(keys.desktopSettings, settings),
+  })
+}
+
+export function useRestoreBackup() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: restoreBackup,
+    onSuccess: (settings: DesktopSettings) => queryClient.setQueryData(keys.desktopSettings, settings),
+  })
 }

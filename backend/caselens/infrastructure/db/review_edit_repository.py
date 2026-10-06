@@ -1,10 +1,12 @@
-from sqlalchemy import delete, func, select
-from sqlalchemy.dialects.postgresql import insert as pg_insert
+from datetime import UTC, datetime
+
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from caselens.application.ports.review_edits import ReviewEditRepository
 from caselens.domain.digest_v2 import Section
 from caselens.infrastructure.db.orm_models import ReviewDigestEditModel
+from caselens.infrastructure.db.portable import insert_for
 
 
 class SqlReviewEditRepository(ReviewEditRepository):
@@ -22,9 +24,9 @@ class SqlReviewEditRepository(ReviewEditRepository):
     def save(self, batch_id: int, digest_id: int, section: Section, text: str) -> None:
         values = {"batch_id": batch_id, "digest_id": digest_id, "section": section.value, "text": text}
         self._session.execute(
-            pg_insert(ReviewDigestEditModel)
+            insert_for(self._session)(ReviewDigestEditModel)
             .values(values)
-            .on_conflict_do_update(constraint="uq_review_digest_edits_section", set_={"text": text, "updated_at": func.now()})
+            .on_conflict_do_update(index_elements=["batch_id", "digest_id", "section"], set_={"text": text, "updated_at": datetime.now(UTC)})
         )
         self._session.flush()
 

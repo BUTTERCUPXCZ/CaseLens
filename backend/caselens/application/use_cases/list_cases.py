@@ -1,7 +1,9 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from caselens.application.ports.bulk import BulkRepository
+from caselens.application.ports.digests import CaseDigestRepository
 from caselens.application.ports.repositories import CaseRepository
+from caselens.domain.digest_v2 import scope_key
 from caselens.domain.entities import CaseSummary
 
 
@@ -13,21 +15,41 @@ class CasePage:
     offset: int
 
 
+# What the student can filter an upload's cases by, while its digests are still being written.
+BATCH_STATE_FILTERS = {"ready": {"ready"}, "writing": {"pending", "none"}, "failed": {"failed"}}
+
+
+@dataclass(frozen=True)
+class BatchCasePage(CasePage):
+    states: dict[int, str] = field(default_factory=dict)  # each case's digest for this upload's topic scope
+    counts: dict[str, int] = field(default_factory=dict)  # how many cases are ready / being written / failed, over the whole upload
+
+
 class ListBatchCases:
     """What a bulk upload gave: its main cases, each once, in the order the student gave them. A case a later page made
-    related is shown as its main case; nothing a file only cites is ever here."""
+    related is shown as its main case; nothing a file only cites is ever here. While digests are written, the list can be
+    narrowed to the ready ones (or the ones still being written), so the student studies those first."""
 
-    def __init__(self, bulk: BulkRepository, cases: CaseRepository) -> None:
+    def __init__(self, bulk: BulkRepository, cases: CaseRepository, digests: CaseDigestRepository | None = None) -> None:
         self._bulk = bulk
         self._cases = cases
+        self._digests = digests
 
-    def execute(self, batch_id: int, limit: int, offset: int) -> CasePage:
+    def execute(self, batch_id: int, limit: int, offset: int, state: str | None = None) -> BatchCasePage:
         ids = self._bulk.main_case_ids(batch_id)
         known = self._cases.summaries(ids)
         mains = list(dict.fromkeys((known[i].main_case_id or i) for i in ids if i in known))
+        states: dict[int, str] = {}
+        if self._digests is not None:
+            batch = self._bulk.get_batch(batch_id)
+            found = self._digests.states(mains, scope_key(batch.topic_scope if batch else ""))
+            states = {i: found.get(i, "none") for i in mains}
+        counts = {name: sum(1 for i in mains if states.get(i, "none") in wanted) for name, wanted in BATCH_STATE_FILTERS.items()}
+        if state in BATCH_STATE_FILTERS:
+            mains = [i for i in mains if states.get(i, "none") in BATCH_STATE_FILTERS[state]]
         page_ids = mains[offset : offset + limit]
         shown = self._cases.summaries(page_ids)
-        return CasePage([shown[i] for i in page_ids if i in shown], len(mains), limit, offset)
+        return BatchCasePage([shown[i] for i in page_ids if i in shown], len(mains), limit, offset, {i: states[i] for i in page_ids if i in states}, counts)
 
 
 class ListCases:

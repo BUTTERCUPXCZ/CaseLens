@@ -3,10 +3,37 @@
 These are NOT the domain entities. Repositories map between the two (see mappers.py),
 so the domain layer never imports SQLAlchemy.
 """
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 
 from sqlalchemy import Date, DateTime, ForeignKey, Index, Integer, LargeBinary, String, Text, UniqueConstraint, func, text
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
+from sqlalchemy.types import JSON, TypeDecorator
+
+# One schema for both databases: PostgreSQL (the web version) keeps its JSONB and ARRAY columns; SQLite (the desktop app) stores
+# the same values as JSON. Indexes that only PostgreSQL has (trigram, full-text, GIN) are created there only.
+JSONDoc = JSON().with_variant(JSONB(), "postgresql")
+
+
+def ListOf(item):
+    return JSON().with_variant(ARRAY(item), "postgresql")
+
+
+class UTCDateTime(TypeDecorator):
+    """A moment in time, always UTC. PostgreSQL keeps the time zone itself; SQLite stores plain text, so the zone is put back on read
+    (otherwise "Today, 9:10 PM" would be shown in the wrong zone)."""
+
+    impl = DateTime(timezone=True)
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if value is not None and value.tzinfo is not None:
+            value = value.astimezone(UTC)
+        return value
+
+    def process_result_value(self, value, dialect):
+        if value is not None and value.tzinfo is None:
+            value = value.replace(tzinfo=UTC)
+        return value
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from caselens.infrastructure.db.base import Base
@@ -30,7 +57,7 @@ class CaseSubjectModel(Base):
     case_id: Mapped[int] = mapped_column(ForeignKey("cases.id", ondelete="CASCADE"), primary_key=True)
     subject_id: Mapped[int] = mapped_column(ForeignKey("subjects.id", ondelete="CASCADE"), primary_key=True, index=True)
     source: Mapped[str] = mapped_column(String(16), server_default="student")
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), server_default=func.now())
 
 
 class CaseModel(Base):
@@ -51,11 +78,11 @@ class CaseModel(Base):
     raw_html: Mapped[str] = mapped_column(Text)
     full_text: Mapped[str] = mapped_column(Text)
     fetched_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
+        UTCDateTime(), server_default=func.now()
     )
     parser_version: Mapped[int] = mapped_column(Integer)
     # Every G.R. number the page prints (a joint decision has several); empty on older rows.
-    numbers: Mapped[list[str]] = mapped_column(ARRAY(String(32)), server_default=text("'{}'"))
+    numbers: Mapped[list[str]] = mapped_column(ListOf(String(32)), default=list)
     subjects: Mapped[list[SubjectModel]] = relationship(
         secondary="case_subjects", viewonly=True, order_by=SubjectModel.sort_order, lazy="selectin"
     )  # the tags; written through CaseSubjectModel
@@ -81,13 +108,13 @@ class CaseModel(Base):
             "title",
             postgresql_using="gin",
             postgresql_ops={"title": "gin_trgm_ops"},
-        ),
-        Index("ix_cases_numbers", "numbers", postgresql_using="gin"),
+        ).ddl_if(dialect="postgresql"),
+        Index("ix_cases_numbers", "numbers", postgresql_using="gin").ddl_if(dialect="postgresql"),
         Index(
             "ix_cases_full_text_fts",
             text("to_tsvector('english', full_text)"),
             postgresql_using="gin",
-        ),
+        ).ddl_if(dialect="postgresql"),
     )
 
 
@@ -154,9 +181,9 @@ class MonthIndexModel(Base):
 
     url: Mapped[str] = mapped_column(Text, primary_key=True)
     fetched_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
+        UTCDateTime(), server_default=func.now()
     )
-    links: Mapped[list[str]] = mapped_column(JSONB)
+    links: Mapped[list[str]] = mapped_column(JSONDoc)
 
 
 class UploadModel(Base):
@@ -169,7 +196,7 @@ class UploadModel(Base):
     file_data: Mapped[bytes | None] = mapped_column(LargeBinary, deferred=True)
     status: Mapped[str] = mapped_column(String(16), server_default="pending")
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
+        UTCDateTime(), server_default=func.now()
     )
 
     citations: Mapped[list["UploadCitationModel"]] = relationship(
@@ -192,8 +219,8 @@ class UploadCitationModel(Base):
         ForeignKey("cases.id", ondelete="SET NULL")
     )
     status: Mapped[str] = mapped_column(String(16), server_default="pending")
-    mismatches: Mapped[dict | None] = mapped_column(JSONB)
-    unverified: Mapped[list | None] = mapped_column(JSONB)
+    mismatches: Mapped[dict | None] = mapped_column(JSONDoc)
+    unverified: Mapped[list | None] = mapped_column(JSONDoc)
     message: Mapped[str | None] = mapped_column(Text)
 
     upload: Mapped[UploadModel] = relationship(back_populates="citations")
@@ -227,7 +254,7 @@ class CatalogEntryModel(Base):
             "title",
             postgresql_using="gin",
             postgresql_ops={"title": "gin_trgm_ops"},
-        ),
+        ).ddl_if(dialect="postgresql"),
     )
 
 
@@ -257,7 +284,7 @@ class CatalogMonthModel(Base):
     month: Mapped[int] = mapped_column(Integer, primary_key=True)
     status: Mapped[str] = mapped_column(String(16))  # read | broken
     entries: Mapped[int] = mapped_column(Integer)
-    read_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    read_at: Mapped[datetime] = mapped_column(UTCDateTime(), server_default=func.now())
 
 
 class DigestModel(Base):
@@ -271,13 +298,13 @@ class DigestModel(Base):
     template: Mapped[str] = mapped_column(String(32))
     status: Mapped[str] = mapped_column(String(16), server_default="pending")
     error: Mapped[str | None] = mapped_column(Text)
-    fields: Mapped[list] = mapped_column(JSONB)
+    fields: Mapped[list] = mapped_column(JSONDoc)
     model: Mapped[str | None] = mapped_column(String(64))
     prompt_version: Mapped[str | None] = mapped_column(String(32))
     parser_version: Mapped[int | None] = mapped_column(Integer)
-    ai_answered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    ai_answered_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), index=True)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), server_default=func.now())
 
 
 class JobLockModel(Base):
@@ -286,8 +313,8 @@ class JobLockModel(Base):
     __tablename__ = "job_locks"
 
     key: Mapped[str] = mapped_column(Text, primary_key=True)
-    locked_until: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    locked_until: Mapped[datetime] = mapped_column(UTCDateTime())
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), server_default=func.now())
 
 
 class CaseDigestV2Model(Base):
@@ -302,7 +329,7 @@ class CaseDigestV2Model(Base):
     scope: Mapped[str] = mapped_column(String(300), server_default="")  # as the student wrote it
     scope_key: Mapped[str] = mapped_column(String(300), server_default="")  # the same, lower-cased with spaces collapsed: finds a repeat
     state: Mapped[str] = mapped_column(String(16), server_default="pending")
-    sections: Mapped[dict] = mapped_column(JSONB, server_default=text("'{}'"))
+    sections: Mapped[dict] = mapped_column(JSONDoc, default=dict)
     written: Mapped[int] = mapped_column(Integer, server_default="0")
     dropped: Mapped[int] = mapped_column(Integer, server_default="0")
     error: Mapped[str | None] = mapped_column(Text)
@@ -310,8 +337,8 @@ class CaseDigestV2Model(Base):
     prompt_version: Mapped[str | None] = mapped_column(String(32))
     input_tokens: Mapped[int] = mapped_column(Integer, server_default="0")
     output_tokens: Mapped[int] = mapped_column(Integer, server_default="0")
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), server_default=func.now(), index=True)
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), server_default=func.now())
 
 
 class CaseQuestionModel(Base):
@@ -324,10 +351,10 @@ class CaseQuestionModel(Base):
     case_id: Mapped[int] = mapped_column(ForeignKey("cases.id", ondelete="CASCADE"))
     batch_id: Mapped[int | None] = mapped_column(ForeignKey("bulk_batches.id", ondelete="CASCADE"))
     question: Mapped[str] = mapped_column(String(500))
-    answer: Mapped[dict | None] = mapped_column(JSONB)
+    answer: Mapped[dict | None] = mapped_column(JSONDoc)
     state: Mapped[str] = mapped_column(String(16), server_default="pending")
     error: Mapped[str | None] = mapped_column(Text)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), server_default=func.now(), index=True)
 
 
 class ReviewDigestEditModel(Base):
@@ -341,7 +368,7 @@ class ReviewDigestEditModel(Base):
     digest_id: Mapped[int] = mapped_column(ForeignKey("case_digests_v2.id", ondelete="CASCADE"))
     section: Mapped[str] = mapped_column(String(32))
     text: Mapped[str] = mapped_column(Text)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), server_default=func.now())
 
 
 class BulkBatchModel(Base):
@@ -350,10 +377,10 @@ class BulkBatchModel(Base):
     __tablename__ = "bulk_batches"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    subject_ids: Mapped[list[int]] = mapped_column(ARRAY(Integer), server_default=text("'{}'"))  # the upload's tags
+    subject_ids: Mapped[list[int]] = mapped_column(ListOf(Integer), default=list)  # the upload's tags
     topic_scope: Mapped[str] = mapped_column(String(300), server_default="")
     kind: Mapped[str] = mapped_column(String(16), server_default="bulk")  # "individual" | "bulk"
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), server_default=func.now())
 
 
 class BulkItemModel(Base):
@@ -373,5 +400,5 @@ class BulkItemModel(Base):
     message: Mapped[str | None] = mapped_column(Text)
     case_id: Mapped[int | None] = mapped_column(ForeignKey("cases.id", ondelete="SET NULL"), index=True)
     reporter: Mapped[str | None] = mapped_column(String(64))  # "177 SCRA 668", when the file printed it
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), server_default=func.now())
