@@ -8,9 +8,10 @@ use std::process::{Child, Command};
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
+mod downloads;
 mod updates;
 
-use tauri::webview::DownloadEvent;
+use tauri::webview::{DownloadEvent, NewWindowResponse};
 use tauri::{AppHandle, Manager, RunEvent, Url, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
 
 /// The running backend, so it can be stopped when the app closes.
@@ -96,12 +97,32 @@ fn open_window(app: &AppHandle) -> tauri::Result<WebviewWindow> {
     #[cfg(not(target_os = "macos"))]
     let builder = builder.decorations(false);
     builder
-        .on_download(|webview, event| {
-            if let DownloadEvent::Requested { destination, .. } = event {
-                let downloads = webview.path().download_dir().unwrap_or_else(|_| std::env::temp_dir());
-                *destination = download_target(downloads, destination);
+        // A link to another website (Lawphil, an AI's key page) opens in the computer's own browser, never inside this window.
+        .on_navigation(|url| {
+            if downloads::is_app_url(url) {
+                return true;
             }
-            true
+            downloads::open_outside(url);
+            false
+        })
+        .on_new_window(|url, _features| {
+            downloads::open_outside(&url); // "open in a new tab" links: the window has no tabs
+            NewWindowResponse::Deny
+        })
+        .on_download(|webview, event| match event {
+            DownloadEvent::Requested { url, destination } => {
+                if !downloads::first_request(&url) {
+                    return false; // the same click asked twice: one file, not two copies
+                }
+                let folder = webview.path().download_dir().unwrap_or_else(|_| std::env::temp_dir());
+                *destination = download_target(folder, destination);
+                true
+            }
+            DownloadEvent::Finished { path, success, .. } => {
+                downloads::finished(webview.app_handle(), path, success);
+                true
+            }
+            _ => true,
         })
         .build()
 }
@@ -125,7 +146,12 @@ pub fn run() {
         }))
         .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(Backend(Mutex::new(None)))
-        .invoke_handler(tauri::generate_handler![updates::check_update, updates::install_update])
+        .invoke_handler(tauri::generate_handler![
+            updates::check_update,
+            updates::install_update,
+            downloads::open_download,
+            downloads::reveal_download
+        ])
         .setup(|app| {
             let handle = app.handle().clone();
             updates::manage(&handle);

@@ -5,6 +5,7 @@ import { Scale } from 'lucide-react'
 
 import { AppSidebar } from '@/components/AppSidebar'
 import { DesktopTitleBar } from '@/components/DesktopTitleBar'
+import { DownloadNotice } from '@/features/desktop/DownloadNotice'
 import { UpdateBanner } from '@/features/desktop/UpdateBanner'
 import { Button } from '@/components/ui/button'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
@@ -27,6 +28,7 @@ function RootLayout() {
   return (
       <TooltipProvider>
         {inDesktopWindow ? <DesktopTitleBar /> : null}
+        {inDesktopWindow ? <DownloadNotice /> : null}
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"

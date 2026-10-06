@@ -3,7 +3,7 @@ fn main() {
     // which ones the library page may call.
     tauri_build::try_build(
         tauri_build::Attributes::new()
-            .app_manifest(tauri_build::AppManifest::new().commands(&["check_update", "install_update"])),
+            .app_manifest(tauri_build::AppManifest::new().commands(&["check_update", "install_update", "open_download", "reveal_download"])),
     )
     .expect("failed to run the Tauri build step")
 }

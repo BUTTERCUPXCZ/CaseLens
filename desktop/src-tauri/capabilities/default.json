@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "The app's own title bar (loading screen and library page) may move, minimize, maximize and close the window, and check for and install a signed CaseLens update. Nothing else: no files, no shell.",
+  "description": "The app's own title bar (loading screen and library page) may move, minimize, maximize and close the window, check for and install a signed CaseLens update, and open or show a file it saved in Downloads. Nothing else: no other files, no shell.",
   "windows": [
     "main"
   ],
@@ -20,6 +20,8 @@
     "core:event:allow-listen",
     "core:event:allow-unlisten",
     "allow-check-update",
-    "allow-install-update"
+    "allow-install-update",
+    "allow-open-download",
+    "allow-reveal-download"
   ]
 }

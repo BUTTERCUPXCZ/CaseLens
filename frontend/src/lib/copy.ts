@@ -367,6 +367,16 @@ export const navCopy = {
 }
 
 /** The desktop app's update bar and its line in Settings. */
+/** The desktop app's note after a download (it has no browser download bar). */
+export const downloadCopy = {
+  saved: 'Saved to your Downloads folder',
+  failed: 'The file could not be saved. Try the download again.',
+  open: 'Open',
+  showInFolder: 'Show in folder',
+  close: 'Close this message',
+  openFailed: 'That file could not be opened. Look for it in your Downloads folder.',
+}
+
 export const updateCopy = {
   ready: (version: string) => `CaseLens ${version} is ready.`,
   keeps: 'Your library and AI key stay as they are.',
