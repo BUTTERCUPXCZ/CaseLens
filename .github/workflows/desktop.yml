@@ -1,6 +1,7 @@
 # Builds the desktop installers: Windows (.exe), Mac Apple chip and Mac Intel (.dmg). No paid signing: Mac builds are ad-hoc
 # signed, Windows is unsigned (see desktop/INSTALL.md for the first-open steps). Updates are signed with CaseLens's own update
 # key (repo secrets TAURI_SIGNING_PRIVATE_KEY and TAURI_SIGNING_PRIVATE_KEY_PASSWORD); installed apps refuse anything else.
+# Each build gathers its files under clear names; the publish step attaches them all and writes latest.json.
 #   - Actions tab > "Desktop app" > Run workflow: builds the installers (download them from the run's page).
 #   - Push a tag like v1.2.0 (= the version in desktop/src-tauri/tauri.conf.json, set with desktop/scripts/version.mjs):
 #     publishes a GitHub Release with the installers, the signed update files and latest.json, which installed apps read to
@@ -49,7 +50,7 @@ jobs:
     needs: release
     if: ${{ !failure() && !cancelled() }} # also runs on a manual run, where there is no release job
     permissions:
-      contents: write # adds the installers to the release
+      contents: read # only gathers files; the publish job attaches them
     strategy:
       fail-fast: false
       matrix:
@@ -92,34 +93,54 @@ jobs:
           python -m pip install -r requirements-desktop.txt
           python -m PyInstaller caselens.spec --noconfirm
 
-      - name: Desktop tools
+      - name: Desktop app (signs the update files when the signing secrets are set)
         working-directory: desktop
-        run: npm ci
-
-      - name: Build, sign the update files, add them to the release
-        uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5 # v0.6.2
+        shell: bash
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-        with:
-          projectPath: desktop
-          tauriScript: npx tauri
-          # Signed update files only when the signing secrets are set; without them the installers are still built.
-          args: --bundles ${{ matrix.bundles }} ${{ secrets.TAURI_SIGNING_PRIVATE_KEY != '' && '--config {"bundle":{"createUpdaterArtifacts":true}}' || '' }}
-          releaseId: ${{ needs.release.outputs.id }}
-          includeUpdaterJson: true
+        run: |
+          npm ci
+          if [ -n "$TAURI_SIGNING_PRIVATE_KEY" ]; then
+            npx tauri build --bundles ${{ matrix.bundles }} --config '{"bundle":{"createUpdaterArtifacts":true}}'
+          else
+            echo "::warning::No update signing secrets: installers only, installed apps cannot update to this build."
+            npx tauri build --bundles ${{ matrix.bundles }}
+          fi
+
+      - name: Gather the files to publish
+        shell: bash
+        run: |
+          mkdir out
+          bundle=desktop/src-tauri/target/release/bundle
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            cp "$bundle"/nsis/*-setup.exe out/
+            if ls "$bundle"/nsis/*-setup.exe.sig >/dev/null 2>&1; then
+              exe=$(basename "$(ls "$bundle"/nsis/*-setup.exe)")
+              cp "$bundle"/nsis/*-setup.exe.sig out/
+              printf '{"platform":"windows-x86_64","file":"%s"}' "$exe" > out/update-windows-x86_64.json
+            fi
+          else
+            arch=$([ "$(uname -m)" = "arm64" ] && echo aarch64 || echo x64)
+            platform=$([ "$arch" = "aarch64" ] && echo darwin-aarch64 || echo darwin-x86_64)
+            cp "$bundle"/dmg/*.dmg out/
+            if [ -f "$bundle"/macos/CaseLens.app.tar.gz.sig ]; then
+              # Both Macs make "CaseLens.app.tar.gz": give each its own name.
+              cp "$bundle"/macos/CaseLens.app.tar.gz "out/CaseLens_${arch}.app.tar.gz"
+              cp "$bundle"/macos/CaseLens.app.tar.gz.sig "out/CaseLens_${arch}.app.tar.gz.sig"
+              printf '{"platform":"%s","file":"CaseLens_%s.app.tar.gz"}' "$platform" "$arch" > "out/update-${platform}.json"
+            fi
+          fi
+          ls -la out
 
       - uses: actions/upload-artifact@v4
         with:
           name: CaseLens-${{ matrix.os }}
-          path: |
-            desktop/src-tauri/target/release/bundle/nsis/*.exe
-            desktop/src-tauri/target/release/bundle/dmg/*.dmg
+          path: out/*
           if-no-files-found: error
 
   publish:
-    # All three built: make the release public. Only now does latest.json point installed apps at the new version.
+    # All three built: attach the files, write latest.json (what installed apps read to update), make the release public.
     needs: [release, build]
     runs-on: ubuntu-latest
     permissions:
@@ -129,4 +150,30 @@ jobs:
       REPO: ${{ github.repository }}
       GH_TOKEN: ${{ github.token }}
     steps:
-      - run: gh release edit "$TAG" --repo "$REPO" --draft=false --latest
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+      - name: Write latest.json from the signed update files
+        run: |
+          python3 - <<'PY'
+          import glob, json, os, subprocess
+          tag, repo = os.environ["TAG"], os.environ["REPO"]
+          notes = subprocess.run(["gh", "release", "view", tag, "--repo", repo, "--json", "body", "--jq", ".body"], capture_output=True, text=True).stdout.strip()
+          platforms = {}
+          for piece in glob.glob("out/update-*.json"):
+              entry = json.load(open(piece))
+              signature = open(f"out/{entry['file']}.sig").read().strip()
+              platforms[entry["platform"]] = {"signature": signature, "url": f"https://github.com/{repo}/releases/download/{tag}/{entry['file']}"}
+              os.remove(piece)
+          if platforms:
+              json.dump({"version": tag.lstrip("v"), "notes": notes, "pub_date": subprocess.run(["date", "-u", "+%Y-%m-%dT%H:%M:%SZ"], capture_output=True, text=True).stdout.strip(), "platforms": platforms}, open("out/latest.json", "w"), indent=2)
+              print("latest.json for", sorted(platforms))
+          else:
+              print("::warning::No signed update files: this release cannot be installed by the app's updater.")
+          PY
+          ls -la out
+      - name: Attach the files and publish
+        run: |
+          gh release upload "$TAG" out/* --repo "$REPO" --clobber
+          gh release edit "$TAG" --repo "$REPO" --draft=false --latest
