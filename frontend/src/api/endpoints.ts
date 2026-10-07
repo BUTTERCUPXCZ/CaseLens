@@ -100,6 +100,8 @@ export const getHealth = () => request<Health>('/health')
 export const getDesktopSettings = () => request<DesktopSettings>('/desktop/settings')
 export const saveAiKey = (key: string, provider: AiProviderId = 'gemini') => putJson<DesktopSettings>('/desktop/ai-key', { key, provider })
 export const saveAiProvider = (provider: AiProviderId) => putJson<DesktopSettings>('/desktop/ai-provider', { provider })
+export const saveOpenRouterModel = (model: string) => putJson<DesktopSettings>('/desktop/openrouter-model', { model })
+export const saveOnlyChosen = (only: boolean) => putJson<DesktopSettings>('/desktop/ai-only-chosen', { only })
 export const backupUrl = '/api/desktop/backup'
 export function restoreBackup(file: File): Promise<DesktopSettings> {
   const form = new FormData()

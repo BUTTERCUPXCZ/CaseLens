@@ -10,7 +10,8 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
-from caselens.desktop.ai_key import save_ai_key, save_provider
+from caselens.desktop.ai_key import save_ai_key, save_only_chosen, save_openrouter_model, save_provider
+from caselens.infrastructure.ai.models import OPENROUTER_MODELS, openrouter_model
 from caselens.infrastructure.ai.calls import PROVIDER_NAMES, PROVIDERS, ai_configured, api_key_for, forget_key_problem, key_problem, model_name
 from caselens.infrastructure.ai.gemini_answerer import check_gemini_key
 from caselens.infrastructure.ai.openai_style_call import check_key
@@ -31,6 +32,12 @@ class ProviderOut(BaseModel):
     problem: str | None = None  # "invalid" | "credit": its last call was refused for the key itself
 
 
+class OpenRouterModelOut(BaseModel):
+    id: str
+    name: str
+    free: bool
+
+
 class DesktopSettingsOut(BaseModel):
     ai_key_set: bool  # any provider has a key (never the key itself)
     data_dir: str  # where the library lives on this computer
@@ -40,6 +47,9 @@ class DesktopSettingsOut(BaseModel):
     ai_key_invalid: bool = False  # the key's last AI call was refused because the key itself is not valid
     ai_provider: str = "gemini"  # the provider that writes first; the others with a key take over when it cannot answer
     providers: list[ProviderOut] = []
+    ai_only_chosen: bool = False  # only the chosen AI writes: no other AI takes over when it cannot answer
+    openrouter_model: str = ""  # the OpenRouter model that writes and checks
+    openrouter_models: list[OpenRouterModelOut] = []  # the ones the client can pick
 
 
 class AiKeyIn(BaseModel):
@@ -49,6 +59,14 @@ class AiKeyIn(BaseModel):
 
 class AiProviderIn(BaseModel):
     provider: str = Field(pattern="^(groq|deepseek|openrouter|gemini)$")
+
+
+class OpenRouterModelIn(BaseModel):
+    model: str = Field(max_length=200)
+
+
+class OnlyChosenIn(BaseModel):
+    only: bool
 
 
 _KEY_HELP = {
@@ -87,6 +105,9 @@ def desktop_settings() -> DesktopSettingsOut:
             ProviderOut(id=p, name=PROVIDER_NAMES[p], model=_model_of(p), key_set=bool(api_key_for(settings, p)), problem=key_problem(p))
             for p in PROVIDERS
         ],
+        ai_only_chosen=settings.ai_only_chosen,
+        openrouter_model=settings.openrouter_model,
+        openrouter_models=[OpenRouterModelOut(id=m.id, name=m.name, free=m.free) for m in OPENROUTER_MODELS],
     )
 
 
@@ -107,6 +128,24 @@ def set_ai_key(body: AiKeyIn) -> DesktopSettingsOut:
 def set_ai_provider(body: AiProviderIn) -> DesktopSettingsOut:
     """Which provider writes first. The others that have a key take over when it cannot answer."""
     save_provider(str(_data_dir()), body.provider)
+    get_settings.cache_clear()
+    return desktop_settings()
+
+
+@router.put("/openrouter-model", response_model=DesktopSettingsOut)
+def set_openrouter_model(body: OpenRouterModelIn) -> DesktopSettingsOut:
+    """Which OpenRouter model writes and checks the digests. New digests use it at once."""
+    if openrouter_model(body.model) is None:
+        raise HTTPException(400, "That model is not one CaseLens offers.")
+    save_openrouter_model(str(_data_dir()), body.model)
+    get_settings.cache_clear()
+    return desktop_settings()
+
+
+@router.put("/ai-only-chosen", response_model=DesktopSettingsOut)
+def set_only_chosen(body: OnlyChosenIn) -> DesktopSettingsOut:
+    """On: only the chosen AI writes; if it cannot answer, the digest says why. Off: another AI with a key takes over."""
+    save_only_chosen(str(_data_dir()), body.only)
     get_settings.cache_clear()
     return desktop_settings()
 

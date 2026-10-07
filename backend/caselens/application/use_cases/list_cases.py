@@ -1,3 +1,4 @@
+import re
 from dataclasses import dataclass, field
 
 from caselens.application.ports.bulk import BulkRepository
@@ -35,7 +36,9 @@ class ListBatchCases:
         self._cases = cases
         self._digests = digests
 
-    def execute(self, batch_id: int, limit: int, offset: int, state: str | None = None) -> BatchCasePage:
+    def execute(self, batch_id: int, limit: int, offset: int, state: str | None = None, query: str | None = None) -> BatchCasePage:
+        """`query`: words of the case name, or the start of a G.R. number ("Ralla", "63253", "G.R. No. L-6325"). The counts stay those
+        of the whole upload; only the list is narrowed."""
         ids = self._bulk.main_case_ids(batch_id)
         known = self._cases.summaries(ids)
         mains = list(dict.fromkeys((known[i].main_case_id or i) for i in ids if i in known))
@@ -47,9 +50,26 @@ class ListBatchCases:
         counts = {name: sum(1 for i in mains if states.get(i, "none") in wanted) for name, wanted in BATCH_STATE_FILTERS.items()}
         if state in BATCH_STATE_FILTERS:
             mains = [i for i in mains if states.get(i, "none") in BATCH_STATE_FILTERS[state]]
+        if query and query.strip():
+            named = self._cases.summaries(mains)
+            mains = [i for i in mains if i in named and _matches(named[i], query)]
         page_ids = mains[offset : offset + limit]
         shown = self._cases.summaries(page_ids)
         return BatchCasePage([shown[i] for i in page_ids if i in shown], len(mains), limit, offset, {i: states[i] for i in page_ids if i in states}, counts)
+
+
+_GR_LABEL = re.compile(r"^\s*g\.?\s?r\.?\s*(?:nos?\.?)?\s*", re.IGNORECASE)
+
+
+def _matches(case: CaseSummary, query: str) -> bool:
+    """A typed G.R. number matches the start of any number the case prints (with or without "L-"); words must all be in its name."""
+    text = _GR_LABEL.sub("", query.strip()).strip().upper()
+    numbers = case.numbers or (case.gr_no.value,)
+    if re.fullmatch(r"L?-?\d+", text):
+        digits = text.lstrip("L-")
+        return any(n.upper().startswith(text) or n.upper().lstrip("L-").startswith(digits) for n in numbers)
+    title = (case.title or "").lower()
+    return all(word in title for word in query.lower().split())
 
 
 class ListCases:

@@ -238,4 +238,4 @@ def test_the_writer_is_told_the_digest_says_only_what_the_decision_says():
 
     assert "in your own words" not in SYSTEM_RULES and "ONLY WHAT THE DECISION SAYS" in SYSTEM_RULES
     assert 'no "dissents" block at all' in SYSTEM_RULES.replace("\n  ", " ")
-    assert DIGEST_VERSION.startswith("digest-v3")  # digests written before this are shown as not current
+    assert DIGEST_VERSION.startswith("digest-v4")  # digests written before this are shown as not current

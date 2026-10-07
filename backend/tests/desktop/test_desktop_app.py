@@ -31,6 +31,7 @@ class _Settings:
         self.ai_provider = "gemini"
         self.groq_model, self.deepseek_model, self.gemini_writer_model = "openai/gpt-oss-120b", "deepseek-flash", "gemini-3.5-flash"
         self.openrouter_model = "deepseek/deepseek-v4.1-flash"
+        self.ai_only_chosen = False
 
 
 @pytest.fixture
@@ -232,3 +233,27 @@ def test_each_provider_has_its_own_key_and_the_chosen_one_writes_first(desktop):
     refused = desktop.put("/api/desktop/ai-key", json={"provider": "deepseek", "key": "not-a-real-key"})
     assert refused.status_code == 400 and "DeepSeek says" in refused.json()["detail"]
     assert desktop.put("/api/desktop/ai-provider", json={"provider": "openai"}).status_code == 422  # only the three
+
+
+def test_the_openrouter_model_and_only_the_chosen_ai_are_set_in_settings(desktop, monkeypatch, tmp_path):
+    from caselens.desktop import ai_key
+
+    settings = desktop_api.get_settings()
+    monkeypatch.setattr(desktop_api, "save_openrouter_model", lambda _folder, model: setattr(settings, "openrouter_model", model))
+    monkeypatch.setattr(desktop_api, "save_only_chosen", lambda _folder, only: setattr(settings, "ai_only_chosen", only))
+    body = desktop.get("/api/desktop/settings").json()
+    assert [m["id"] for m in body["openrouter_models"]] == ["deepseek/deepseek-v4.1-flash", "nvidia/nemotron-3-ultra-550b-a55b:free"]
+
+    body = desktop.put("/api/desktop/openrouter-model", json={"model": "nvidia/nemotron-3-ultra-550b-a55b:free"}).json()
+    assert body["openrouter_model"] == "nvidia/nemotron-3-ultra-550b-a55b:free"
+    assert desktop.put("/api/desktop/openrouter-model", json={"model": "anything/else"}).status_code == 400  # only the offered models
+    assert desktop.put("/api/desktop/ai-only-chosen", json={"only": True}).json()["ai_only_chosen"] is True
+
+    # the choices are kept in the app's folder and read back (the real save functions)
+    folder = tmp_path / "kept"
+    folder.mkdir()
+    assert ai_key.read_only_chosen(str(folder)) is True  # on unless turned off
+    ai_key.save_only_chosen(str(folder), False)
+    ai_key.save_openrouter_model(str(folder), "nvidia/nemotron-3-ultra-550b-a55b:free")
+    assert ai_key.read_only_chosen(str(folder)) is False
+    assert ai_key.read_openrouter_model(str(folder)) == "nvidia/nemotron-3-ultra-550b-a55b:free"

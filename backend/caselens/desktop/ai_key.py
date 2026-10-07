@@ -68,6 +68,39 @@ def save_ai_key(data_dir: str | None, key: str | None, provider: str = "gemini")
         path.unlink()
 
 
+_OPENROUTER_MODEL_FILE = "openrouter-model.txt"
+_ONLY_CHOSEN_FILE = "ai-only-chosen.txt"
+
+
+def read_openrouter_model(data_dir: str | None) -> str | None:
+    """The OpenRouter model chosen in Settings (one of `OPENROUTER_MODELS`), or None for the default."""
+    from caselens.infrastructure.ai.models import openrouter_model
+
+    path = Path(data_dir) / _OPENROUTER_MODEL_FILE if data_dir else None
+    if path and path.exists():
+        chosen = path.read_text(encoding="utf-8").strip()
+        return chosen if openrouter_model(chosen) else None
+    return None
+
+
+def save_openrouter_model(data_dir: str, model_id: str) -> None:
+    from caselens.infrastructure.ai.models import openrouter_model
+
+    if openrouter_model(model_id) is None:
+        raise ValueError(f"Unknown OpenRouter model: {model_id}")
+    (Path(data_dir) / _OPENROUTER_MODEL_FILE).write_text(model_id, encoding="utf-8")
+
+
+def read_only_chosen(data_dir: str | None) -> bool:
+    """Only the chosen AI writes (no other AI takes over): on unless the client turned it off."""
+    path = Path(data_dir) / _ONLY_CHOSEN_FILE if data_dir else None
+    return not (path and path.exists() and path.read_text(encoding="utf-8").strip() == "0")
+
+
+def save_only_chosen(data_dir: str, only: bool) -> None:
+    (Path(data_dir) / _ONLY_CHOSEN_FILE).write_text("1" if only else "0", encoding="utf-8")
+
+
 def read_provider(data_dir: str | None) -> str | None:
     path = Path(data_dir) / _PROVIDER_FILE if data_dir else None
     if path and path.exists():

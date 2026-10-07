@@ -60,6 +60,12 @@ class Settings(BaseSettings):
     openrouter_model: str = "deepseek/deepseek-v4.1-flash"
     openrouter_checker_model: str = "deepseek/deepseek-v4.1-flash"
     openrouter_reasoning: bool = True
+    # Ask for `response_format: json_object`. None: by the model (see `infrastructure/ai/models.py`); some free models do not take it.
+    openrouter_json_mode: bool | None = None
+    # Only the chosen provider writes, with no other AI taking over when it cannot answer (one AI, one kind of digest and cost).
+    ai_only_chosen: bool = False
+    # How hard the writer thinks before writing the digest (billed as output): "minimal" | "low" | "medium" | "high".
+    openrouter_reasoning_effort: str = "low"
     ai_timeout_seconds: float = 180.0
     auto_digest_on_upload: bool = True  # start a digest for every case a reviewer cites as soon as it is checked
     digest_parallel_answers: int = 3  # how many answers of one digest are written at the same time
@@ -113,6 +119,17 @@ class Settings(BaseSettings):
                 setattr(self, f"{provider}_api_key", read_ai_key(self.caselens_data_dir, provider))
         if "ai_provider" not in self.model_fields_set:
             self.ai_provider = read_provider(self.caselens_data_dir) or "groq"
+        from caselens.desktop.ai_key import read_only_chosen, read_openrouter_model
+
+        chosen_model = read_openrouter_model(self.caselens_data_dir)
+        if chosen_model and "openrouter_model" not in self.model_fields_set:
+            self.openrouter_model = chosen_model
+        if chosen_model and "openrouter_checker_model" not in self.model_fields_set:
+            self.openrouter_checker_model = chosen_model  # the chosen model writes AND checks: one model only
+        if "ai_only_chosen" not in self.model_fields_set:
+            self.ai_only_chosen = read_only_chosen(self.caselens_data_dir)
+        if self.openrouter_model.endswith(":free") and "digest_threads" not in self.model_fields_set:
+            self.digest_threads = 2  # free models allow few requests a minute: two digests at a time (read when the app starts)
         return self
 
 

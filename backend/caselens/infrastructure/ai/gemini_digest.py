@@ -2,24 +2,27 @@
 from caselens.application.ports.ai import DigestRequest, DigestWriter
 from caselens.domain.digest import AnswerSentence
 from caselens.domain.digest_v2 import DigestBlock, DigestDraft, Section
-from caselens.infrastructure.ai.calls import CHECKER, WRITER
+from caselens.infrastructure.ai.calls import CHECKER, REPAIR, WRITER
 from caselens.infrastructure.ai.gemini_answerer import _GeminiCall, strip_inline_citations
 from caselens.infrastructure.ai.prompts.digest_v1 import CLIENT_PROMPT, DIGEST_PROMPT_VERSION, DIGEST_VERSION, SYSTEM_RULES
 from caselens.infrastructure.config import Settings
 
+# Short field names: a digest has 100 to 180 sentences, and the names are repeated in every one of them (output tokens are what a
+# digest costs). t = text, c = cites, k = key (bold); a block: h = heading, l = a bullet list, s = its sentences. `_field` below still
+# reads the long names, so an answer in the older shape is not lost.
 _SENTENCE = {
     "type": "object",
-    "properties": {"text": {"type": "string"}, "cites": {"type": "array", "items": {"type": "string"}}, "key": {"type": "boolean"}},
-    "required": ["text", "cites"],
+    "properties": {"t": {"type": "string"}, "c": {"type": "array", "items": {"type": "string"}}, "k": {"type": "boolean"}},
+    "required": ["t", "c"],
 }
 _BLOCK = {
     "type": "object",
     "properties": {
-        "heading": {"type": "string", "nullable": True},
-        "kind": {"type": "string", "enum": ["paragraph", "list"]},
-        "sentences": {"type": "array", "items": _SENTENCE},
+        "h": {"type": "string", "nullable": True},
+        "l": {"type": "boolean"},
+        "s": {"type": "array", "items": _SENTENCE},
     },
-    "required": ["kind", "sentences"],
+    "required": ["s"],
 }
 _SCHEMA = {
     "type": "object",
@@ -75,7 +78,7 @@ class _Repair:
         )
         passages = "\n\n".join(f"[{p.id}] {p.text}" for p in request.sources)
         prompt = f"CASE: {request.case_line}\n\nPASSAGES (the parts of the decision these sentences rely on):\n{passages}\n\nREJECTED SENTENCES TO FIX:\n{rejected}"
-        data = self._call.json(self._model, _REPAIR_RULES, prompt, _REPAIR_SCHEMA, thinking_budget=self._thinking)
+        data = self._call.json(REPAIR, _REPAIR_RULES, prompt, _REPAIR_SCHEMA)  # the repair role: the writer's model, no thinking first
         fixed: dict[int, AnswerSentence] = {}
         for item in data.get("sentences", []):
             text, inline = strip_inline_citations(item["text"])
@@ -84,6 +87,11 @@ class _Repair:
                 fixed[item["number"]] = AnswerSentence(text=text, cites=cites)
         return fixed
 
+
+
+def _field(item: dict, short: str, long: str):
+    """A field by its short name, or by the long name an older answer used."""
+    return item[short] if short in item else item.get(long)
 
 
 class GeminiDigestWriter(_Repair, DigestWriter):
@@ -100,13 +108,14 @@ class GeminiDigestWriter(_Repair, DigestWriter):
             blocks = []
             for item in data.get(section.value) or []:
                 sentences = []
-                for raw in item.get("sentences", []):
-                    text, inline = strip_inline_citations(raw["text"])
-                    cites = tuple(dict.fromkeys([*raw.get("cites", []), *inline]))
+                for raw in _field(item, "s", "sentences") or []:
+                    text, inline = strip_inline_citations(_field(raw, "t", "text") or "")
+                    cites = tuple(dict.fromkeys([*(_field(raw, "c", "cites") or []), *inline]))
                     if text.strip():
-                        sentences.append(AnswerSentence(text=text, cites=cites, key=bool(raw.get("key"))))
+                        sentences.append(AnswerSentence(text=text, cites=cites, key=bool(_field(raw, "k", "key"))))
                 if sentences:
-                    blocks.append(DigestBlock(tuple(sentences), (item.get("heading") or None), item.get("kind") == "list"))
+                    as_list = bool(item.get("l")) or item.get("kind") == "list"
+                    blocks.append(DigestBlock(tuple(sentences), (_field(item, "h", "heading") or None), as_list))
             if blocks:
                 draft.sections[section] = tuple(blocks)
         return draft

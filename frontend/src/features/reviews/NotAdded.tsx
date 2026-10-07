@@ -39,7 +39,8 @@ export function NotAdded({ bulk }: { bulk: Bulk }) {
       </ul>
       {c.failed > 0 ? (
         <div className="mt-3 flex flex-wrap items-center gap-3">
-          <Button variant="outline" disabled={retry.isPending} onClick={() => retry.mutate()}>
+          {/* the column is narrow: the label wraps inside the button instead of running into the digest beside it */}
+          <Button variant="outline" className="h-auto w-full justify-start py-2 text-left whitespace-normal" disabled={retry.isPending} onClick={() => retry.mutate()}>
             <RotateCw data-icon="inline-start" aria-hidden /> {bulkCopy.retry}
           </Button>
           {retry.data ? <span role="status" className="text-sm text-muted-foreground">{bulkCopy.retried(retry.data.requeued)}</span> : null}

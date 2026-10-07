@@ -54,4 +54,7 @@ export type DesktopSettings = {
   ai_key_invalid?: boolean
   ai_provider?: AiProviderId
   providers?: AiProvider[]
+  ai_only_chosen?: boolean
+  openrouter_model?: string
+  openrouter_models?: { id: string; name: string; free: boolean }[]
 }

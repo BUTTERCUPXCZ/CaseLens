@@ -4,7 +4,7 @@ import { AlertTriangle, CircleCheck, Download, KeyRound, RefreshCw, Upload } fro
 import { useRef, useState, type FormEvent } from 'react'
 
 import { backupUrl } from '@/api/endpoints'
-import { useRestoreBackup, useSaveAiKey, useSaveAiProvider } from '@/api/mutations'
+import { useRestoreBackup, useSaveAiKey, useSaveAiProvider, useSaveOnlyChosen, useSaveOpenRouterModel } from '@/api/mutations'
 import { desktopSettingsQuery, healthQuery } from '@/api/queries'
 import type { AiProvider, DesktopSettings } from '@/api/types'
 import { PageHeader } from '@/components/PageHeader'
@@ -59,6 +59,7 @@ function DesktopSettingsPage() {
  *  over when it cannot answer (busy, out of allowance), so digests keep coming. */
 function AiKey({ settings }: { settings: DesktopSettings }) {
   const choose = useSaveAiProvider()
+  const onlyChosen = useSaveOnlyChosen()
   const providers = settings.providers ?? []
   return (
     <section aria-labelledby="ai-title">
@@ -75,9 +76,29 @@ function AiKey({ settings }: { settings: DesktopSettings }) {
             chosen={settings.ai_provider === provider.id}
             onChoose={() => choose.mutate(provider.id)}
             choosing={choose.isPending}
-          />
+          >
+            {provider.id === 'openrouter' ? <OpenRouterModelPicker settings={settings} /> : null}
+          </ProviderCard>
         ))}
       </fieldset>
+      <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-lg border border-border px-4 py-3">
+        <input
+          type="checkbox"
+          className="mt-1 size-4 accent-primary"
+          checked={settings.ai_only_chosen ?? false}
+          disabled={onlyChosen.isPending}
+          onChange={(event) => onlyChosen.mutate(event.target.checked)}
+        />
+        <span>
+          <span className="block text-base font-medium">{settingsCopy.onlyChosen}</span>
+          <span className="block text-sm text-muted-foreground">{settingsCopy.onlyChosenHelp}</span>
+        </span>
+      </label>
+      {onlyChosen.error ? (
+        <p role="alert" className="mt-2 text-base text-problem">
+          {friendlyError(onlyChosen.error)}
+        </p>
+      ) : null}
       {choose.error ? (
         <p role="alert" className="mt-2 text-base text-problem">
           {friendlyError(choose.error)}
@@ -87,7 +108,53 @@ function AiKey({ settings }: { settings: DesktopSettings }) {
   )
 }
 
-function ProviderCard({ provider, chosen, onChoose, choosing }: { provider: AiProvider; chosen: boolean; onChoose: () => void; choosing: boolean }) {
+/** The OpenRouter model that writes and checks every digest (one model only). */
+function OpenRouterModelPicker({ settings }: { settings: DesktopSettings }) {
+  const save = useSaveOpenRouterModel()
+  const models = settings.openrouter_models ?? []
+  const current = models.find((m) => m.id === settings.openrouter_model)
+  if (models.length === 0) return null
+  return (
+    <div className="mt-3">
+      <label htmlFor="openrouter-model" className="mb-1 block text-sm font-medium">
+        {settingsCopy.modelLabel}
+      </label>
+      <select
+        id="openrouter-model"
+        className="h-10 w-full rounded-lg border border-input bg-card px-3 text-base"
+        value={settings.openrouter_model}
+        disabled={save.isPending}
+        onChange={(event) => save.mutate(event.target.value)}
+      >
+        {models.map((m) => (
+          <option key={m.id} value={m.id}>
+            {m.name}
+          </option>
+        ))}
+      </select>
+      {current?.free ? <p className="mt-1 text-sm text-look">{settingsCopy.modelFreeNote}</p> : null}
+      {save.error ? (
+        <p role="alert" className="mt-1 text-sm text-problem">
+          {friendlyError(save.error)}
+        </p>
+      ) : null}
+    </div>
+  )
+}
+
+function ProviderCard({
+  provider,
+  chosen,
+  onChoose,
+  choosing,
+  children,
+}: {
+  provider: AiProvider
+  chosen: boolean
+  onChoose: () => void
+  choosing: boolean
+  children?: React.ReactNode
+}) {
   const [key, setKey] = useState('')
   const [done, setDone] = useState<string | null>(null)
   const save = useSaveAiKey()
@@ -122,6 +189,7 @@ function ProviderCard({ provider, chosen, onChoose, choosing }: { provider: AiPr
         </span>
       </label>
 
+      {children}
       <p className="mt-3 flex items-center gap-2 text-sm font-medium">
         {provider.key_set ? <CircleCheck className="size-4 text-match" aria-hidden /> : <KeyRound className="size-4 text-muted-foreground" aria-hidden />}
         {provider.key_set ? settingsCopy.aiSet : settingsCopy.aiNotSet}

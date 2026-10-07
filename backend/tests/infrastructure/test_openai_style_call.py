@@ -74,7 +74,7 @@ def test_groq_is_asked_for_the_exact_schema_with_the_role_s_model_and_no_thinkin
     request = call._client.requests[0]
     assert request["model"] == "openai/gpt-oss-20b" and request["temperature"] == 0
     assert request["response_format"]["type"] == "json_schema" and request["response_format"]["json_schema"]["strict"] is True
-    assert request["include_reasoning"] is False and request["reasoning_effort"] == "medium" and "reasoning_format" not in request
+    assert request["include_reasoning"] is False and request["reasoning_effort"] == "low" and "reasoning_format" not in request  # the checker thinks least
     assert call.usage == {"calls": 1, "input_tokens": 100, "output_tokens": 40}
 
 
@@ -193,4 +193,51 @@ def test_openrouter_is_built_with_its_address_and_counts_as_a_provider():
     call = OpenAiStyleCall.for_provider(settings, "openrouter")
     assert call.provider == "openrouter" and str(call._client.base_url).startswith("https://openrouter.ai/api/v1")
     assert calls.provider_order(settings) == ["openrouter"] and calls.writer_model_name(settings) == "deepseek/deepseek-v4.1-flash"
-    assert call._extra_body == {"reasoning": {"enabled": True}}
+    assert call._extra_body == {"reasoning": {"effort": "low"}}  # the writer thinks, at low effort (the setting's default)
+
+
+def test_only_the_writer_thinks_the_checker_and_the_repair_answer_straight_away():
+    """Thinking is billed as output and took most of a digest's time; a yes/no check or a one-sentence rewrite does not need it."""
+    from caselens.infrastructure.ai.calls import REPAIR
+
+    call = _openrouter(GOOD, GOOD, GOOD)
+    for role in (WRITER, CHECKER, REPAIR):
+        call.json(role, "s", "p", SCHEMA)
+    writer, checker, repair = (r["extra_body"]["reasoning"] for r in call._client.requests)
+    assert writer == {"enabled": True} and checker == {"enabled": False} and repair == {"enabled": False}
+    assert call._client.requests[2]["model"] == "deepseek/deepseek-v4.1-flash"  # the repair keeps the writer's model
+
+
+def test_groq_s_gpt_oss_cannot_stop_thinking_so_the_checker_thinks_least():
+    call = _groq(GOOD, GOOD)
+    call.json(WRITER, "s", "p", SCHEMA)
+    call.json(CHECKER, "s", "p", SCHEMA)
+    assert [r["reasoning_effort"] for r in call._client.requests] == ["medium", "low"]
+
+
+def test_the_schema_in_the_prompt_is_compact():
+    call = _openrouter(GOOD)
+    call.json(CHECKER, "s", "p", SCHEMA)
+    system = call._client.requests[0]["messages"][0]["content"]
+    assert '"type":"object"' in system and '": "' not in system.split("JSON schema exactly:")[1]  # no spaces: fewer tokens
+
+
+def test_only_the_chosen_ai_writes_when_that_is_switched_on():
+    from caselens.infrastructure.config import Settings
+
+    both = dict(openrouter_api_key="sk-or-test", groq_api_key="gsk-test", deepseek_api_key=None, gemini_api_key=None, ai_provider="openrouter")
+    assert calls.provider_order(Settings(**both)) == ["openrouter", "groq"]  # switched off: Groq takes over when OpenRouter cannot answer
+    assert calls.provider_order(Settings(**both, ai_only_chosen=True)) == ["openrouter"]  # Groq has a key but never writes
+    assert calls.provider_order(Settings(**{**both, "openrouter_api_key": None}, ai_only_chosen=True)) == []  # no key: nothing is tried
+
+
+def test_a_model_without_json_mode_gets_no_response_format_and_its_wrapped_json_is_still_read():
+    from caselens.infrastructure.config import Settings
+
+    settings = Settings(openrouter_api_key="sk-or-test", openrouter_model="nvidia/nemotron-3-ultra-550b-a55b:free")
+    assert OpenAiStyleCall.for_provider(settings, "openrouter")._json_mode is False  # known not to take `response_format`
+    call = OpenAiStyleCall(_Client("Here it is:\n```json\n" + json.dumps(GOOD) + "\n```"), "openrouter", {WRITER: "m", CHECKER: "m"},
+                           strict=False, max_retries=1, sleep=lambda _: None, json_mode=False)
+    assert call.json(WRITER, "s", "p", SCHEMA) == GOOD
+    assert "response_format" not in call._client.requests[0]
+    assert "JSON schema exactly" in call._client.requests[0]["messages"][0]["content"]  # the shape is still asked for, and checked

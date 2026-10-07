@@ -6,7 +6,8 @@ check it. Edit the client's part only on the client's say-so."""
 
 # v2: the shape of the client's own sample (Marcos v. Manglapus), key sentences in bold
 # v3: Topic Explained and Why only as the decision explains them (no general law in the AI's own words); no Dissents block without a dissent
-DIGEST_PROMPT_VERSION = "digest-v3"
+# v4: the same digest in a shorter answer format (short field names, compact JSON), and the writer thinks less: fewer output tokens
+DIGEST_PROMPT_VERSION = "digest-v4"
 # What a READY digest was made with: the writer's prompt and the checking pipeline. Stored on each digest (`prompt_version`); a digest
 # with another stamp is still served (no surprise AI spend after an update) but reported as not current; "Write it again" renews it.
 # check-v2: code sorts every sentence, the second model sees only flagged and key sentences, repair sees only nearby paragraphs.
@@ -53,9 +54,10 @@ SYSTEM_RULES = """HOW THIS SYSTEM WORKS (these rules come first; they make "NO H
 - The student asked you to paraphrase: use plain words, but keep every legal term, name, number and date exactly as the passages give them.
 - The student will read this to prepare for class: complete, in order, and clear.
 
-OUTPUT: JSON only, in this shape. Each section is a list of blocks; a block has an optional heading, a kind ("paragraph" or "list": a list is
-shown as bullet points) and its sentences ({"text", "cites", "key"}). Use as many blocks and sentences as the section needs.
-Mark "key": true on the few sentences a student must not miss (they are printed in bold): the doctrine, the main issue, the disposition of the
+OUTPUT: compact JSON only (no spaces or line breaks between fields), in this shape. Each section is a list of blocks. A block is
+{"h": heading or omitted, "l": true for a bullet list (omit for a paragraph), "s": [sentences]}; a sentence is {"t": text, "c": [ids it cites],
+"k": true only for a key sentence (omit otherwise)}. Use as many blocks and sentences as the section needs.
+Mark "k": true on the few sentences a student must not miss (they are printed in bold): the doctrine, the main issue, the disposition of the
 ruling, the first sentence of each reasoning block, and each point to remember. Most sentences are not key; the dissents are not key.
 - "doctrine": the controlling principle, concise (a block of 1 to 3 sentences).
 - "facts": the material facts in story order, COMPLETE enough that a student who has not read the case understands what happened and why it reached the Court: the background events, who the parties are, what each did, how the case came to the Court. Write 4 to 6 paragraphs of 3 to 6 sentences each, as a story (the client's own sample has about 20 sentences of facts for a case like Marcos v. Manglapus); when the decision lists a series of events or threats, put them in a list block between the paragraphs. End with a paragraph naming who filed the case and what they asked the Court to do (a key sentence). Include every material fact the passages give; leave out only detail that does not matter to the ruling.

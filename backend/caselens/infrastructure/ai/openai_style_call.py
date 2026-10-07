@@ -12,7 +12,8 @@ from collections.abc import Callable
 import jsonschema
 
 from caselens.domain.errors import AiCreditError, AiInvalidRequestError, AiKeyError, AiRateLimitError, AiUnavailableError
-from caselens.infrastructure.ai.calls import CHECKER, PROVIDER_NAMES, WRITER, clear_key_problem, note_key_problem
+from caselens.infrastructure.ai.calls import CHECKER, PROVIDER_NAMES, REPAIR, WRITER, clear_key_problem, note_key_problem
+from caselens.infrastructure.ai.models import openrouter_model
 from caselens.infrastructure.config import Settings
 
 logger = logging.getLogger(__name__)
@@ -21,6 +22,17 @@ _DEEPSEEK_URL = "https://api.deepseek.com"
 _OPENROUTER_URL = "https://openrouter.ai/api/v1"
 _OPENROUTER_HEADERS = {"X-Title": "CaseLens"}  # how OpenRouter names the app on the key owner's activity page
 _MAX_OUTPUT_TOKENS = 32_000  # a long digest plus its reasoning; well under each model's limit
+
+
+def _read_json(text: str) -> dict:
+    """The JSON object in an answer. A model without JSON mode may wrap it in ```json fences or add a line around it."""
+    try:
+        return json.loads(text)
+    except ValueError:
+        start, end = text.find("{"), text.rfind("}")
+        if start < 0 or end <= start:
+            raise
+        return json.loads(text[start : end + 1])
 
 
 def _per_day(detail: str) -> bool:
@@ -80,13 +92,15 @@ class OpenAiStyleCall:
     """One provider (Groq or DeepSeek) with retries; errors become the app's own (key, credit, rate limit, busy)."""
 
     def __init__(self, client, provider: str, models: dict[str, str], *, strict: bool, reasoning_effort: str | None = None,
-                 max_retries: int = 3, sleep: Callable[[float], None] = time.sleep, extra_body: dict | None = None) -> None:
+                 max_retries: int = 3, sleep: Callable[[float], None] = time.sleep, extra_body: dict | None = None,
+                 json_mode: bool = True) -> None:
         self._client = client
         self.provider = provider
         self._models = models
         self._strict = strict
         self._reasoning_effort = reasoning_effort
         self._extra_body = extra_body  # provider-only fields the SDK does not know (OpenRouter's `reasoning`)
+        self._json_mode = json_mode  # False: the model does not take `response_format`; the shape is in the instructions only
         self._max_retries = max_retries
         self._sleep = sleep
         self.usage = {"calls": 0, "input_tokens": 0, "output_tokens": 0}
@@ -97,13 +111,13 @@ class OpenAiStyleCall:
             from groq import Groq
 
             client = Groq(api_key=settings.groq_api_key, timeout=settings.ai_timeout_seconds, max_retries=0)
-            models = {WRITER: settings.groq_model, CHECKER: settings.groq_checker_model}
+            models = {WRITER: settings.groq_model, CHECKER: settings.groq_checker_model, REPAIR: settings.groq_model}
             return cls(client, "groq", models, strict=True, reasoning_effort=settings.groq_reasoning_effort, max_retries=settings.gemini_max_retries)
         if provider == "deepseek":
             from openai import OpenAI
 
             client = OpenAI(api_key=settings.deepseek_api_key, base_url=_DEEPSEEK_URL, timeout=settings.ai_timeout_seconds, max_retries=0)
-            models = {WRITER: settings.deepseek_model, CHECKER: settings.deepseek_checker_model}
+            models = {WRITER: settings.deepseek_model, CHECKER: settings.deepseek_checker_model, REPAIR: settings.deepseek_model}
             return cls(client, "deepseek", models, strict=False, max_retries=settings.gemini_max_retries)
         if provider == "openrouter":
             from openai import OpenAI
@@ -112,35 +126,44 @@ class OpenAiStyleCall:
                 api_key=settings.openrouter_api_key, base_url=_OPENROUTER_URL, timeout=settings.ai_timeout_seconds, max_retries=0,
                 default_headers=_OPENROUTER_HEADERS,
             )
-            models = {WRITER: settings.openrouter_model, CHECKER: settings.openrouter_checker_model}
+            models = {WRITER: settings.openrouter_model, CHECKER: settings.openrouter_checker_model, REPAIR: settings.openrouter_model}
             # The schema goes in the prompt and the answer is checked here (as for DeepSeek direct): OpenRouter can route a model to
             # hosts that do not all enforce a strict schema. The model thinks first (`reasoning`), then answers with the JSON only.
-            extra = {"reasoning": {"enabled": True}} if settings.openrouter_reasoning else None
-            return cls(client, "openrouter", models, strict=False, max_retries=settings.gemini_max_retries, extra_body=extra)
+            # The writer thinks at the set effort ("low" by default: it was about a fifth of a digest's output); the checker and the
+            # repair do not think at all (see `_request`).
+            extra = {"reasoning": {"effort": settings.openrouter_reasoning_effort}} if settings.openrouter_reasoning else None
+            known = openrouter_model(settings.openrouter_model)
+            json_mode = settings.openrouter_json_mode if settings.openrouter_json_mode is not None else (known.json_mode if known else True)
+            return cls(client, "openrouter", models, strict=False, max_retries=settings.gemini_max_retries, extra_body=extra, json_mode=json_mode)
         raise ValueError(f"Not an OpenAI-style provider: {provider}")
 
     def model_for(self, role: str) -> str:
+        if role == REPAIR and REPAIR not in self._models:
+            role = WRITER  # the repair rewrites with the writer's model
         return self._models.get(role, role)  # a real model name (an older caller, an eval script) is used as given
 
-    def _request(self, model: str, system: str, prompt: str, schema: dict) -> dict:
+    def _request(self, model: str, system: str, prompt: str, schema: dict, think: bool = True) -> dict:
+        """`think`: let the model reason before answering. Only the writer does: for the checker and the repair, reasoning took most of
+        a digest's time and output cost (about 74% of all output tokens on a real case) for a yes/no or a one-sentence answer."""
         # OpenRouter reads `max_tokens`; Groq and DeepSeek read the newer `max_completion_tokens`.
         limit = "max_tokens" if self.provider == "openrouter" else "max_completion_tokens"
         request: dict = {"model": model, "temperature": 0, limit: _MAX_OUTPUT_TOKENS}
         if self._extra_body:
-            request["extra_body"] = self._extra_body
+            request["extra_body"] = self._extra_body if think else {**self._extra_body, "reasoning": {"enabled": False}}
         if self._strict:
             request["response_format"] = {"type": "json_schema", "json_schema": {"name": "answer", "strict": True, "schema": strict_schema(schema)}}
             request["messages"] = [{"role": "system", "content": system}, {"role": "user", "content": prompt}]
             if self._reasoning_effort:
-                request["reasoning_effort"] = self._reasoning_effort
+                request["reasoning_effort"] = self._reasoning_effort if think else "low"  # gpt-oss cannot turn it off: the least
             # Groq: the answer only, no thinking text. gpt-oss models take `include_reasoning`; the others `reasoning_format`.
             if model.startswith("openai/gpt-oss"):
                 request["include_reasoning"] = False
             else:
                 request["reasoning_format"] = "hidden"
         else:
-            shape = json.dumps(standard_schema(schema), ensure_ascii=False)
-            request["response_format"] = {"type": "json_object"}
+            shape = json.dumps(standard_schema(schema), ensure_ascii=False, separators=(",", ":"))
+            if self._json_mode:
+                request["response_format"] = {"type": "json_object"}
             request["messages"] = [
                 {"role": "system", "content": f"{system}\n\nAnswer with one JSON object only, matching this JSON schema exactly:\n{shape}"},
                 {"role": "user", "content": prompt},
@@ -149,8 +172,9 @@ class OpenAiStyleCall:
 
     def json(self, model: str, system: str, prompt: str, schema: dict, *, thinking_budget: int | None = None) -> dict:
         name = PROVIDER_NAMES[self.provider]
+        think = model not in (CHECKER, REPAIR) and thinking_budget != 0  # a role, or (older callers) a model name: those think
         model = self.model_for(model)
-        request = self._request(model, system, prompt, schema)
+        request = self._request(model, system, prompt, schema, think)
         last_problem = "no attempt made"
         rate_limited = False
         for attempt in range(self._max_retries + 1):
@@ -161,7 +185,7 @@ class OpenAiStyleCall:
                 text = (response.choices[0].message.content or "").strip()
                 if not text:
                     raise ValueError("empty answer")
-                data = json.loads(text)
+                data = _read_json(text)
                 if not self._strict:
                     jsonschema.validate(data, standard_schema(schema))  # DeepSeek only promises JSON, not the shape
                 clear_key_problem(self.provider)

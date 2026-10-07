@@ -14,7 +14,7 @@ from google.genai import types
 from caselens.application.ports.ai import AnswerChecker, AnswerRequest, AnswerWriter
 from caselens.domain.digest import AnswerSentence, CheckResult, SourcePassage, Verdict
 from caselens.domain.errors import AiCreditError, AiInvalidRequestError, AiKeyError, AiRateLimitError, AiUnavailableError
-from caselens.infrastructure.ai.calls import CHECKER, WRITER, clear_key_problem, note_key_problem
+from caselens.infrastructure.ai.calls import CHECKER, REPAIR, WRITER, clear_key_problem, note_key_problem
 from caselens.infrastructure.ai.calls import key_problem as calls_key_problem
 from caselens.infrastructure.config import Settings
 
@@ -46,7 +46,8 @@ Be strict: when unsure, do not say supported.
 Also reject overstatement: a sentence is not supported if it says something more certain, more general or more
 final than the passages do (for example, an allegation, a finding of probable cause or a party's argument written
 as if the Court had decided it, or "always"/"all" where the passage says "in this case").
-Give a short reason for any verdict that is not supported."""
+Answer in compact JSON: {"verdicts": [{"i": the sentence's number, "v": the verdict, "r": a short reason}]}. Give "r" ONLY for a verdict
+that is not supported; leave it out for a supported sentence."""
 
 _WRITER_SCHEMA = {
     "type": "object",
@@ -69,12 +70,14 @@ _CHECKER_SCHEMA = {
             "type": "array",
             "items": {
                 "type": "object",
+                # i = the sentence's number, v = the verdict, r = why (only when not supported: a reason for every supported
+                # sentence was most of the checker's answer and is never shown)
                 "properties": {
-                    "index": {"type": "integer"},
-                    "verdict": {"type": "string", "enum": [v.value for v in Verdict]},
-                    "reason": {"type": "string"},
+                    "i": {"type": "integer"},
+                    "v": {"type": "string", "enum": [v.value for v in Verdict]},
+                    "r": {"type": "string"},
                 },
-                "required": ["index", "verdict", "reason"],
+                "required": ["i", "v"],
             },
         }
     },
@@ -136,13 +139,15 @@ class _GeminiCall:
         self._client = genai.Client(api_key=settings.gemini_api_key, http_options=types.HttpOptions(timeout=timeout_ms))
         self._max_retries = settings.gemini_max_retries
         self._fallbacks = list(settings.gemini_fallback_models)
-        self._models = {WRITER: settings.gemini_writer_model, CHECKER: settings.gemini_checker_model}
+        self._models = {WRITER: settings.gemini_writer_model, CHECKER: settings.gemini_checker_model, REPAIR: settings.gemini_writer_model}
         self.provider = "gemini"
         self._sleep = sleep
         self.usage = {"calls": 0, "input_tokens": 0, "output_tokens": 0}  # for measuring what a digest costs
         self._usage_lock = threading.Lock()  # a digest's check groups run at the same time
 
     def model_for(self, role: str) -> str:
+        if role == REPAIR and REPAIR not in self._models:
+            role = WRITER  # the repair rewrites with the writer's model
         return self._models.get(role, role)  # a real model name (an older caller, an eval script) is used as given
 
     def json(self, model: str, system: str, prompt: str, schema: dict, *, thinking_budget: int | None = None) -> dict:
@@ -262,6 +267,11 @@ class GeminiAnswerWriter(AnswerWriter):
         return sentences
 
 
+def _pick(item: dict, short: str, long: str):
+    """A field by its short name, or by the long name an older answer used."""
+    return item[short] if short in item else item.get(long)
+
+
 class GeminiAnswerChecker(AnswerChecker):
     def __init__(self, settings: Settings, call: _GeminiCall | None = None) -> None:
         self._call = call or _GeminiCall(settings)
@@ -276,7 +286,10 @@ class GeminiAnswerChecker(AnswerChecker):
         prompt = f"PASSAGES:\n{passages}\n\nSENTENCES (judge each only against the passages it cites):\n{claims}"
         data = self._call.json(self._model, _CHECKER_RULES, prompt, _CHECKER_SCHEMA)
 
-        by_index = {item["index"]: CheckResult(Verdict(item["verdict"]), item.get("reason", "")) for item in data.get("verdicts", [])}
+        by_index = {
+            _pick(item, "i", "index"): CheckResult(Verdict(_pick(item, "v", "verdict")), _pick(item, "r", "reason") or "")
+            for item in data.get("verdicts", [])
+        }
         # A sentence the checker did not rule on is NOT supported: silence is never approval.
         return [by_index.get(i, CheckResult(Verdict.NOT_SUPPORTED, "the checker gave no verdict")) for i in range(len(sentences))]
 

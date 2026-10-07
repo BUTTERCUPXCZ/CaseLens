@@ -11,7 +11,7 @@ router = APIRouter(prefix="/library", tags=["library"])
 
 @router.get("/cases", response_model=CasePageOut)
 def library_cases(
-    q: str | None = Query(None, max_length=200, description="Part of the case name, or the start of a G.R. number"),
+    q: str | None = Query(None, max_length=200, description="Part of the case name, or the start of a G.R. number (also within one upload)"),
     subject_id: int | None = Query(None, description="Only the cases filed under this subject"),
     no_subject: bool = Query(False, description="Only the cases with no subject yet"),
     batch_id: int | None = Query(None, description="Only what this bulk upload gave: its main cases, each once"),
@@ -23,7 +23,7 @@ def library_cases(
     """One row per main case, newest decision first. Lighter than GET /cases/{id}: no full text. A Resolution or a repeat of the same
     case is never listed on its own."""
     if batch_id is not None:
-        batch_page = services.list_batch_cases().execute(batch_id, limit, offset, digest_state)
+        batch_page = services.list_batch_cases().execute(batch_id, limit, offset, digest_state, q)
         return CasePageOut.from_page(batch_page, batch_page.states).model_copy(update={"state_counts": batch_page.counts})
     page = services.list_cases().execute(q, limit, offset, subject_id, no_subject)
     return CasePageOut.from_page(page, services.case_digest_states([c.id for c in page.items]))

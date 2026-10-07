@@ -9,6 +9,9 @@ from caselens.infrastructure.config import Settings
 
 WRITER = "writer"
 CHECKER = "checker"
+# Rewriting the few sentences that failed: the writer's model, but without thinking first (like the checker). Thinking is billed as output
+# and took most of a digest's time and cost on these small tasks; only the writer, which drafts the whole digest, thinks.
+REPAIR = "repair"
 PROVIDERS = ("groq", "deepseek", "openrouter", "gemini")
 PROVIDER_NAMES = {"groq": "Groq", "deepseek": "DeepSeek", "openrouter": "OpenRouter", "gemini": "Gemini"}
 
@@ -57,8 +60,11 @@ def ai_configured(settings: Settings) -> bool:
 
 
 def provider_order(settings: Settings) -> list[str]:
-    """The chosen provider first, then the others that have a key: when one cannot answer, the next one writes."""
+    """The chosen provider first, then the others that have a key: when one cannot answer, the next one writes. With "only the chosen
+    AI" on, just the chosen one: when it cannot answer, the digest fails with its reason instead of another AI writing it."""
     chosen = settings.ai_provider if settings.ai_provider in PROVIDERS else "gemini"
+    if settings.ai_only_chosen:
+        return [chosen] if api_key_for(settings, chosen) else []
     return list(dict.fromkeys(p for p in [chosen, *PROVIDERS] if api_key_for(settings, p)))
 
 

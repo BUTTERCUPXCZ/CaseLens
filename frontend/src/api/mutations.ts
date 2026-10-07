@@ -12,6 +12,8 @@ import {
   retryBulk,
   saveAiKey,
   saveAiProvider,
+  saveOnlyChosen,
+  saveOpenRouterModel,
   setCaseSubjects,
   startBulk,
   startCatalogBuild,
@@ -164,6 +166,23 @@ export function useSaveAiProvider() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: saveAiProvider,
+    onSuccess: (settings: DesktopSettings) => queryClient.setQueryData(keys.desktopSettings, settings),
+  })
+}
+
+/** Which OpenRouter model writes and checks, and whether only the chosen AI may write (no backup AI). */
+export function useSaveOpenRouterModel() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: saveOpenRouterModel,
+    onSuccess: (settings: DesktopSettings) => queryClient.setQueryData(keys.desktopSettings, settings),
+  })
+}
+
+export function useSaveOnlyChosen() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: saveOnlyChosen,
     onSuccess: (settings: DesktopSettings) => queryClient.setQueryData(keys.desktopSettings, settings),
   })
 }

@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, Link, notFound } from '@tanstack/react-router'
-import { ChevronLeft, ChevronRight, FileQuestion, FileText, MessageCircleQuestion } from 'lucide-react'
+import { ChevronLeft, ChevronRight, FileQuestion, FileText, MessageCircleQuestion, Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { z } from 'zod'
@@ -12,6 +12,7 @@ import { BackButton } from '@/components/BackButton'
 import { Disclaimer } from '@/components/Disclaimer'
 import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -180,10 +181,21 @@ function ReviewPage() {
   const wide = useWideScreen()
   const [page, setPage] = useState(0)
   const [filter, setFilter] = useState<Filter>('all')
+  const [draft, setDraft] = useState('') // what the student types in the search box
+  const [q, setQ] = useState('') // what is searched: the box, once the student pauses typing
   const [sheetOpen, setSheetOpen] = useState(false)
   const { data: bulk } = useQuery(bulkQuery(batchId))
   const live = bulk ? !bulk.finished || bulk.counts.digests_pending > 0 : true
-  const cases = useQuery(batchCasesQuery(batchId, page, live, filter === 'all' ? undefined : (filter as BatchDigestFilter)))
+  const cases = useQuery(batchCasesQuery(batchId, page, live, filter === 'all' ? undefined : (filter as BatchDigestFilter), q))
+
+  // Search as the student types, but ask the server only once they pause.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setQ(draft.trim())
+      setPage(0)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [draft])
   const queryClient = useQueryClient()
   const found = bulk?.counts.found
   const ready = bulk?.counts.digests_ready
@@ -222,8 +234,23 @@ function ReviewPage() {
                 }}
               />
             ) : null}
+            {bulk.counts.found > 1 ? (
+              <div className="relative mb-3">
+                <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+                <Input
+                  type="search"
+                  aria-label={reviewsCopy.searchLabel}
+                  placeholder={reviewsCopy.searchPlaceholder}
+                  value={draft}
+                  onChange={(event) => setDraft(event.target.value)}
+                  className="pl-8"
+                />
+              </div>
+            ) : null}
             {!cases.data ? (
               <Skeleton className="h-24 w-full" aria-label="Loading the cases" />
+            ) : total === 0 && q ? (
+              <p className="text-base text-muted-foreground">{reviewsCopy.searchNone(q)}</p>
             ) : total === 0 && filter !== 'all' ? (
               <p className="text-base text-muted-foreground">{reviewsCopy.filterEmpty[filter]}</p>
             ) : total === 0 ? (

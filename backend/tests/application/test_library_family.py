@@ -128,6 +128,13 @@ def test_the_results_of_a_batch_show_each_main_case_once_in_the_order_given():
     assert [c.id for c in page.items] == [second.id, first.id] and page.total == 2
     assert ListBatchCases(bulk, cases).execute(batch.id, 1, 1).items[0].id == first.id
 
+    # searching within the upload: by words of the name, or the start of the G.R. number (with or without its label)
+    listing = ListBatchCases(bulk, cases)
+    assert [c.id for c in listing.execute(batch.id, 20, 0, query="review center").items] == [first.id]
+    assert [c.id for c in listing.execute(batch.id, 20, 0, query="G.R. No. 1739").items] == [second.id]
+    found = listing.execute(batch.id, 20, 0, query="nothing like this")
+    assert found.items == [] and found.total == 0
+
 
 def test_an_uploads_cases_can_be_narrowed_to_the_ready_ones_while_the_rest_are_written():
     """With 50 cases the student studies the finished digests first: the list filters by digest state (for this upload's
