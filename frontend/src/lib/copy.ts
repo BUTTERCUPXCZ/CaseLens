@@ -398,6 +398,8 @@ export const updateCopy = {
 export const settingsCopy = {
   title: 'Settings',
   webDescription: 'Which AI writes the digests on this site.',
+  webModelHelp: 'Used for the next digests and questions; a digest already being written finishes with the model it started with.',
+  webSaved: 'Saved.',
   webAiLine: (provider: string, model: string) => `${provider} · ${model}`,
   webOnlyChosen: 'Only this AI writes and checks the digests; no other AI takes over.',
   webFree: 'A free model, for testing: OpenRouter allows about 50 requests a day (about 12 digests), so the site writes two digests at a time.',

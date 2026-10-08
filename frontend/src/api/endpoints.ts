@@ -99,6 +99,7 @@ export const getHealth = () => request<Health>('/health')
 
 /** The website's Settings: which AI writes the digests (read only). */
 export const getAiInfo = () => request<AiInfo>('/ai-info')
+export const chooseAiModel = (model: string) => putJson<AiInfo>('/ai-model', { model })
 
 /** The desktop app's Settings: the AI key (never sent back, only whether one is set), backup and restore. */
 export const getDesktopSettings = () => request<DesktopSettings>('/desktop/settings')

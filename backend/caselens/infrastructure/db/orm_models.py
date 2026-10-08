@@ -307,6 +307,16 @@ class DigestModel(Base):
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), server_default=func.now())
 
 
+class AppSettingModel(Base):
+    """A setting changed from the website's Settings page (the AI model); the rest comes from the host's environment."""
+
+    __tablename__ = "app_settings"
+
+    key: Mapped[str] = mapped_column(String(64), primary_key=True)
+    value: Mapped[str] = mapped_column(Text)
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), server_default=func.now())
+
+
 class JobLockModel(Base):
     """A held lock for background work. A lock past `locked_until` is free again, so a crashed worker cannot block it forever."""
 

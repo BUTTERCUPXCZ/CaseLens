@@ -78,6 +78,7 @@ from caselens.infrastructure.ai.gemini_answerer import (
     GeminiAnswerWriter,
 )
 from caselens.infrastructure.ai.calls import ai_configured, make_ai_call, writer_model_name
+from caselens.infrastructure.db.app_settings import with_site_choices
 from caselens.infrastructure.ai.gemini_digest import DIGEST_VERSION, GeminiDigestWriter
 from caselens.infrastructure.ai.gemini_passages import PASSAGE_PROMPT_VERSION, GeminiPassageChecker, GeminiPassagePicker
 from caselens.infrastructure.docx_case_export import DocxCaseExporter
@@ -146,7 +147,8 @@ class Services:
         digest_writer: DigestWriter | None = None,
         ai_enabled: bool | None = None,
     ) -> None:
-        self._settings = settings or get_settings()
+        # The website's Settings page may have picked another model: read on every request and job, so it applies at once.
+        self._settings = settings or with_site_choices(get_settings(), session)
         self._session = session
         self._case_locator = case_locator
         self._case_fetcher = case_fetcher

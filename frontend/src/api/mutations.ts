@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   addBulkFiles,
   askAboutCase,
+  chooseAiModel,
   deleteBulk,
   editDigestSection,
   fetchCaseByUrl,
@@ -21,7 +22,7 @@ import {
 import { chunkFiles } from '@/features/bulk/chunkFiles'
 
 import { keys } from './queries'
-import type { AiProviderId, CaseQuestion, DesktopSettings } from './types'
+import type { AiInfo, AiProviderId, CaseQuestion, DesktopSettings } from './types'
 
 /** The student pastes a case's own Lawphil link and we save that case straight away. */
 export function useFetchByLink() {
@@ -171,6 +172,15 @@ export function useSaveAiProvider() {
 }
 
 /** Which OpenRouter model writes and checks, and whether only the chosen AI may write (no backup AI). */
+/** The website: pick the OpenRouter model that writes the next digests. */
+export function useChooseAiModel() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: chooseAiModel,
+    onSuccess: (info: AiInfo) => queryClient.setQueryData(keys.aiInfo, info),
+  })
+}
+
 export function useSaveOpenRouterModel() {
   const queryClient = useQueryClient()
   return useMutation({

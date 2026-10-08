@@ -44,7 +44,15 @@ export type BatchDigestFilter = 'ready' | 'writing' | 'failed'
 /** The desktop app only (its routes are not in the web version's OpenAPI document). */
 export type Health = { status: string; database: 'postgresql' | 'sqlite'; desktop?: boolean }
 /** Which AI writes the digests on the website (read only; the key is set by whoever runs the site). */
-export type AiInfo = { provider: string; model: string; free: boolean; only_chosen: boolean; ready: boolean }
+export type AiInfo = {
+  provider: string
+  model: string
+  model_id: string
+  free: boolean
+  only_chosen: boolean
+  ready: boolean
+  models: { id: string; name: string; free: boolean }[] // the OpenRouter models that can be picked on the website
+}
 export type AiProviderId = 'groq' | 'deepseek' | 'openrouter' | 'gemini'
 export type AiProvider = { id: AiProviderId; name: string; model: string; key_set: boolean; problem?: 'invalid' | 'credit' | null }
 export type DesktopSettings = {

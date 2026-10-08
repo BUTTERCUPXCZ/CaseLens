@@ -1,11 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
 import { AlertTriangle, CircleCheck } from 'lucide-react'
 
+import { useChooseAiModel } from '@/api/mutations'
 import { aiInfoQuery } from '@/api/queries'
+import type { AiInfo } from '@/api/types'
 import { PageHeader } from '@/components/PageHeader'
 import { ErrorState } from '@/components/States'
 import { Skeleton } from '@/components/ui/skeleton'
-import { settingsCopy } from '@/lib/copy'
+import { friendlyError, settingsCopy } from '@/lib/copy'
 
 /** The website's Settings: which AI writes the digests, read only (its key is set where the site is hosted, never in the app). */
 export function WebSettingsPage() {
@@ -25,11 +27,46 @@ export function WebSettingsPage() {
             {settingsCopy.webAiLine(info.data.provider, info.data.model)}
           </p>
           {info.data.ready ? null : <p className="mt-2 text-base text-look">{settingsCopy.webNotReady}</p>}
+          <ModelPicker info={info.data} />
           {info.data.only_chosen ? <p className="mt-2 text-sm text-muted-foreground">{settingsCopy.webOnlyChosen}</p> : null}
           {info.data.free ? <p className="mt-2 text-sm text-muted-foreground">{settingsCopy.webFree}</p> : null}
           <p className="mt-2 text-sm text-muted-foreground">{settingsCopy.webKeyNote}</p>
         </section>
       )}
     </>
+  )
+}
+
+/** The OpenRouter models the site may use; the choice applies to the next digests at once (no restart). */
+function ModelPicker({ info }: { info: AiInfo }) {
+  const choose = useChooseAiModel()
+  if (info.models.length === 0) return null
+  return (
+    <div className="mt-4">
+      <label htmlFor="web-model" className="mb-1 block text-sm font-medium">
+        {settingsCopy.modelLabel}
+      </label>
+      <select
+        id="web-model"
+        className="h-10 w-full rounded-lg border border-input bg-card px-3 text-base"
+        value={info.model_id}
+        disabled={choose.isPending}
+        onChange={(event) => choose.mutate(event.target.value)}
+      >
+        {info.models.map((m) => (
+          <option key={m.id} value={m.id}>
+            {m.name}
+          </option>
+        ))}
+      </select>
+      <p className="mt-1 text-sm text-muted-foreground">
+        {settingsCopy.webModelHelp} {choose.isSuccess ? settingsCopy.webSaved : null}
+      </p>
+      {choose.error ? (
+        <p role="alert" className="mt-1 text-sm text-problem">
+          {friendlyError(choose.error)}
+        </p>
+      ) : null}
+    </div>
   )
 }
