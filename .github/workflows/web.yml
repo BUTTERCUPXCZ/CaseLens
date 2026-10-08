@@ -1,0 +1,99 @@
+# The website: every push and pull request to main runs the tests. Render deploys the API only when these checks pass
+# (render.yaml: autoDeployTrigger: checksPass), and the frontend is deployed to Vercel from here, after the tests, so the two
+# never go live with code that failed.
+#   Repo secrets for the frontend deploy: VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID (Vercel > Settings > Tokens; the two
+#   ids are in frontend/.vercel/project.json after `npx vercel link`). Without them the deploy step is skipped.
+name: Web
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: web-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend tests (${{ matrix.db }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        db: [postgresql, sqlite] # the website's database (migrations as they will run on Supabase), and the desktop app's
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: caselens
+          POSTGRES_PASSWORD: caselens
+          POSTGRES_DB: caselens
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U caselens" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: ${{ matrix.db == 'postgresql' && 'postgresql+psycopg://caselens:caselens@localhost:5432/caselens?sslmode=disable' || 'sqlite:///./ci.db' }}
+      QUEUE_BACKEND: stub
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+      - run: pip install -r requirements-dev.txt
+      - name: Migrations on PostgreSQL, as Render runs them on start
+        if: matrix.db == 'postgresql'
+        run: alembic upgrade head
+      - run: python -m pytest -m "not live and not rabbit" -q
+
+  frontend:
+    name: Frontend tests and build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npx eslint src --quiet
+      - run: npx vitest run
+      - run: npm run build
+
+  deploy-frontend:
+    name: Deploy the frontend (Vercel)
+    needs: [backend, frontend]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    # From the repository root: the Vercel project's own "Root Directory" (frontend) says where the app is.
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Deploy to production
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::warning::VERCEL_TOKEN is not set, so the frontend was not deployed. Add the Vercel secrets (see the top of this file)."
+            exit 0
+          fi
+          npx --yes vercel@latest pull --yes --environment=production --token="$VERCEL_TOKEN"
+          npx --yes vercel@latest build --prod --token="$VERCEL_TOKEN"
+          npx --yes vercel@latest deploy --prebuilt --prod --token="$VERCEL_TOKEN"

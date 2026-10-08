@@ -1,8 +1,6 @@
-import { useQuery } from '@tanstack/react-query'
 import { Link, useRouterState } from '@tanstack/react-router'
 import { BookOpen, FileSearch, Layers, Library, Scale, Settings } from 'lucide-react'
 
-import { healthQuery } from '@/api/queries'
 import { bulkPageCopy, guideCopy, individualCopy, libraryCopy, settingsCopy } from '@/lib/copy'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import {
@@ -24,15 +22,12 @@ const NAV = [
   { to: '/guide', label: guideCopy.navLabel, icon: BookOpen, matches: (path: string) => path.startsWith('/guide') },
 ] as const
 
-/** The desktop app also has Settings (the AI key, backups); the website has nothing to set. */
-const DESKTOP_NAV = [
-  { to: '/settings', label: settingsCopy.title, icon: Settings, matches: (path: string) => path.startsWith('/settings') },
-] as const
+/** Settings: the AI keys and backups in the desktop app; on the website, which AI writes (read only). */
+const SETTINGS_NAV = { to: '/settings', label: settingsCopy.title, icon: Settings, matches: (path: string) => path.startsWith('/settings') } as const
 
 export function AppSidebar() {
   const path = useRouterState({ select: (state) => state.location.pathname })
-  const desktop = useQuery(healthQuery()).data?.desktop === true
-  const nav = desktop ? [...NAV, ...DESKTOP_NAV] : NAV
+  const nav = [...NAV, SETTINGS_NAV]
 
   return (
     <Sidebar>

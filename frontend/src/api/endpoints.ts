@@ -1,5 +1,6 @@
 import { postJson, putJson, query, request } from './client'
 import type {
+  AiInfo,
   AiProviderId,
   BatchDigestFilter,
   Bulk,
@@ -95,6 +96,9 @@ export const deleteBulk = (id: number) => request<void>(`/bulk/${id}`, { method:
 export const retryBulk = (id: number) => postJson<{ requeued: number }>(`/bulk/${id}/retry`, {})
 
 export const getHealth = () => request<Health>('/health')
+
+/** The website's Settings: which AI writes the digests (read only). */
+export const getAiInfo = () => request<AiInfo>('/ai-info')
 
 /** The desktop app's Settings: the AI key (never sent back, only whether one is set), backup and restore. */
 export const getDesktopSettings = () => request<DesktopSettings>('/desktop/settings')

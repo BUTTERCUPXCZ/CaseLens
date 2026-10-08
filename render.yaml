@@ -1,5 +1,6 @@
 # Render Blueprint: the API on the free plan. The jobs run inside it as threads (no workers, no RabbitMQ).
-# The database is Supabase: paste its Session pooler address as DATABASE_URL in the Render dashboard.
+# The database is Supabase: paste its Session pooler address as DATABASE_URL in the Render dashboard, and the AI key as
+# OPENROUTER_API_KEY. Render deploys a push to main only after the GitHub checks (.github/workflows/web.yml) pass.
 services:
   - type: web
     name: caselens-api
@@ -9,6 +10,7 @@ services:
     rootDir: backend
     dockerfilePath: ./backend/Dockerfile
     healthCheckPath: /health
+    autoDeployTrigger: checksPass
     envVars:
       - key: QUEUE_BACKEND
         value: threads
@@ -18,7 +20,19 @@ services:
         value: "5"
       - key: UPLOAD_KEEP_DAYS
         value: "7"
+      - key: AI_PROVIDER
+        value: openrouter
+      - key: AI_ONLY_CHOSEN
+        value: "true"
+      - key: OPENROUTER_MODEL
+        value: nvidia/nemotron-3-ultra-550b-a55b:free
+      - key: OPENROUTER_CHECKER_MODEL
+        value: nvidia/nemotron-3-ultra-550b-a55b:free
+      - key: CASE_DIGEST_MONTHLY_LIMIT
+        value: "2500"
       - key: DATABASE_URL
+        sync: false
+      - key: OPENROUTER_API_KEY
         sync: false
       - key: GEMINI_API_KEY
         sync: false

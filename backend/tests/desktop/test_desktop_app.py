@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import func, insert, select
 
 from caselens.desktop import api as desktop_api
-from caselens.desktop.catalog_seed import export_catalog, import_catalog
+from caselens.infrastructure.db.catalog_seed import export_catalog, import_catalog
 from caselens.desktop.server import apply_pending_restore, create_desktop_app
 from caselens.infrastructure.db.orm_models import CatalogEntryModel, CatalogNumberModel
 from caselens.infrastructure.db.session import make_engine

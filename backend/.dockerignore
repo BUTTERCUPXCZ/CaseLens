@@ -4,8 +4,7 @@
 __pycache__/
 *.pyc
 tests/
-# the desktop app only (its shipped catalog, local libraries, build output)
-catalog.sqlite
+# local libraries and build output (catalog.sqlite stays: the website fills an empty catalog from it on its first start)
 *.db
 build/
 dist/

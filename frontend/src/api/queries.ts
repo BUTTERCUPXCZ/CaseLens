@@ -9,6 +9,7 @@ import {
   getCaseDigest,
   getCaseQuestions,
   getDesktopSettings,
+  getAiInfo,
   getHealth,
   getRecentBulk,
   getSubjectCounts,
@@ -47,6 +48,7 @@ export const keys = {
   finishedReviewer: (uploadId: number) => ['finished-reviewer', uploadId] as const,
   digest: (id: number) => ['digest', id] as const,
   health: ['health'] as const,
+  aiInfo: ['ai-info'] as const,
   desktopSettings: ['desktop-settings'] as const,
 }
 
@@ -173,5 +175,7 @@ export const reviewsQuery = (page: number) =>
 
 /** Which kind of CaseLens this is (the website or the desktop app). It never changes while the app runs. */
 export const healthQuery = () => queryOptions({ queryKey: keys.health, queryFn: getHealth, staleTime: Infinity })
+
+export const aiInfoQuery = () => queryOptions({ queryKey: keys.aiInfo, queryFn: getAiInfo })
 
 export const desktopSettingsQuery = () => queryOptions({ queryKey: keys.desktopSettings, queryFn: getDesktopSettings })

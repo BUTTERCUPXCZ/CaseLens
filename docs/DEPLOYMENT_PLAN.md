@@ -2,7 +2,33 @@
 
 **Database:** Supabase. **API:** Render. **Web app:** Vercel.
 
-**Status:** the code changes (F1) are done and tested. The deploy steps (F2 onward) are not done yet. Free plans change often, so do the check in section 12 before you start.
+**Status (October 2026):** live. The API runs on Render (`https://caselens-7ycr.onrender.com`), the database on Supabase, the web app on
+Vercel. The sections below are the original plan; this box is how it runs now.
+
+### How it runs now
+- **AI:** OpenRouter, `nvidia/nemotron-3-ultra-550b-a55b:free`, only that AI (`AI_PROVIDER=openrouter`, `AI_ONLY_CHOSEN=true`, in
+  `render.yaml`). The key is `OPENROUTER_API_KEY` in the Render dashboard (Environment), never in git. A free model allows about 50
+  requests a day (about 12 digests; 1,000 a day once the OpenRouter account has $10 of credit), so the site writes two digests at a time.
+  To switch to the paid model, set `OPENROUTER_MODEL` and `OPENROUTER_CHECKER_MODEL` to `deepseek/deepseek-v4.1-flash`.
+  The site's Settings page shows which AI is in use (read only).
+- **Deploys:** a push to `main` runs `.github/workflows/web.yml` (backend tests on PostgreSQL and SQLite, frontend tests and build).
+  Render deploys the API only when those checks pass (`autoDeployTrigger: checksPass`); the same workflow deploys the frontend to
+  Vercel after the tests (Vercel's own deploy of `main` is off in `frontend/vercel.json`).
+- **Migrations** run when the API starts (`alembic upgrade head` in the Dockerfile). Before a release that changes the database, take
+  a backup: `pg_dump "$DATABASE_URL" -Fc -f caselens-$(date +%F).dump` (Supabase's free plan also keeps daily backups).
+- **Catalog:** on its first start with an empty catalog, the API copies the shipped list (`backend/catalog.sqlite`, about 35,000
+  cases) into Supabase in the background, so search works at once; the daily refresh adds the newest months.
+- **Staying awake:** while a digest, bulk item, upload or question is waiting, the API calls its own `/health` every 10 minutes
+  (`RENDER_EXTERNAL_URL`, set by Render), so the free plan does not stop it midway. For no 30 to 60 second wait on the first visit,
+  add a free UptimeRobot monitor on `/health` (every 5 minutes); it also keeps the Supabase project from pausing.
+
+### One-time setup still to do
+1. Render dashboard > caselens-api > Environment: add `OPENROUTER_API_KEY`. Then Blueprint > Sync (or Settings > Auto-Deploy:
+   "After CI checks pass").
+2. Vercel: create a token (Account Settings > Tokens). Run `npx vercel link` in the repo once to get the org and project ids
+   (`.vercel/project.json`). Add `VERCEL_TOKEN`, `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` as GitHub repo secrets
+   (Settings > Secrets and variables > Actions). Until then the frontend is not redeployed (Vercel's own deploy of `main` is off).
+3. Optional: UptimeRobot monitor on `https://caselens-7ycr.onrender.com/health`.
 
 ---
 

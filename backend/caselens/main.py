@@ -9,7 +9,7 @@ from caselens.domain import errors
 from caselens.infrastructure.config import get_settings
 from caselens.infrastructure.db.upload_cleanup import keep_uploads_trimmed
 from caselens.presentation import access_gate
-from caselens.presentation.api import bulk, case_digests, case_questions, catalog, cases, digests, health, insights, library, reviewer, uploads
+from caselens.presentation.api import ai_info, bulk, case_digests, case_questions, catalog, cases, digests, health, insights, library, reviewer, uploads
 
 # Domain error -> HTTP status. One table, so no router needs try/except.
 _STATUS_BY_ERROR: list[tuple[type[errors.DomainError], int]] = [
@@ -34,10 +34,20 @@ def _handle_domain_error(_: Request, exc: Exception) -> JSONResponse:
 
 @asynccontextmanager
 async def _lifespan(_: FastAPI):
-    if get_settings().queue_backend != "stub":  # tests never start background work
+    settings = get_settings()
+    if settings.queue_backend != "stub":  # tests never start background work
         start_background_jobs()
-        if get_settings().upload_keep_days > 0:
-            keep_uploads_trimmed(get_settings().upload_keep_days)
+        if settings.upload_keep_days > 0:
+            keep_uploads_trimmed(settings.upload_keep_days)
+        if not settings.caselens_desktop:  # the desktop app fills its catalog and needs no waking (server.py)
+            from caselens.infrastructure.db.catalog_seed import seed_catalog_in_background
+            from caselens.infrastructure.db.session import engine
+
+            seed_catalog_in_background(engine)
+            if settings.render_external_url:
+                from caselens.infrastructure.keep_awake import keep_awake_while_busy
+
+                keep_awake_while_busy(settings.render_external_url)
     yield
 
 
@@ -46,7 +56,7 @@ def create_app() -> FastAPI:
     app = FastAPI(title="CaseLens", version="0.1.0", lifespan=_lifespan)
     app.middleware("http")(access_gate.require_access_code)
     app.add_exception_handler(errors.DomainError, _handle_domain_error)
-    for router in (health.router, access_gate.router, uploads.router, cases.router, library.router, catalog.router, insights.router, digests.router, reviewer.router, case_digests.router, case_questions.router, bulk.router):
+    for router in (health.router, access_gate.router, uploads.router, cases.router, library.router, catalog.router, insights.router, digests.router, reviewer.router, case_digests.router, case_questions.router, bulk.router, ai_info.router):
         app.include_router(router)
     return app
 

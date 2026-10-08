@@ -397,6 +397,12 @@ export const updateCopy = {
 /** Settings: only in the desktop app (the client's own computer). */
 export const settingsCopy = {
   title: 'Settings',
+  webDescription: 'Which AI writes the digests on this site.',
+  webAiLine: (provider: string, model: string) => `${provider} · ${model}`,
+  webOnlyChosen: 'Only this AI writes and checks the digests; no other AI takes over.',
+  webFree: 'A free model, for testing: OpenRouter allows about 50 requests a day (about 12 digests), so the site writes two digests at a time.',
+  webNotReady: 'No AI key is set for this site yet, so digests cannot be written. Ask the person who runs the site to add it.',
+  webKeyNote: 'The AI key is set by the person who runs the site (in Render), never in the app.',
   description: 'Your AI keys and your library backups. Everything else stays on this computer.',
   aiTitle: 'AI for digests and questions',
   aiHelp: 'Choose which AI writes first and paste its key. If it is busy or out of allowance, another one that has a key takes over, so digests keep coming. Keys are kept in this computer’s password store and never shown again.',

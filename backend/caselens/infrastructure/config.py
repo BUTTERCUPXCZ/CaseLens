@@ -67,6 +67,9 @@ class Settings(BaseSettings):
     # How hard the writer thinks before writing the digest (billed as output): "minimal" | "low" | "medium" | "high".
     openrouter_reasoning_effort: str = "low"
     ai_timeout_seconds: float = 180.0
+    # The website's own public address (Render sets RENDER_EXTERNAL_URL). While work is waiting, the site calls it now and then so the
+    # free host does not put it to sleep midway. Empty (the desktop app, a local run): off.
+    render_external_url: str | None = None
     auto_digest_on_upload: bool = True  # start a digest for every case a reviewer cites as soon as it is checked
     digest_parallel_answers: int = 3  # how many answers of one digest are written at the same time
     question_daily_limit: int = 500  # questions the AI assistant may answer per day (a cost guard)
@@ -128,8 +131,15 @@ class Settings(BaseSettings):
             self.openrouter_checker_model = chosen_model  # the chosen model writes AND checks: one model only
         if "ai_only_chosen" not in self.model_fields_set:
             self.ai_only_chosen = read_only_chosen(self.caselens_data_dir)
-        if self.openrouter_model.endswith(":free") and "digest_threads" not in self.model_fields_set:
-            self.digest_threads = 2  # free models allow few requests a minute: two digests at a time (read when the app starts)
+        return self
+
+    @model_validator(mode="after")
+    def _few_at_a_time_on_a_free_model(self) -> "Settings":
+        """Free OpenRouter models allow few requests a minute: two digests at a time, on the website as in the desktop app (read at
+        start). Runs after the desktop defaults, which may have picked the model."""
+        uses_free = self.ai_provider == "openrouter" and self.openrouter_model.endswith(":free")
+        if uses_free and "digest_threads" not in self.model_fields_set:
+            self.digest_threads = 2
         return self
 
 

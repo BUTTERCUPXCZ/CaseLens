@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { createFileRoute, Navigate } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { AlertTriangle, CircleCheck, Download, KeyRound, RefreshCw, Upload } from 'lucide-react'
 import { useRef, useState, type FormEvent } from 'react'
 
@@ -14,19 +14,20 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { appUpdateQuery } from '@/features/desktop/appUpdate'
 import { friendlyError, settingsCopy, updateCopy } from '@/lib/copy'
+import { WebSettingsPage } from '@/features/settings/WebSettings'
 import { inDesktopWindow } from '@/lib/desktop'
 
 export const Route = createFileRoute('/settings')({
   component: Settings,
 })
 
-/** Settings exist only in the desktop app: on the website there is nothing here to set. */
+/** The desktop app sets its AI keys and backups here; the website only shows which AI writes (its key is set where it is hosted). */
 function Settings() {
   const health = useQuery(healthQuery())
   if (health.isPending) return <Skeleton className="h-40 w-full" aria-busy="true" aria-label="Loading settings" />
-  if (!health.data?.desktop) return <Navigate to="/library" search={{}} replace />
-  return <DesktopSettingsPage />
+  return health.data?.desktop ? <DesktopSettingsPage /> : <WebSettingsPage />
 }
+
 
 function DesktopSettingsPage() {
   const settings = useQuery(desktopSettingsQuery())

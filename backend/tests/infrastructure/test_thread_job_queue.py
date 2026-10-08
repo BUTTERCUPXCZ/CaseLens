@@ -104,6 +104,15 @@ def test_the_desktop_app_writes_twelve_digests_at_once_and_the_website_four(tmp_
     assert Settings(_env_file=None, caselens_desktop=True, caselens_data_dir=str(tmp_path), gemini_api_key="k", digest_threads=6).digest_threads == 6
 
 
+def test_a_free_openrouter_model_writes_two_at_a_time_on_the_website_too():
+    from caselens.infrastructure.config import Settings
+
+    free = dict(_env_file=None, database_url="sqlite:///x.db", ai_provider="openrouter", openrouter_model="nvidia/nemotron-3-ultra-550b-a55b:free")
+    assert Settings(**free).digest_threads == 2
+    assert Settings(**free, digest_threads=3).digest_threads == 3  # set by hand: kept
+    assert Settings(**{**free, "ai_provider": "groq"}).digest_threads == 4  # the free model is not the one writing
+
+
 def test_a_job_that_finds_the_database_busy_runs_again(monkeypatch, locks):
     """Desktop app: SQLite says "database is locked" while another job writes; the job runs again instead of failing."""
     from sqlalchemy.exc import OperationalError

@@ -190,7 +190,7 @@ def main(argv: list[str] | None = None) -> None:
 
     import uvicorn
 
-    from caselens.desktop.catalog_seed import import_catalog
+    from caselens.infrastructure.db.catalog_seed import import_catalog
     from caselens.infrastructure.config import get_settings
     from caselens.infrastructure.db.session import engine
     from caselens.infrastructure.db.sqlite_schema import upgrade_sqlite
