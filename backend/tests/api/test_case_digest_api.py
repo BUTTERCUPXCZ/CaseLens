@@ -54,7 +54,7 @@ def test_before_anyone_asks_the_state_is_none_and_the_header_is_filled(client, c
     assert body["header"]["case_name"] == "Review Center Association of the Philippines v. Ermita"
     assert body["header"]["citation"] == "G.R. No. 180046, April 2, 2009 (En Banc)"
     assert set(body["levels"]) == {"short", "standard", "full"}
-    assert body["levels"]["short"] == ["doctrine", "facts", "arguments_petitioners", "arguments_respondents"]
+    assert body["levels"]["short"] == ["case_summary", "doctrine"]
 
 
 def test_asking_returns_202_pending_and_queues_the_job_once(client, case_id, jobs):
@@ -85,6 +85,29 @@ def test_after_the_job_the_digest_is_readable_with_its_sources_and_the_levels(cl
     assert ratio["heading"] == "1. The power is Congress's" and ratio["sentences"][0]["cites"] == ["P120"]
 
 
+def test_while_pending_the_digest_says_its_step_and_once_ready_it_says_none(client, services, case_id, jobs):
+    asked = client.post(f"/cases/{case_id}/case-digest").json()
+    assert asked["stage"] == "queued" and asked["stage_seconds"] >= 0 and asked["pending_seconds"] >= 0  # waiting for a worker
+    services.build_case_digest_v2().execute(jobs.case_digests[-1])
+    body = client.get(f"/cases/{case_id}/case-digest").json()
+    assert body["state"] == "ready" and body["stage"] is None and body["stage_seconds"] is None
+
+
+def test_the_case_summary_starts_the_page_and_the_short_word_file(db_session, jobs, case_id):
+    summary = DigestBlock((AnswerSentence("The PRC reported leaks, and the Court granted the petition.", ("P9", "P132")),))
+    draft = DigestDraft({**DRAFT.sections, Section.CASE_SUMMARY: (summary,)})
+    services = Services(db_session, jobs=jobs, digest_writer=ScriptedDigestWriter(draft), answer_checker=VerdictChecker())
+    app = create_app()
+    app.dependency_overrides[get_services] = lambda: services
+    client = TestClient(app)
+    services.build_case_digest_v2().execute(client.post(f"/cases/{case_id}/case-digest").json() and jobs.case_digests[-1])
+    body = client.get(f"/cases/{case_id}/case-digest").json()
+    assert [s["key"] for s in body["sections"]][:2] == ["case_summary", "doctrine"]  # the page shows the full digest, summary first
+    assert body["levels"]["short"] == ["case_summary", "doctrine"]
+    word = client.get(f"/cases/{case_id}/case-digest.docx", params={"level": "short"})
+    assert [p.text for p in docx.Document(io.BytesIO(word.content)).paragraphs if p.style.name == "Heading 1"] == ["Case Summary", "Doctrine"]
+
+
 def test_the_word_file_follows_the_level_and_is_refused_until_the_digest_is_ready(client, services, case_id, jobs):
     assert client.get(f"/cases/{case_id}/case-digest.docx").status_code == 409
     services.build_case_digest_v2().execute(client.post(f"/cases/{case_id}/case-digest").json() and jobs.case_digests[-1])
@@ -95,7 +118,7 @@ def test_the_word_file_follows_the_level_and_is_refused_until_the_digest_is_read
         assert f"GR-180046-{level}-digest.docx" in response.headers["content-disposition"]
         return [p.text for p in docx.Document(io.BytesIO(response.content)).paragraphs if p.style.name == "Heading 1"]
 
-    assert headings("short") == ["Doctrine", "Facts"]
+    assert headings("short") == ["Facts", "Issue", "Ruling", "Doctrine"]  # this writer gives no Case Summary: Facts, Issue, Ruling stand in
     assert headings("standard") == ["Doctrine", "Facts", "Issue", "Ruling"]
     assert headings("full") == ["Doctrine", "Facts", "Issue", "Ruling", "Ratio Decidendi"]
     assert client.get(f"/cases/{case_id}/case-digest.docx", params={"level": "huge"}).status_code == 422

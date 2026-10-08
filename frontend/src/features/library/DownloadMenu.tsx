@@ -12,7 +12,7 @@ const OPTIONS: { level: DigestLevel; label: string; hint: string | null }[] = [
   { level: 'full', label: libraryCopy.optionFull, hint: libraryCopy.optionFullHint },
 ]
 
-/** The "Download options" of the drawing: Facts and Doctrine; Doctrine, Facts, Issue, Ruling (1 to 2 pages); the full case digest (about 6 pages).
+/** The "Download options" of the drawing: Case Summary and Doctrine; Doctrine, Facts, Issue, Ruling (1 to 2 pages); the full case digest (about 6 pages).
  *  A digest is written the first time it is opened, so until then the options point there instead of at a file that does not exist. */
 export function DownloadMenu({ caseId, caseName, digestReady, onNeedDigest }: { caseId: number; caseName: string; digestReady: boolean; onNeedDigest: () => void }) {
   return (

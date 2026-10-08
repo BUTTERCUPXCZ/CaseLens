@@ -47,7 +47,7 @@ describe('the table of the drawing (Case | G.R. No., date and ponente | View / D
     await renderApp(<LibraryTable cases={ready} />)
     await user.click(screen.getByRole('button', { name: 'Download: Aquilino Pimentel III et al.' }))
 
-    expect(await screen.findByRole('link', { name: /Facts and Doctrine/ })).toHaveAttribute('href', '/api/cases/7/case-digest.docx?level=short')
+    expect(await screen.findByRole('link', { name: /Case Summary and Doctrine/ })).toHaveAttribute('href', '/api/cases/7/case-digest.docx?level=short')
     expect(screen.getByRole('link', { name: /Doctrine, Facts, Issue, Ruling.*1 to 2 pages/ })).toHaveAttribute('href', '/api/cases/7/case-digest.docx?level=standard')
     expect(screen.getByRole('link', { name: /Full case digest.*about 6 pages/ })).toHaveAttribute('href', '/api/cases/7/case-digest.docx?level=full')
     expect(screen.getByRole('link', { name: /Full text of the decision/ })).toHaveAttribute('href', '/api/cases/7/document.docx')

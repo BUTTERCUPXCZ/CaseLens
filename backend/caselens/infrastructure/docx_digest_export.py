@@ -7,7 +7,7 @@ import docx
 from docx.document import Document as DocxDocument
 from docx.shared import Pt, RGBColor
 
-from caselens.domain.digest_v2 import LEVEL_SECTIONS, SECTION_TITLES, DigestBlock, DigestDraft, DigestHeader, Level, Section
+from caselens.domain.digest_v2 import SECTION_TITLES, DigestBlock, DigestDraft, DigestHeader, Level, Section, sections_for
 
 _GREY = RGBColor(0x59, 0x59, 0x59)
 _REMEMBER = "Remember for recitation:"
@@ -24,9 +24,8 @@ class DocxCaseDigestExporter:
         document.styles["Normal"].font.name = "Calibri"
         document.styles["Normal"].font.size = Pt(11)
         self._header(document, header)
-        wanted = LEVEL_SECTIONS[level]
-        for section in Section:
-            if section not in wanted or section not in draft.sections:
+        for section in sections_for(level, draft):  # in the level's order: the short file is Case Summary, then Doctrine
+            if section not in draft.sections:
                 continue
             title = SECTION_TITLES[section]
             document.add_heading(title, level=2 if section in _SUBSECTIONS else 1)

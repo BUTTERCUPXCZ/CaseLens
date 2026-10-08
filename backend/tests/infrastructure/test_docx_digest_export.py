@@ -5,7 +5,7 @@ import docx
 import pytest
 
 from caselens.domain.digest import AnswerSentence
-from caselens.domain.digest_v2 import DigestBlock, DigestDraft, Level, Section
+from caselens.domain.digest_v2 import DigestBlock, DigestDraft, Level, Section, sections_for
 from caselens.infrastructure.docx_digest_export import DigestHeader, DocxCaseDigestExporter
 
 HEADER = DigestHeader("Marcos v. Manglapus", "G.R. No. 88211, September 15, 1989 (En Banc)", "Constitutional Law", "Cortes, J.")
@@ -25,16 +25,18 @@ DRAFT = DigestDraft({
     Section.DISSENTS: (block("He argued rights come first.", heading="Cruz, J., dissenting", cites=("O3.2",)),),
     Section.TOPIC: (block("Executive power is more than a list."),),
     Section.WHY: (block("Remember residual powers.", as_list=True),),
+    Section.CASE_SUMMARY: (block("Marcos was deposed and wanted to return.", "The Supreme Court dismissed the petition."),),
 })
+NO_SUMMARY = DigestDraft({s: b for s, b in DRAFT.sections.items() if s is not Section.CASE_SUMMARY})  # a digest written before v5
 
 
-def read(level, **kwargs):
-    document = docx.Document(io.BytesIO(DocxCaseDigestExporter().export(HEADER, DRAFT, level, **kwargs)))
+def read(level, draft=DRAFT, **kwargs):
+    document = docx.Document(io.BytesIO(DocxCaseDigestExporter().export(HEADER, draft, level, **kwargs)))
     return [(p.style.name, p.text) for p in document.paragraphs if p.text.strip()]
 
 
-def headings(level):
-    return [text for style, text in read(level) if style.startswith("Heading 1")]
+def headings(level, draft=DRAFT):
+    return [text for style, text in read(level, draft) if style.startswith("Heading 1")]
 
 
 def test_the_header_is_laid_out_like_the_clients_sample():
@@ -43,16 +45,30 @@ def test_the_header_is_laid_out_like_the_clients_sample():
 
 
 def test_the_full_digest_has_every_section_in_the_clients_order():
-    assert headings(Level.FULL) == ["Doctrine", "Facts", "Issue", "Ruling", "Ratio Decidendi", "The Dissents (useful for recitation)", "Topic Explained", "Why This Case Matters"]
+    assert headings(Level.FULL) == ["Case Summary", "Doctrine", "Facts", "Issue", "Ruling", "Ratio Decidendi", "The Dissents (useful for recitation)", "Topic Explained", "Why This Case Matters"]
 
 
-def test_the_standard_level_stops_after_the_ruling_and_the_short_one_after_the_facts():
+def test_the_standard_level_stops_after_the_ruling():
     assert headings(Level.STANDARD) == ["Doctrine", "Facts", "Issue", "Ruling"]
-    assert headings(Level.SHORT) == ["Doctrine", "Facts"]
+
+
+def test_the_short_level_is_the_case_summary_then_the_doctrine_like_the_clients_example():
+    assert headings(Level.SHORT) == ["Case Summary", "Doctrine"]
+    assert ("Normal", "Marcos was deposed and wanted to return. The Supreme Court dismissed the petition.") in read(Level.SHORT)
+
+
+def test_the_case_summary_starts_the_full_digest_but_not_the_standard_one():
+    assert headings(Level.FULL)[0] == "Case Summary" and "Case Summary" not in headings(Level.STANDARD)
+    assert headings(Level.FULL, NO_SUMMARY)[:2] == ["Doctrine", "Facts"]  # no summary: no stand-in either, the full digest has them all
+
+
+def test_a_digest_without_a_case_summary_prints_facts_issue_and_ruling_in_its_place():
+    assert headings(Level.SHORT, NO_SUMMARY) == ["Facts", "Issue", "Ruling", "Doctrine"]
+    assert sections_for(Level.SHORT, DRAFT) == (Section.CASE_SUMMARY, Section.DOCTRINE)
 
 
 def test_the_partys_arguments_are_a_subheading_of_the_facts_and_a_list_prints_as_bullets():
-    document = read(Level.SHORT)
+    document = read(Level.STANDARD)
     assert ("Heading 2", "Petitioners’ arguments") in document
     assert [text for style, text in document if style == "List Bullet"] == ["They invoked the right to travel.", "They invoked the right to return."]
 

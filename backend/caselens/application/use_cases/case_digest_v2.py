@@ -7,7 +7,7 @@ from caselens.application.ports.gateways import JobQueue
 from caselens.application.ports.repositories import CaseRepository, UnitOfWork
 from caselens.application.use_cases.build_digest_request import OpinionText, build_digest_request
 from caselens.application.use_cases.write_case_digest import WriteCaseDigest
-from caselens.domain.digest_v2 import SECTION_TITLES, CaseDigestV2, DigestState, Section, clean_scope, scope_key
+from caselens.domain.digest_v2 import SECTION_TITLES, CaseDigestV2, DigestStage, DigestState, Section, clean_scope, scope_key
 from caselens.domain.entities import Case
 from caselens.domain.errors import AiUnavailableError, CaseNotFoundError, DigestNotFoundError
 
@@ -62,6 +62,7 @@ class RequestCaseDigestV2:
             return existing
         digest = existing or CaseDigestV2(case_id=main_id, scope=clean_scope(scope))
         digest.state, digest.error = DigestState.PENDING, None  # an older draft stays visible until the new one is ready
+        digest.stage, digest.stage_at = DigestStage.QUEUED, datetime.now(UTC)
         saved = self._digests.save(digest)
         self._uow.commit()  # commit first so the worker can see it
         assert saved.id is not None
@@ -128,7 +129,7 @@ class BuildCaseDigestV2:
         self._uow.commit()  # end the read before the AI call (minutes): SQLite refuses a late save from a read held that long
         before = self._usage()
         try:
-            result = self._writer.execute(request)
+            result = self._writer.execute(request, lambda stage: self._stage(digest_id, stage))
         except AiUnavailableError as exc:
             logger.warning("case %s digest %s: not written: %s", case.id, digest_id, exc)
             return self._finish(digest, DigestState.FAILED, _reason(exc))
@@ -149,8 +150,18 @@ class BuildCaseDigestV2:
         digest.input_tokens, digest.output_tokens = after[0] - before[0], after[1] - before[1]
         return self._finish(digest, DigestState.READY, None)
 
+    def _stage(self, digest_id: int, stage: DigestStage) -> None:
+        """Record the step for the progress bar, in its own short commit. Only a display: a failure here never stops the digest."""
+        try:
+            self._digests.set_stage(digest_id, stage, self._clock())
+            self._uow.commit()
+        except Exception:  # noqa: BLE001
+            logger.warning("digest %s: could not record the step %s", digest_id, stage.value, exc_info=True)
+            self._uow.rollback()
+
     def _finish(self, digest: CaseDigestV2, state: DigestState, error: str | None) -> CaseDigestV2:
         digest.state, digest.error = state, error
+        digest.stage, digest.stage_at = None, None  # finished: no step to show
         saved = self._digests.save(digest)
         self._uow.commit()
         return saved

@@ -5,7 +5,7 @@ import pytest
 from caselens.application.ports.ai import DigestRequest
 from caselens.application.use_cases.write_case_digest import WriteCaseDigest
 from caselens.domain.digest import AnswerSentence, SourcePassage
-from caselens.domain.digest_v2 import LEVEL_SECTIONS, DigestBlock, DigestDraft, Level, Section
+from caselens.domain.digest_v2 import LEVEL_SECTIONS, DigestBlock, DigestDraft, DigestStage, Level, Section
 from tests.fakes import ScriptedDigestWriter, VerdictChecker
 
 SOURCES = (
@@ -84,6 +84,23 @@ def test_a_rewrite_that_fails_the_same_checks_is_dropped_too():
     assert texts(result) == [] and len(result.dropped) == 1 and result.repaired == 0
 
 
+def stages(writer, checker=None, **kwargs):
+    seen = []
+    WriteCaseDigest(writer, checker or VerdictChecker(), **kwargs).execute(REQUEST, seen.append)
+    return seen
+
+
+def test_the_steps_are_told_in_order_writing_then_checking_and_repairing_only_when_something_failed():
+    key = DigestDraft({Section.DOCTRINE: (DigestBlock((AnswerSentence("Marcos was deposed.", ("P6",), True),)),)})  # a key sentence is always checked
+    assert stages(ScriptedDigestWriter(key)) == [DigestStage.WRITING, DigestStage.CHECKING]
+    bad = ScriptedDigestWriter(draft(("The President feared a coup in 1999.", ["P9"])), repairs={0: AnswerSentence("The President cited dire consequences.", ("P9",))})
+    assert stages(bad) == [DigestStage.WRITING, DigestStage.REPAIRING]  # code alone failed it: no checker call, then the repair
+
+
+def test_no_checking_step_when_code_settles_every_sentence():
+    assert stages(ScriptedDigestWriter(draft(("In February 1986, Marcos was deposed.", ["P6"])))) == [DigestStage.WRITING]
+
+
 def test_with_repair_off_nothing_is_rewritten():
     writer = ScriptedDigestWriter(draft(("Marcos was deposed in 1999.", ["P6"])), repairs={0: AnswerSentence("Marcos was deposed.", ("P6",))})
     assert texts(run(writer, repair=False)) == [] and writer.repair_calls == []
@@ -97,8 +114,9 @@ def test_a_section_with_nothing_left_is_absent_not_filled_in():
 @pytest.mark.parametrize("level", list(Level))
 def test_every_level_prints_the_header_sections_the_client_asked_for(level):
     sections = LEVEL_SECTIONS[level]
-    assert Section.DOCTRINE in sections and Section.FACTS in sections  # all three levels start with Doctrine and Facts
+    assert Section.DOCTRINE in sections  # every level has the Doctrine
     assert (Section.RATIO in sections) is (level is Level.FULL) and (Section.ISSUE in sections) is (level is not Level.SHORT)
+    assert (Section.CASE_SUMMARY in sections) is (level is not Level.STANDARD)  # the client's "Case Summary and Doctrine", and the full digest
 
 
 class SlowChecker(VerdictChecker):
@@ -238,4 +256,5 @@ def test_the_writer_is_told_the_digest_says_only_what_the_decision_says():
 
     assert "in your own words" not in SYSTEM_RULES and "ONLY WHAT THE DECISION SAYS" in SYSTEM_RULES
     assert 'no "dissents" block at all' in SYSTEM_RULES.replace("\n  ", " ")
-    assert DIGEST_VERSION.startswith("digest-v4")  # digests written before this are shown as not current
+    assert '"case_summary": ONE paragraph' in SYSTEM_RULES
+    assert DIGEST_VERSION.startswith("digest-v5")  # digests written before this are shown as not current

@@ -125,3 +125,6 @@ class UnitOfWork(ABC):
 
     @abstractmethod
     def commit(self) -> None: ...
+
+    def rollback(self) -> None:
+        """Drop what was not committed (after a failed write that should not stop the operation)."""

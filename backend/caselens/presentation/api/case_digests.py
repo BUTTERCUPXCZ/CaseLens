@@ -1,6 +1,6 @@
 import re
 from dataclasses import replace
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Literal
 
 from fastapi import APIRouter, Depends, Query, Response
@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 from caselens.application.use_cases.build_digest_request import build_digest_header
 from caselens.composition import Services
-from caselens.domain.digest_v2 import LEVEL_SECTIONS, clean_scope, SECTION_TITLES, CaseDigestV2, DigestHeader, Level, Section
+from caselens.domain.digest_v2 import LEVEL_SECTIONS, clean_scope, SECTION_TITLES, CaseDigestV2, DigestHeader, DigestState, Level, Section, sections_for
 from caselens.domain.entities import Case
 from caselens.domain.section_edits import section_text, with_edits
 from caselens.infrastructure.ai.prompts.digest_v1 import DIGEST_VERSION
@@ -59,13 +59,16 @@ class CaseDigestOut(BaseModel):
     levels: dict[str, list[str]]  # which sections each download level prints
     updated_at: datetime | None
     current: bool = True  # written by the current prompt and checks; False: an older digest, kept until "Write it again"
+    stage: Literal["queued", "writing", "checking", "repairing"] | None = None  # while pending: the step it is on (the progress bar)
+    stage_seconds: int | None = None  # how long it has been on that step, counted here so a wrong clock on the reader's computer does not matter
+    pending_seconds: int | None = None  # how long since it was asked for (a step does not touch `updated_at`, so that is when it was asked)
 
     @classmethod
     def build(cls, case: Case, digest: CaseDigestV2 | None, header: DigestHeader, edits: dict[Section, str] | None = None) -> "CaseDigestOut":
         sections = []
         if digest is not None:
             draft = with_edits(digest.draft, edits) if edits else digest.draft
-            for section in Section:
+            for section in LEVEL_SECTIONS[Level.FULL]:  # the page shows the full digest, Case Summary first
                 blocks = draft.sections.get(section)
                 if blocks:
                     sections.append(DigestSectionOut(
@@ -82,10 +85,21 @@ class CaseDigestOut(BaseModel):
             dropped=digest.dropped if digest else 0,
             header=DigestHeaderOut(case_name=header.case_name, citation=header.citation, topic=header.topic, ponente=header.ponente),
             sections=sections,
-            levels={level.value: [s.value for s in sections_] for level, sections_ in LEVEL_SECTIONS.items()},
+            levels={level.value: [s.value for s in (sections_for(level, digest.draft) if digest else LEVEL_SECTIONS[level])] for level in Level},
             updated_at=digest.updated_at if digest else None,
             current=digest.is_current(DIGEST_VERSION) if digest else True,
+            **_stage(digest),
         )
+
+
+def _since(at: datetime | None) -> int:
+    return max(0, int((datetime.now(UTC) - (at if at.tzinfo else at.replace(tzinfo=UTC))).total_seconds())) if at else 0
+
+
+def _stage(digest: CaseDigestV2 | None) -> dict:
+    if digest is None or digest.state is not DigestState.PENDING or digest.stage is None:
+        return {}
+    return {"stage": digest.stage.value, "stage_seconds": _since(digest.stage_at), "pending_seconds": _since(digest.updated_at)}
 
 
 _SCOPE = Query("", max_length=300, description="The topic scope the digest is focused on; empty = the standard digest")
@@ -135,7 +149,7 @@ def request_case_digest(
 @router.get("/cases/{case_id}/case-digest.docx")
 def download_case_digest(
     case_id: int,
-    level: Level = Query(Level.FULL, description="short: Facts and Doctrine; standard: Doctrine, Facts, Issue, Ruling; full: the whole digest"),
+    level: Level = Query(Level.FULL, description="short: Case Summary and Doctrine; standard: Doctrine, Facts, Issue, Ruling; full: the whole digest"),
     sources: bool = Query(False, description="Print the decision paragraphs each part rests on (the client's sample does not)"),
     scope: str = _SCOPE,
     batch_id: int | None = _BATCH,

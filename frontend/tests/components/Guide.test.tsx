@@ -43,7 +43,7 @@ describe('the guide steps for the case library', () => {
 
   it('names the three download options of the drawing', () => {
     const download = guideCopy.librarySteps[5]!.body.join(' ')
-    for (const option of ['Facts and Doctrine', 'Doctrine, Facts, Issue, Ruling', 'Full case digest']) expect(download).toContain(option)
+    for (const option of ['Case Summary and Doctrine', 'Doctrine, Facts, Issue, Ruling', 'Full case digest']) expect(download).toContain(option)
   })
 })
 

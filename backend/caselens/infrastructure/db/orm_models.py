@@ -337,6 +337,8 @@ class CaseDigestV2Model(Base):
     prompt_version: Mapped[str | None] = mapped_column(String(32))
     input_tokens: Mapped[int] = mapped_column(Integer, server_default="0")
     output_tokens: Mapped[int] = mapped_column(Integer, server_default="0")
+    stage: Mapped[str | None] = mapped_column(String(16))  # while pending: queued, writing, checking or repairing (the progress bar)
+    stage_at: Mapped[datetime | None] = mapped_column(UTCDateTime())  # when that step began
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), server_default=func.now(), index=True)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), server_default=func.now())
 

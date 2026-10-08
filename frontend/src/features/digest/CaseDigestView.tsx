@@ -172,7 +172,8 @@ export function CaseDigestView({
         </div>
         {digest.state === 'pending' ? (
           <p role="status" className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="size-4 animate-spin" aria-hidden /> {digestPageCopy.writing}
+            <Loader2 className="size-4 animate-spin" aria-hidden />{' '}
+            {digest.stage ? digestPageCopy.rewritingStage(digestPageCopy.stagesShort[digest.stage]) : digestPageCopy.writing}
           </p>
         ) : null}
       </header>

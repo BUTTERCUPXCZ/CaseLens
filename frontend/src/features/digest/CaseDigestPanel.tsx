@@ -1,10 +1,10 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { Loader2 } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 
 import { useRequestCaseDigest, useSectionEdits } from '@/api/mutations'
-import { caseDigestQuery } from '@/api/queries'
+import { caseDigestQuery, keys } from '@/api/queries'
 import { ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -12,6 +12,7 @@ import { digestPageCopy } from '@/lib/copy'
 import { inDesktopWindow } from '@/lib/desktop'
 
 import { CaseDigestView } from './CaseDigestView'
+import { DigestProgress } from './DigestProgress'
 
 /** The case digest of one case for a topic scope ("" = the standard one), with its states: being written, could not be written, ready.
  *  Opening a digest nobody asked for yet asks for it (once), so opening it is all it takes. */
@@ -21,6 +22,14 @@ export function CaseDigestPanel({ caseId, scope = '', batchId = null }: { caseId
   const edits = useSectionEdits(caseId, scope, batchId ?? 0, digest?.id ?? 0)
   const asked = useRef<string | null>(null)
   const key = `${caseId}|${scope}`
+
+  // The upload's status line stops asking once it looks finished: when this digest starts or finishes, tell it, so it never says
+  // "Ready" while a digest is still being written.
+  const queryClient = useQueryClient()
+  const state = digest?.state
+  useEffect(() => {
+    if (batchId !== null && state && state !== 'none') void queryClient.invalidateQueries({ queryKey: keys.bulk(batchId) })
+  }, [batchId, state, queryClient])
 
   useEffect(() => {
     if (digest?.state === 'none' && asked.current !== key) {
@@ -58,10 +67,17 @@ export function CaseDigestPanel({ caseId, scope = '', batchId = null }: { caseId
         <h2 className="font-serif text-2xl font-semibold md:text-3xl">{digest.header.case_name}</h2>
         <p className="tabular mt-2 text-base text-muted-foreground">{digest.header.citation}</p>
         {scope ? <p className="mt-1 text-base text-muted-foreground">{digestPageCopy.topic}: {scope}</p> : null}
-        <p className="mt-6 flex items-center gap-2 text-lg">
-          <Loader2 className="size-5 animate-spin" aria-hidden /> {digestPageCopy.writing}
-        </p>
-        <p className="mt-2 text-base text-muted-foreground">{digestPageCopy.writingHelp}</p>
+        {digest.stage ? (
+          <DigestProgress stage={digest.stage} seconds={digest.stage_seconds ?? 0} total={digest.pending_seconds ?? 0} />
+        ) : (
+          <>
+            {/* a digest asked for before steps were recorded */}
+            <p className="mt-6 flex items-center gap-2 text-lg">
+              <Loader2 className="size-5 animate-spin" aria-hidden /> {digestPageCopy.writing}
+            </p>
+            <p className="mt-2 text-base text-muted-foreground">{digestPageCopy.writingHelp}</p>
+          </>
+        )}
       </div>
     )
   }

@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import type { CaseDigest } from '@/api/types'
 import { CaseDigestView } from '@/features/digest/CaseDigestView'
+import { DigestProgress } from '@/features/digest/DigestProgress'
 
 import marcos from '../fixtures/api/case-digest-marcos.json'
 import pending from '../fixtures/api/case-digest-pending.json'
@@ -55,7 +56,7 @@ describe('the case digest in the client’s format', () => {
     const user = userEvent.setup()
     const onRewrite = vi.fn()
     await show(digest, onRewrite)
-    expect(screen.getByRole('link', { name: 'Facts and Doctrine' })).toHaveAttribute('href', '/api/cases/23/case-digest.docx?level=short')
+    expect(screen.getByRole('link', { name: 'Case Summary and Doctrine' })).toHaveAttribute('href', '/api/cases/23/case-digest.docx?level=short')
     expect(screen.getByRole('link', { name: 'Doctrine, Facts, Issue, Ruling' })).toHaveAttribute('href', '/api/cases/23/case-digest.docx?level=standard')
     expect(screen.getByRole('link', { name: 'Full case digest' })).toHaveAttribute('href', '/api/cases/23/case-digest.docx?level=full')
     await user.click(screen.getByRole('button', { name: 'Write it again' }))
@@ -79,6 +80,26 @@ describe('the case digest in the client’s format', () => {
     expect(screen.getByRole('region', { name: 'Doctrine' })).toBeInTheDocument()
     expect(within(screen.getByRole('article', { name: 'Case digest' })).getByRole('status')).toHaveTextContent('Writing the digest…')
     expect(screen.getByRole('button', { name: 'Write it again' })).toBeDisabled()
+  })
+})
+
+describe('the progress of a digest being written', () => {
+  it('names the step, shows a bar, and the time so far', async () => {
+    await renderApp(<DigestProgress stage="checking" seconds={10} total={84} />)
+    expect(screen.getByText('Step 2 of 3 · Checking each sentence against the decision')).toBeInTheDocument()
+    const bar = screen.getByRole('progressbar', { name: 'Digest progress' })
+    expect(bar).toBeInTheDocument()
+    expect(screen.getByText('1:24 so far')).toBeInTheDocument()
+  })
+
+  it('says a digest waiting for a worker is waiting, not being written', async () => {
+    await renderApp(<DigestProgress stage="queued" seconds={0} total={0} />)
+    expect(screen.getByText(/Waiting for its turn/)).toBeInTheDocument()
+  })
+
+  it('a new digest being written over an older one says its step in one line', async () => {
+    await show({ ...digest, state: 'pending', stage: 'writing', stage_seconds: 3, pending_seconds: 3 }, () => undefined, true)
+    expect(within(screen.getByRole('article', { name: 'Case digest' })).getByRole('status')).toHaveTextContent('Writing a new digest · Step 1 of 3')
   })
 })
 

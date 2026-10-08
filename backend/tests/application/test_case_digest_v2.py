@@ -6,7 +6,7 @@ import pytest
 from caselens.application.use_cases.case_digest_v2 import BuildCaseDigestV2, GetCaseDigestV2, RequestCaseDigestV2, opinions_of
 from caselens.application.use_cases.write_case_digest import WriteCaseDigest
 from caselens.domain.digest import AnswerSentence
-from caselens.domain.digest_v2 import DigestBlock, DigestDraft, DigestState, Section
+from caselens.domain.digest_v2 import DigestBlock, DigestDraft, DigestStage, DigestState, Section
 from caselens.domain.errors import AiUnavailableError, CaseNotFoundError
 from tests.fakes import (
     FakeJobQueue,
@@ -88,6 +88,29 @@ def test_the_job_writes_the_digest_and_keeps_the_checked_sentences():
     assert digest.state is DigestState.READY and digest.model == "m" and digest.prompt_version == "v"
     assert [s.text for s in digest.draft.sections[Section.FACTS][0].sentences] == ["The PRC reported the leakage of the nursing exams."]
     assert digest.written == 4 and digest.dropped == 0  # the facts line, and the doctrine, issue and ruling every finished digest has
+
+
+def test_a_digest_says_its_step_while_written_and_none_once_finished():
+    w = World()
+    asked = w.request.execute(w.case.id)
+    assert asked.stage is DigestStage.QUEUED and asked.stage_at is not None
+    digest = w.build(w.case.id)
+    assert w.digests.stages == [DigestStage.WRITING, DigestStage.CHECKING]  # each step recorded as it began; nothing failed, so no repair
+    assert digest.state is DigestState.READY and digest.stage is None and digest.stage_at is None
+
+
+def test_a_failed_digest_shows_no_step_either():
+    w = World(writer_error=AiUnavailableError("down"))
+    w.request.execute(w.case.id)
+    digest = w.build(w.case.id)
+    assert digest.state is DigestState.FAILED and digest.stage is None
+
+
+def test_a_step_that_cannot_be_recorded_never_stops_the_digest():
+    w = World()
+    w.digests.set_stage = lambda *args: (_ for _ in ()).throw(RuntimeError("database is locked"))
+    w.request.execute(w.case.id)
+    assert w.build(w.case.id).state is DigestState.READY
 
 
 def test_what_the_checks_reject_is_counted_but_never_in_the_digest():

@@ -494,6 +494,7 @@ class InMemoryCaseDigestRepository(CaseDigestRepository):
     def __init__(self):
         self.rows = {}  # (case id, scope key) -> digest
         self.started = []  # the creation times, for the monthly limit
+        self.stages = []  # every step recorded, in order
 
     @property
     def by_case(self):
@@ -513,6 +514,12 @@ class InMemoryCaseDigestRepository(CaseDigestRepository):
             self.started.append(getattr(digest, "started_at", None) or datetime(2026, 10, 5))
         self.rows[key] = digest
         return digest
+
+    def set_stage(self, digest_id, stage, at):
+        digest = self.get_by_id(digest_id)
+        if digest is not None:
+            digest.stage, digest.stage_at = stage, at
+            self.stages.append(stage)
 
     def count_started_since(self, since):
         return sum(1 for t in self.started if t.replace(tzinfo=since.tzinfo) >= since)  # the fake keeps naive times; the real month start is UTC

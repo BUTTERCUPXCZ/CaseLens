@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from datetime import datetime
 
 from caselens.domain.case_digest import CaseDigest
-from caselens.domain.digest_v2 import CaseDigestV2
+from caselens.domain.digest_v2 import CaseDigestV2, DigestStage
 
 
 class DigestRepository(ABC):
@@ -41,6 +41,10 @@ class CaseDigestRepository(ABC):
     @abstractmethod
     def save(self, digest: CaseDigestV2) -> CaseDigestV2:
         """Insert the digest, or replace the stored one of the same case and scope."""
+
+    @abstractmethod
+    def set_stage(self, digest_id: int, stage: DigestStage, at: datetime) -> None:
+        """Record the step a digest being written has reached, and when it began (only those two fields change)."""
 
     @abstractmethod
     def count_started_since(self, since: datetime) -> int:

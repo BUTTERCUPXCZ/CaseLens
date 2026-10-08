@@ -1,11 +1,12 @@
 import logging
 import re
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field, replace
 
 from caselens.application.ports.ai import AnswerChecker, DigestRequest, DigestWriter
 from caselens.domain.digest import AnswerSentence, SourcePassage, Verdict
-from caselens.domain.digest_v2 import DigestBlock, DigestDraft, Section
+from caselens.domain.digest_v2 import DigestBlock, DigestDraft, DigestStage, Section
 from caselens.domain.services.claim_validator import ClaimStatus, ClaimValidator
 
 logger = logging.getLogger(__name__)
@@ -85,8 +86,11 @@ class WriteCaseDigest:
         self._claims = claims or ClaimValidator()
         self._check_all = check_mode == CHECK_ALL
 
-    def execute(self, request: DigestRequest) -> DigestResult:
+    def execute(self, request: DigestRequest, on_stage: Callable[[DigestStage], None] | None = None) -> DigestResult:
+        """`on_stage` is told each step as it begins (writing, checking, repairing), for the progress bar."""
+        stage = on_stage or (lambda _: None)
         sources = {source.id: source for source in request.sources}
+        stage(DigestStage.WRITING)
         draft = self._writer.write(request)
         result = DigestResult(DigestDraft(), written=len(draft.sentences()))
         result.calls.writer += 1
@@ -95,10 +99,11 @@ class WriteCaseDigest:
         positions = [(section, b, i, sentence) for section, blocks in draft.sections.items() for b, block in enumerate(blocks) for i, sentence in enumerate(block.sentences)]
         verdicts: dict[tuple[Section, int, int], AnswerSentence] = {}
         failed: list[tuple[tuple[Section, int, int], AnswerSentence, str]] = []
-        self._judge(positions, sources, verdicts, failed, result)
+        self._judge(positions, sources, verdicts, failed, result, lambda: stage(DigestStage.CHECKING))
 
         # 3. one repair pass, for the failed sentences only, from their own paragraphs; a rewrite faces the same sorting and checks
         if failed and self._repair:
+            stage(DigestStage.REPAIRING)
             evidence = self._evidence(request, draft, failed)
             rewrites = self._writer.repair(
                 replace(request, sources=evidence), [(key[0].value, sentence.text, reason, sentence.cites) for key, sentence, reason in failed]
@@ -124,7 +129,7 @@ class WriteCaseDigest:
             logger.info("digest: dropped %s (%s): %s", line.section.value, line.reason[:120], line.text[:160])
         return result
 
-    def _judge(self, entries, sources, verdicts, failed, result: DigestResult) -> None:
+    def _judge(self, entries, sources, verdicts, failed, result: DigestResult, before_check: Callable[[], None] | None = None) -> None:
         """Sort every sentence by code; send to the second model only those code cannot settle. A sentence that passes goes into
         `verdicts`; one that does not goes into `failed` with the reason."""
         to_check = []
@@ -138,6 +143,8 @@ class WriteCaseDigest:
                 to_check.append((section, b, i, sentence))
         if not to_check:
             return
+        if before_check:
+            before_check()
         batches = [to_check[start : start + _CHECK_BATCH] for start in range(0, len(to_check), _CHECK_BATCH)]
         result.calls.checker += len(batches)
         result.checked += len(to_check)

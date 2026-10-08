@@ -7,7 +7,8 @@ check it. Edit the client's part only on the client's say-so."""
 # v2: the shape of the client's own sample (Marcos v. Manglapus), key sentences in bold
 # v3: Topic Explained and Why only as the decision explains them (no general law in the AI's own words); no Dissents block without a dissent
 # v4: the same digest in a shorter answer format (short field names, compact JSON), and the writer thinks less: fewer output tokens
-DIGEST_PROMPT_VERSION = "digest-v4"
+# v5: a "case_summary" (one paragraph of facts, issue and ruling) for the client's short "Case Summary and Doctrine" download
+DIGEST_PROMPT_VERSION = "digest-v5"
 # What a READY digest was made with: the writer's prompt and the checking pipeline. Stored on each digest (`prompt_version`); a digest
 # with another stamp is still served (no surprise AI spend after an update) but reported as not current; "Write it again" renews it.
 # check-v2: code sorts every sentence, the second model sees only flagged and key sentences, repair sees only nearby paragraphs.
@@ -75,6 +76,9 @@ ruling, the first sentence of each reasoning block, and each point to remember. 
   Then numbered blocks with headings ("1. What is executive power?"): the rule, its elements or requirements and its exceptions ONLY where the
   passages state them, and finally how this case shows it. Every sentence cites the passages that state it.
 - "why": the main lessons to remember for recitation: a list block of 3 to 6 points (key), each a lesson the decision itself states. No vote count.
+- "case_summary": ONE paragraph block of 4 to 6 sentences that tells the whole case in short, in this order: what happened, who brought the
+  case and what they asked the Court to do, the question the Court had to answer, and the Court's disposition in its own terms ("The Supreme
+  Court dismissed the petition.", key). Plain words, no heading, no list; every sentence cites its passages like the others.
 THE DIGEST SAYS ONLY WHAT THE DECISION SAYS, in every section, "topic" and "why" included: no general law, no other cases, no textbook
 explanation and nothing you know from elsewhere that the passages do not contain. If the decision does not explain an element, a requirement or an
 exception, leave it out; do not fill it in. A shorter section is better than one sentence the decision does not support."""

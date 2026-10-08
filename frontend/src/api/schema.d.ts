@@ -1138,6 +1138,12 @@ export interface components {
              * @default true
              */
             current: boolean;
+            /** Stage */
+            stage?: ("queued" | "writing" | "checking" | "repairing") | null;
+            /** Stage Seconds */
+            stage_seconds?: number | null;
+            /** Pending Seconds */
+            pending_seconds?: number | null;
         };
         /** CasePageOut */
         CasePageOut: {
@@ -3009,7 +3015,7 @@ export interface operations {
     download_case_digest_cases__case_id__case_digest_docx_get: {
         parameters: {
             query?: {
-                /** @description short: Facts and Doctrine; standard: Doctrine, Facts, Issue, Ruling; full: the whole digest */
+                /** @description short: Case Summary and Doctrine; standard: Doctrine, Facts, Issue, Ruling; full: the whole digest */
                 level?: components["schemas"]["Level"];
                 /** @description Print the decision paragraphs each part rests on (the client's sample does not) */
                 sources?: boolean;

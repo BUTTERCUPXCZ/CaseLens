@@ -161,7 +161,7 @@ function Header({ bulk }: { bulk: Bulk }) {
         {bulkCopy.total(c.total)} · {reviewsCopy.cases(c.found, c.digests_ready)}
       </p>
       {/* While digests are written: how far along, so the student knows they can start on the ready ones. */}
-      {c.found > 1 && c.digests_ready < c.found && (c.digests_pending > 0 || !bulk.finished) ? (
+      {c.found > 0 && c.digests_ready < c.found && (c.digests_pending > 0 || !bulk.finished) ? (
         <div className="mt-4 max-w-md">
           <p className="tabular mb-1.5 text-sm font-medium">{reviewsCopy.progress(c.digests_ready, c.found)}</p>
           <Progress value={(100 * c.digests_ready) / c.found} aria-label={reviewsCopy.progress(c.digests_ready, c.found)} className="h-1.5" />

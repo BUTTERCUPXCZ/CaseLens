@@ -1,12 +1,12 @@
 from collections.abc import Sequence
 from datetime import datetime
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from caselens.application.ports.digests import CaseDigestRepository
 from caselens.domain.digest import AnswerSentence
-from caselens.domain.digest_v2 import CaseDigestV2, DigestBlock, DigestDraft, DigestState, Section
+from caselens.domain.digest_v2 import CaseDigestV2, DigestBlock, DigestDraft, DigestStage, DigestState, Section
 from caselens.infrastructure.db.orm_models import CaseDigestV2Model
 
 
@@ -41,6 +41,7 @@ def _to_entity(row: CaseDigestV2Model) -> CaseDigestV2:
         id=row.id, case_id=row.case_id, scope=row.scope or "", state=DigestState(row.state), draft=draft_from_json(row.sections or {}),
         written=row.written, dropped=row.dropped, error=row.error, model=row.model, prompt_version=row.prompt_version,
         input_tokens=row.input_tokens, output_tokens=row.output_tokens, created_at=row.created_at, updated_at=row.updated_at,
+        stage=DigestStage(row.stage) if row.stage else None, stage_at=row.stage_at,
     )
 
 
@@ -69,10 +70,14 @@ class SqlCaseDigestRepository(CaseDigestRepository):
         row.written, row.dropped, row.error = digest.written, digest.dropped, digest.error
         row.model, row.prompt_version = digest.model, digest.prompt_version
         row.input_tokens, row.output_tokens = digest.input_tokens, digest.output_tokens
+        row.stage, row.stage_at = (digest.stage.value if digest.stage else None), digest.stage_at
         row.updated_at = func.now()
         self._session.flush()
         self._session.refresh(row)
         return _to_entity(row)
+
+    def set_stage(self, digest_id: int, stage: DigestStage, at: datetime) -> None:
+        self._session.execute(update(CaseDigestV2Model).where(CaseDigestV2Model.id == digest_id).values(stage=stage.value, stage_at=at))
 
     def count_started_since(self, since: datetime) -> int:
         return self._session.scalar(select(func.count()).select_from(CaseDigestV2Model).where(CaseDigestV2Model.created_at >= since)) or 0
