@@ -40,7 +40,7 @@ class FetchCaseByGrNumber:
                     f"G.R. No. {gr_no} is not stored yet and no year was given to search "
                     "for it. Add the year, or paste the Lawphil URL."
                 )
-            raise CaseNotFoundError(f"G.R. No. {gr_no} was not found on Lawphil near {claimed_year}.")
+            raise CaseNotFoundError(f"G.R. No. {gr_no} was not found on Lawphil near {claimed_year}, nor on the SC E-Library.")
         return self._decision_among(urls)
 
     def _decision_among(self, urls: list[str]) -> Case:

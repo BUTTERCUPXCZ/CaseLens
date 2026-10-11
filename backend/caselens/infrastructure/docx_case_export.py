@@ -10,6 +10,7 @@ from docx.shared import Pt, RGBColor
 from caselens.application.ports.gateways import CaseDocumentExporter
 from caselens.domain.entities import Case, Footnote
 from caselens.domain.services.decision_blocks import BlockKind, DecisionBlock, DecisionBlocks, MarkerPiece
+from caselens.infrastructure.source_notice import court_text_notice
 
 _GREY = RGBColor(0x59, 0x59, 0x59)
 _FONT = "Times New Roman"
@@ -17,10 +18,6 @@ _COVER_TITLE_CHARS = 110  # a petitioners' list can run to hundreds of names; th
 _NO_FOOTNOTE_TEXT = (
     "This decision has footnote numbers, but their text could not be read from the Court's page. "
     "See the footnotes on the official page."
-)
-_NOTICE = (
-    "Court text from Lawphil (Arellano Law Foundation), https://lawphil.net. Informational only, not legal advice; "
-    "Lawphil gives no warranty of accuracy or completeness: confirm with the Supreme Court."
 )
 
 
@@ -49,7 +46,7 @@ class DocxCaseExporter(CaseDocumentExporter):
         self._grey(document, f"Made by CaseLens on {date.today():%B %d, %Y}. {len(cases)} cases.")
         for case in cases:
             document.add_paragraph(f"{self._numbers(case)}: {self._cover_title(case)}", style="List Bullet")
-        self._grey(document, _NOTICE, size=10)
+        self._grey(document, court_text_notice([case.source_url for case in cases]), size=10)
 
     def _case(self, document: DocxDocument, case: Case) -> None:
         document.add_heading(self._numbers(case), level=1)  # the Court's own full caption follows in the decision
@@ -60,7 +57,7 @@ class DocxCaseExporter(CaseDocumentExporter):
         ]
         self._grey(document, " · ".join(part for part in meta if part))
         self._grey(document, f"Official page: {case.source_url}")
-        self._grey(document, _NOTICE, size=10)
+        self._grey(document, court_text_notice([case.source_url]), size=10)
 
         self._decision(document, case.full_text)
         self._footnotes(document, case.footnotes, case.full_text)

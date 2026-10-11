@@ -3,9 +3,11 @@ change without touching the domain."""
 from datetime import date, datetime
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from caselens.application.use_cases.get_upload import UploadReport
+from caselens.infrastructure.config import get_settings
+from caselens.infrastructure.elibrary.url_scheme import ElibraryUrlScheme
 from caselens.application.use_cases.list_cases import CasePage
 from caselens.application.use_cases.search_catalog import CatalogPage
 from caselens.domain.entities import (
@@ -32,6 +34,9 @@ DispositionName = Literal[
 ]
 
 
+_ELIBRARY = ElibraryUrlScheme(get_settings().elibrary_base_url)
+
+
 class Attribution(BaseModel):
     """Shown with every response that presents official text. Wording follows Lawphil's own
     Acceptable Use Policy and Disclaimer (read 2026-10-03): informational only, no warranty
@@ -42,6 +47,29 @@ class Attribution(BaseModel):
         "Informational only, not legal advice. Lawphil gives no warranty of accuracy or "
         "completeness: confirm with the originating body (the Supreme Court)."
     )
+
+    @classmethod
+    def for_url(cls, source_url: str | None) -> "Attribution":
+        """The library the text was read from: Lawphil, or the SC E-Library (whose FAQ says the official printed copy prevails)."""
+        if source_url and _ELIBRARY.is_official_case_url(source_url):
+            return cls(
+                source="Supreme Court E-Library, https://elibrary.judiciary.gov.ph",
+                notice=(
+                    "Informational only, not legal advice. The SC E-Library says the official printed copy of a decision "
+                    "prevails over its online text: confirm with the Supreme Court."
+                ),
+            )
+        return cls()
+
+
+class _AttributedBySource(BaseModel):
+    """A response about one case names the library its text came from."""
+
+    @model_validator(mode="after")
+    def _attribute(self):
+        if "attribution" in type(self).model_fields and getattr(self, "source_url", None):
+            self.attribution = Attribution.for_url(self.source_url)
+        return self
 
 
 class FootnoteOut(BaseModel):
@@ -132,7 +160,7 @@ class SubjectsIn(BaseModel):
     subject_ids: list[int] = Field(default_factory=list, max_length=20)  # an empty list clears the tags
 
 
-class CaseDetailOut(CaseSummaryOut):
+class CaseDetailOut(_AttributedBySource, CaseSummaryOut):
     full_text: str
     fetched_at: datetime | None
     attribution: Attribution = Attribution()
@@ -285,7 +313,7 @@ class OpinionRefOut(BaseModel):
     author: str | None
 
 
-class InsightsOut(BaseModel):
+class InsightsOut(_AttributedBySource):
     """Findings parsed from the stored official text. Nothing here is generated."""
 
     case_id: int

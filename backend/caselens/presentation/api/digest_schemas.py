@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 from caselens.domain.case_digest import CaseDigest, DigestField
 from caselens.domain.entities import Case
-from caselens.presentation.api.schemas import Attribution
+from caselens.presentation.api.schemas import Attribution, _AttributedBySource
 
 FieldKindName = Literal["verbatim", "answer", "note"]
 FieldOriginName = Literal[
@@ -54,7 +54,7 @@ class DigestFieldOut(BaseModel):
         )
 
 
-class DigestOut(BaseModel):
+class DigestOut(_AttributedBySource):
     id: int
     case_id: int
     upload_id: int | None

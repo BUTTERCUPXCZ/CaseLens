@@ -8,6 +8,8 @@ from caselens.composition import Services
 from caselens.domain.entities import IndexPage
 from caselens.domain.value_objects import GrNumber
 from caselens.infrastructure.db.catalog_repository import SqlCatalogRepository
+from caselens.infrastructure.elibrary.catalog_parser import ElibraryCatalogParser
+from caselens.infrastructure.elibrary.url_scheme import ElibraryUrlScheme
 from caselens.infrastructure.lawphil.catalog_parser import LawphilCatalogParser
 from caselens.infrastructure.lawphil.html_decoding import decode_html
 from caselens.main import create_app
@@ -52,6 +54,17 @@ def loaded(db_session):
         parsed = LawphilCatalogParser().parse(decode_html((FIXTURES / name).read_bytes(), "text/html"), page.url)
         repo.register_months([page])
         repo.replace_month(page, parsed.entries)
+
+
+@pytest.fixture
+def elibrary_loaded(db_session):
+    """March 2015, as read from the SC E-Library (it lists G.R. 193038, which Lawphil does not)."""
+    repo = SqlCatalogRepository(db_session)
+    scheme = ElibraryUrlScheme("https://elibrary.judiciary.gov.ph")
+    page = IndexPage(2015, 3, scheme.month_list_url(2015, 3), "elibrary")
+    html = (FIXTURES.parent / "elibrary" / "docmonth_mar2015.html").read_text(encoding="utf-8")
+    repo.register_months([page])
+    repo.replace_month(page, ElibraryCatalogParser(scheme).parse(html, page.url).entries)
 
 
 def test_search_by_case_name_finds_the_real_case(client, loaded, jobs):
@@ -123,7 +136,20 @@ def test_the_first_search_on_an_empty_catalog_starts_the_one_time_build(client, 
     assert jobs.catalog_builds == [1987, 1987]  # the real queue refuses the second (its lock); the fake just records asks
 
 
-def test_searching_a_filled_catalog_asks_for_the_daily_refresh_not_a_build(client, loaded, jobs):
+def test_a_number_only_the_elibrary_lists_is_found_there(client, loaded, elibrary_loaded):
+    body = client.get("/catalog/search", params={"q": "193038"}).json()
+    assert body["total"] == 1
+    item = body["items"][0]
+    assert (item["gr_no"], item["decision_date"]) == ("193038", "2015-03-11")
+    assert item["source_url"] == "https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/60169"
+
+
+def test_after_an_update_the_elibrarys_lists_are_built_once_even_though_lawphils_are_read(client, loaded, jobs):
+    client.get("/catalog/search", params={"q": "ermita"})
+    assert jobs.catalog_builds == [1987]  # Lawphil's months are skipped by the build; the E-Library's are read
+
+
+def test_searching_a_filled_catalog_asks_for_the_daily_refresh_not_a_build(client, loaded, elibrary_loaded, jobs):
     client.get("/catalog/search", params={"q": "ermita"})
     assert jobs.catalog_builds == [] and jobs.catalog_refreshes == 1
     client.get("/catalog/search", params={"q": "people"})

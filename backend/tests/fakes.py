@@ -1,5 +1,6 @@
 """In-memory stand-ins for ports. Using them proves the use cases only depend on the
 port (Liskov): the same code runs against SQL or a dict."""
+from dataclasses import replace
 from datetime import datetime
 
 from caselens.application.ports.ai import AnswerChecker, AnswerWriter, DigestWriter, PassageChecker, PassagePicker
@@ -315,32 +316,48 @@ class FakeCatalogParser(CatalogIndexParser):
 
 
 class InMemoryCatalogRepository(CatalogRepository):
+    """Lawphil's months are keyed (year, month) as before; another library's are kept in `other_months` / `other_entries`."""
+
     def __init__(self) -> None:
         self.months: dict[tuple[int, int], str] = {}
         self.entries: dict[tuple[int, int], list[CatalogEntry]] = {}
         self.writes: list[tuple[int, int]] = []
         self.saved_urls: set[str] = set()
+        self.other_months: dict[tuple[str, int, int], str] = {}
+        self.other_entries: dict[tuple[str, int, int], list[CatalogEntry]] = {}
+
+    def _months_of(self, source: str) -> dict:
+        return self.months if source == "lawphil" else self.other_months
+
+    def _key(self, page: IndexPage):
+        return (page.year, page.month) if page.source == "lawphil" else (page.source, page.year, page.month)
 
     def mark_absent(self, page: IndexPage) -> None:
-        self.months[(page.year, page.month)] = "absent"
+        self._months_of(page.source)[self._key(page)] = "absent"
 
     def register_months(self, pages: list[IndexPage]) -> None:
         for page in pages:
-            self.months.setdefault((page.year, page.month), "pending")
+            self._months_of(page.source).setdefault(self._key(page), "pending")
 
     def replace_month(self, page: IndexPage, entries: list[CatalogEntry], broken: bool = False) -> None:
-        self.months[(page.year, page.month)] = "broken" if broken else "read"
-        self.entries[(page.year, page.month)] = list(entries)
-        self.writes.append((page.year, page.month))
+        self._months_of(page.source)[self._key(page)] = "broken" if broken else "read"
+        if page.source == "lawphil":
+            self.entries[(page.year, page.month)] = list(entries)
+            self.writes.append((page.year, page.month))
+        else:
+            self.other_entries[self._key(page)] = [replace(e, source=page.source) for e in entries]
 
-    def read_months(self) -> set[tuple[int, int]]:
-        return {key for key, status in self.months.items() if status == "read"}
+    def read_months(self, source: str = "lawphil") -> set[tuple[int, int]]:
+        if source == "lawphil":
+            return {key for key, status in self.months.items() if status == "read"}
+        return {(y, m) for (s, y, m), status in self.other_months.items() if s == source and status == "read"}
 
     def search(self, query, year, limit, offset) -> tuple[list[CatalogHit], int]:
         return [], 0
 
     def find_by_number(self, gr_no: GrNumber) -> list[CatalogEntry]:
-        return [e for entries in self.entries.values() for e in entries if gr_no.value in e.numbers]
+        lawphil = [e for entries in self.entries.values() for e in entries if gr_no.value in e.numbers]
+        return lawphil + [e for entries in self.other_entries.values() for e in entries if gr_no.value in e.numbers]
 
     def unsaved(self, first_year, last_year, after_id, limit):
         urls = dict.fromkeys(e.source_url for (year, _), entries in self.entries.items() for e in entries if first_year <= year <= last_year)

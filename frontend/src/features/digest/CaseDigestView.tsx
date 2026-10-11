@@ -34,13 +34,18 @@ export type SectionEditing = {
 }
 
 function SectionBlocks({ section }: { section: Section }) {
+  // A doctrine is one paragraph led by its label in bold ("1. Community property ...: Under Art. 91, ..."), as the client's reference
+  // prints it; the Case Summary reads as plain paragraphs (no bold sentences).
+  const doctrine = section.key === 'doctrine'
+  const plain = section.key === 'case_summary' || doctrine
   return (
     <div className="space-y-5">
       {section.blocks.map((block, index) => {
         const line = section.edited ? null : sourcesLine(block)
+        const label = doctrine && block.heading && !block.as_list ? block.heading.replace(/:\s*$/, '') : null
         return (
           <div key={index}>
-            {block.heading ? <h4 className="mb-1 text-lg font-semibold">{block.heading}</h4> : null}
+            {block.heading && !label ? <h4 className="mb-1 text-lg font-semibold">{block.heading}</h4> : null}
             {block.as_list ? (
               <ul className="max-w-prose space-y-2 text-base leading-relaxed">
                 {block.sentences.map((sentence, i) => (
@@ -51,8 +56,9 @@ function SectionBlocks({ section }: { section: Section }) {
               </ul>
             ) : (
               <p className="max-w-prose text-base leading-relaxed">
+                {label ? <span className="font-semibold">{label}: </span> : null}
                 {block.sentences.map((s, i) => (
-                  <span key={i} className={s.key ? 'font-semibold' : undefined}>
+                  <span key={i} className={s.key && !plain ? 'font-semibold' : undefined}>
                     {i > 0 ? ' ' : ''}
                     {s.text}
                   </span>

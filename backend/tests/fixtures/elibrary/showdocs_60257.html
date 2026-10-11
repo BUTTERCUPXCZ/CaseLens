@@ -1,0 +1,611 @@
+ 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>G.R. Nos. 211789-90 - DR. REY B. AQUINO, PETITIONER, VS. COMMISSION ON ELECTIONS, RESPONDENT.D E C I S I O N - Supreme Court E-Library</title>
+    <link rel="stylesheet" href="https://elibrary.judiciary.gov.ph/assets/css/style.css" type="text/css" media="screen" />
+    <link rel="alternate" type="application/rss+xml" title="RSS Feed" href="feed/" />
+    <link rel="pingback" href="xmlrpc.php" />
+    <link rel="shortcut icon" href="https://elibrary.judiciary.gov.ph/assets/images/favicon.ico"/>
+    <script type="text/javascript" src="https://elibrary.judiciary.gov.ph/assets/js/jquery.js"></script>
+    <script type="text/javascript" src="https://elibrary.judiciary.gov.ph/assets/js/superfish.min.js"></script>
+    <script type="text/javascript" src="https://elibrary.judiciary.gov.ph/assets/js/supersubs.js"></script>
+    <script type="text/javascript" src="https://elibrary.judiciary.gov.ph/assets/js/cookies.js"></script>
+    <script type="text/javascript" src="https://elibrary.judiciary.gov.ph/assets/js/fontResizer.js"></script>
+    <script type="text/javascript" src="https://elibrary.judiciary.gov.ph/assets/js/theme.js"></script>
+    <script type="text/javascript" src="https://elibrary.judiciary.gov.ph/assets/js/section_menu.js"></script>
+
+    <!-- START DataTable -->
+
+        <!-- START LOAD SCRIPTS -->
+        
+        <!-- ✅ load jQuery ✅ -->
+        <!-- <script type="text/javascript" src="https://elibrary.judiciary.gov.ph/assets/js/jquery-3.7.1.min.js"></script> -->
+        <link rel="stylesheet" href="https://elibrary.judiciary.gov.ph/assets/DataTables/datatables.css" type="text/css" media="screen" />
+        <!-- ✅ load DataTables ✅ -->
+        <script type="text/javascript" src="https://elibrary.judiciary.gov.ph/assets/DataTables/datatables.js"></script>
+
+        <!-- END LOAD SCRIPTS -->
+    
+        <!-- START RA -->
+        <script>
+            jQuery( function ($) {
+                $('#ra').DataTable({
+                    // Options go here
+                    "processing": true,
+                    //"stateSave": true,
+                    "serverSide": true,
+                    "order":[],
+                    "pagingType": "full_numbers",
+                    "ajax": {
+                        url: "https://elibrary.judiciary.gov.ph/republic_acts/fetch_ra",
+                        type: "POST",
+                        data:{  'csrf_test_name' : '815013d744c8d321f31a49556ea2d2b3' },
+                    },
+                    "columnDefs":[{
+                        "targets":[0, 2],
+                        "orderable":false,
+                        /*'targets': [2,],    // this will invoke the below function on all cells
+                        'createdCell': function(td, cellData, rowData, row, col) {
+                            // this will give each cell an ID
+                            $(td).attr('id', 'cms_default_document_title');
+                        },*/
+                    },],
+                });
+            });
+        </script>
+        <!-- END RA -->
+
+             <!-- START PHILREP -->
+        <script>
+            jQuery( function ($) {
+                $('#volumes').DataTable({
+                    "pagingType": "full_numbers",
+                    "order":[[0], "desc"],
+                    "columnDefs":[
+                        {
+							//Targets column 2 (Files column) and prevents from being
+							//orderable
+                            "targets":[2],
+                            "orderable":false,
+                        },
+                        {
+                            // Target column 1 and tells DataTables to order column 1
+							//using data from Column0
+                            "targets": [1],
+                            "orderData": [0],
+                        },
+						
+						{
+							//Hides column 0 and prevents it from being searchable.
+							target: [0],
+							visible: false,
+							searchable: false,
+						},
+                    ],
+                });
+            });
+        </script>
+
+        <!-- START CASE INDEX -->
+        <script>
+            jQuery( function ($) {
+                $('#caseindex').DataTable({
+                    "pagingType": "full_numbers",
+                    "order":[],
+                    "columnDefs":[{
+                        "targets":[0,1],
+                        "orderable":false,
+                    },],
+                });
+            });
+        </script>
+        <!-- END CASEINDEX -->
+
+        <!-- START LAWYERS LIST -->
+        <script>
+            jQuery( function ($) {
+                $('#lawlist').DataTable({
+                    // INITIALIZATION OPTIONS GO HERE.
+                    "processing": true,
+                    //"stateSave": true,
+                    "serverSide": true,
+                    // ORDERING IS ENABLED BUT THERE IS NO DEFAULT ORDER.
+                    "order":[],
+                    "pagingType": "full_numbers",
+                    "ajax": {
+                        url: "https://elibrary.judiciary.gov.ph/lawyers_list/fetch_lawlist",
+                        type: "POST",
+                        data:{  'csrf_test_name' : '815013d744c8d321f31a49556ea2d2b3' },
+                    },
+                    "columnDefs":[{
+                        // "targets" ARE THE TABLE COLUMNS THAT ARE TO BE INITIALIZED.
+                        // STARTING WITH 0 AS THE FIRST COLUMN. HERE, TARGETED COLUMNS ARE
+                        // 2, 3, 4.
+                        "targets":[2, 3, 4],
+                        // TARGETED COLUMNS ARE NOT ORDERABLE.
+                        "orderable":false,
+                        /*'targets': [2,],    // this will invoke the below function on all cells
+                        'createdCell': function(td, cellData, rowData, row, col) {
+                            // this will give each cell an ID
+                            $(td).attr('id', 'cms_default_document_title');
+                        },*/
+                    },],
+                });
+            });
+        </script>
+        <!-- END LAWYERS LIST -->
+
+        <!-- START DataTables STYLES -->
+    
+        <!-- START REPUBLIC ACTS STYLES-->
+        <style>
+            table#ra {
+                font-family: calibri, candara, segoe, segoe ui, optima, arial;
+                font-size: 1.25em;
+                font-weight: bold;
+            }
+            td#cms_default_document_title {
+                text-align: justify;
+            }
+        
+            td#cms_default_document_title:after {
+                content: "";
+                display: inline-block;
+                width: 100%;
+            }
+        </style>
+        <!-- END REPUBLIC ACTS START STYLES -->
+
+        <!-- START PHILREP STYLES -->
+        <style>
+            table#volumes {
+                font-family: calibri, candara, segoe, segoe ui, optima, arial;
+                font-size: 1.25em;
+                font-weight: bold;
+            }
+        </style>
+        <!-- END PHILREP STYLES -->
+
+        <!-- START CASEINDEX STYLES -->
+        <style>
+            table#caseindex {
+                font-family: calibri, candara, segoe, segoe ui, optima, arial;
+                font-size: 1.25em;
+                font-weight: bold;
+            }
+        </style>
+        <!-- END CASEINDEX STYLES -->
+
+        <!-- START LAWYERS LIST STYLES -->
+        <style>
+            table#lawlist {
+                font-family: calibri, candara, segoe, segoe ui, optima, arial;
+                font-size: 1.2em;
+            }
+            
+        </style>
+        <!-- END LAWYERS LIST STYLES -->
+
+        <!-- END DataTables STYLES -->
+    
+    <!-- END DataTable -->
+
+    <link rel="stylesheet" href="https://elibrary.judiciary.gov.ph/assets/css/mystyle.css" type="text/css" media="screen" />
+
+    
+    
+    <!-- remove 04.29.19 for console search-->
+    <!-- <meta name='robots' content='noindex,nofollow' /> -->
+
+    <link rel='stylesheet' id='wp_sidebarlogin_css_styles-css'  href='https://elibrary.judiciary.gov.ph/assets/css/style_login.css?ver=3.3.1' type='text/css' media='all' />
+
+    <!-- Font Awesome CSS -->
+    <link rel="stylesheet" href="https://elibrary.judiciary.gov.ph/assets/css/all.css">
+    <!-- jquery confirm -->
+    <link rel="stylesheet" href="https://elibrary.judiciary.gov.ph/assets/css/jquery-confirm.min.css">
+    <!-- jconfirm modal custom theme -->
+    <style>
+        .jconfirm.jconfirm-custom .jconfirm-bg{
+            background-color: rgba(13,0,45,0.95);
+        }
+        .jconfirm.jconfirm-custom .jconfirm-box{
+            color: #ccc;
+            text-align: center;
+            background-color: transparent;
+        }
+
+        /* Exclamation animation start */
+        .jconfirm.jconfirm-custom.jconfirm-open .jconfirm-box .jconfirm-title-c .jconfirm-icon-c {
+            -webkit-transform: scale(1);
+            transform: scale(1);
+        }
+        .jconfirm.jconfirm-custom .jconfirm-box div.jconfirm-title-c .jconfirm-icon-c {
+            -webkit-transition: -webkit-transform .5s;
+            transition: -webkit-transform .5s;
+            transition: transform .5s;
+            transition: transform .5s,-webkit-transform .5s;
+            -webkit-transform: scale(0);
+            transform: scale(0);
+            display: block;
+            margin-right: 0;
+            margin-left: 0;
+            margin-bottom: 10px;
+            font-size: 69px;
+            color: #ccc;
+        }
+        /* Exclamation animation end */
+
+        .jconfirm.jconfirm-custom .jconfirm-box .jconfirm-buttons button{
+            font-size: 16px;
+            border-radius: 2px;
+            background: rgb(13,0,45);
+            text-shadow: none;
+            border: none;
+            color: #ccc;
+            padding: 10px;
+            min-width: 100px;
+        }
+        .jconfirm.jconfirm-custom .jconfirm-box .jconfirm-buttons button:hover{
+            background: #ccc;
+            color: rgb(13,0,45);
+        }
+        .jconfirm.jconfirm-custom .jconfirm-box .jconfirm-title-c{
+            font-family: Tahoma, Verdana, serif;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .jconfirm.jconfirm-custom .jconfirm-box .jconfirm-content{
+            font-family: Tahoma, Verdana, serif;
+            text-align: justify;
+            font-size: 18px;
+        }
+        /* Targets content list item */
+        .jconfirm.jconfirm-custom .jconfirm-box .jconfirm-content li{
+            margin: 20px;
+        }
+        .jconfirm.jconfirm-my-theme .jconfirm-box .jconfirm-content-pane{
+        }
+    </style>
+
+<!-- FOR DTSEARCH -->
+<!-- START -->
+    <META NAME="AddedReference" CONTENT="InsertedForFormBuilder" HREF="https://elibrary.judiciary.gov.ph/assets/searchform/dtSearch_help.html">
+    <META NAME="AddedReference" CONTENT="InsertedForFormBuilder" HREF="https://elibrary.judiciary.gov.ph/assets/searchform/dtSearch_pdfhelp.pdf">
+    <META NAME="AddedReference" CONTENT="InsertedForFormBuilder" HREF="https://elibrary.judiciary.gov.ph/assets/searchform/dtSearch_WebSearchForm.css">
+    <META NAME="AddedReference" CONTENT="InsertedForFormBuilder" HREF="https://elibrary.judiciary.gov.ph/assets/searchform/dtSearch_SearchResults.css">
+    <META NAME="AddedReference" CONTENT="InsertedForFormBuilder" HREF="https://elibrary.judiciary.gov.ph/assets/searchform/dtSearch_Utilities.js">
+    <META NAME="AddedReference" CONTENT="InsertedForFormBuilder" HREF="https://elibrary.judiciary.gov.ph/assets/searchform/dtSearch_SearchResults.js">
+    <META NAME="AddedReference" CONTENT="InsertedForFormBuilder" HREF="https://elibrary.judiciary.gov.ph/assets/searchform/dtSearch_WebSearchForm.js">
+<!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <!-- <link rel="stylesheet" href="https://elibrary.judiciary.gov.ph/searchforms/custom.css"> -->
+
+    <style type='text/css'>
+        body{
+            /*background-image:url(searchforms/images/bg-blue.jpg);*/
+            /*background-size: 100% auto;*/
+            background-position:center top;
+            background-color: #193C74;
+            background-repeat:no-repeat;
+            background-position:fixed;
+            /*font-family: "Trebuchet MS";*/
+            font-size:10px;
+            /*color:#FFFFFF;*/
+            margin:0px 0px 0px 0px;
+        }
+        .forms{
+            font-size:10px;
+            border:1px solid #000000;
+        }
+        #cont_left{
+            width: 250px;
+            height: 400px;
+            background-color: #fff;
+            margin-left: 3%;
+            margin-top: 12%;
+            position: relative;
+        }
+        #cont_main{
+            width: 900px;
+            height: 400px;
+            background-color: #fff;
+            top:153px;
+            left: 300px;
+            position: absolute;
+        }
+        table{
+            position: relative;
+            top: 3px;
+        }
+        #copyright{
+            position: fixed;
+            bottom:-1%;
+            right: 1%;
+            z-index: -10;
+        }
+        #bared{
+            position: fixed;
+            bottom:0px;
+            right: 0px;
+            z-index: -9;
+            background-color: #000;
+            width: 2000px;
+            height: 20px;
+            padding-bottom: 2px;
+            padding-right: 2px;
+        }
+        iframe{
+            display:block;
+        }
+        /*change font size from 60px to 40px*/
+        div#blog-line h1 a {font-family: Georgia, serif; font-size:40px;  color:#fff;} 
+
+        /*change font size from 40px to 14px, letter spacing from -2px to 1px*/
+        div#blog-line h1 {font:14px Arial, serif; padding:20px 0; margin:0; color:#fff; letter-spacing:1px;}
+    </style>
+    <script>
+        // this deletes the cookie when called
+        function Delete_Cookie( name, path, domain ) {
+        if ( Get_Cookie( name ) ) document.cookie = name + "=" +
+        ( ( path ) ? ";path=" + path : "") +
+        ( ( domain ) ? ";domain=" + domain : "" ) +
+        ";expires=Thu, 01-Jan-1970 00:00:01 GMT";
+        }
+    </script>
+<!-- FOR DTSEARCH -->
+<!-- END -->
+<script>
+
+</script>
+
+</head>
+<!-- <body onLoad="Delete_Cookie( name, path, domain )"> -->
+<body>
+
+<div id="outline">
+<div id="blog-line">
+    <!-- blog title and tag line -->
+    <h1><a href="https://elibrary.judiciary.gov.ph/">Supreme Court E-Library</a> <br /> Information At Your Fingertips</h1> 
+</div>
+
+<!-- page navigation -->
+<div id="nav" class="clearfix">
+    <ul class="sf-menu">
+        <!--Comment out to remove Home in the header
+        <li class="page_item "><a href="http://10.10.100.51">Home</a></li>-->
+        <li class="page_item page-item-11 current_page_item"><a href="https://elibrary.judiciary.gov.ph/">HOME</a></li>
+        <!-- <li class=""><a href="https://elibrary.judiciary.gov.ph/assets/images/memorabilia/2023 Bar Passers.pdf">2023 Bar Passers</a></li> -->
+        <!-- <li class="page_item page-item-92"><a href="https://elibrary.judiciary.gov.ph/secquestion/secquestion_main">REGISTER HERE</a></li> -->
+        <li class="page_item page-item-202"><a href="https://elibrary.judiciary.gov.ph/philippinereports">PHILIPPINE REPORTS E-BOOKS</a>
+        <li class="page_item page-item-202"><a href="https://elibrary.judiciary.gov.ph/republic_acts">REPUBLIC ACTS</a>
+        <li class="page_item page-item-202"><a href="https://elibrary.judiciary.gov.ph/supremecourtjustices/chiefjusticelist/">CHIEF JUSTICES</a> 
+   <!-- <li class="page_item page-item-202"><a href="https://elibrary.judiciary.gov.ph/supremecourtjustices/scjmain">JUDICIARY MEMORABILIA HALL</a> -->
+            <ul class="children">
+				 <!--<li class="page_item page-item-202"><a href="https://elibrary.judiciary.gov.ph/supremecourtjustices/incumbentjusticelist/">Incumbent Justices</a></li>-->
+				 <!--<li class="page_item page-item-202"><a href="https://elibrary.judiciary.gov.ph/supremecourtjustices/chiefjusticelist/">Chief Justices</a></li>-->
+                <!-- <li class="page_item page-item-202"><a href="https://elibrary.judiciary.gov.ph/supremecourtjustices/associatejusticelist">Associate Justices</a></li> -->
+            </ul> 
+        </li>
+        <li class="page_item page-item-94"><a href="https://elibrary.judiciary.gov.ph/advisory/newsandadvisories/">NEWS & ADVISORIES</a></li>
+        <!--<li class="page_item page-item-544"><a href="links/">Links</a></li>-->
+        <li class="page_item page-item-546"><a href="https://elibrary.judiciary.gov.ph/sitemap/sitemap_main">SITE MAP</a></li>
+        <!--<li class="page_item page-item-548"><a href="feedback/">Feedback</a></li>-->
+        <li class="page_item page-item-84"><a href="https://elibrary.judiciary.gov.ph/aboutus/aboutus_main">ABOUT US</a>
+            <ul class='children'>
+                <li class="page_item page-item-86"><a href="https://elibrary.judiciary.gov.ph/aboutus/scelibrary">The Supreme Court E-Library</a></li>
+            <!-- <li class="page_item page-item-88"><a href="https://elibrary.judiciary.gov.ph/aboutus/elib_history">History of the E-Library</a></li> -->
+                <li class="page_item page-item-90"><a href="https://elibrary.judiciary.gov.ph/aboutus/elibrary_team">The E-Library Development Team</a></li>
+            </ul>
+        </li>
+        <!-- <li class="page_item page-item-548"><a href="https://elibrary.judiciary.gov.ph/contactus/contactus_main">CONTACT US</a></li> -->
+         
+    </ul>
+    <ul id="mail_rss">
+    <!--<li><a href="feed/">RSS</a></li>-->
+    </ul>           
+    <!-- ending header template -->
+</div>
+
+<div id="content" class="clearfix">
+<div id="right">
+<!-- FOR Toggle posts-->
+<p id="toggle-all"><a href="#" id="toggle" class="hide-all">Toggle posts</a></p>
+<!-- For FONT-SIZE changer  -->
+<p id="font-resize">
+<a id="default" href="#">A </a><a id="larger" href="#">A+ </a><a id="largest" href="#">A++</a>
+</p>
+<!-- widget -->
+
+<!---02/28/2022--->
+<!-- Search button only appears when not in the search page. -->
+<div id="wp_sidebarlogin-3" class="widget">
+    <p>
+        <!-- <STRONG>TO START</STRONG> click <STRONG>E-Library Search</STRONG>. -->
+        <center>
+            <b>CLICK THE IMAGE TO SEARCH</b>
+            <a href="https://elibrary.judiciary.gov.ph/search" target="_self">
+                <img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia/search_button.png"  alt="Elibrary Search"  title="E-Library Search" />
+            </a>
+        </center>
+  </p>
+</div>
+
+<!-- For Advisory
+<div id="container_faq">
+
+    <table border='0'>
+    <tr valign='center'>
+        <td>ADVISORY:</td>
+    </tr>
+    <tr valign='center'>
+        <td><div align='justify'>The Supreme Court E-Library will undergo a system
+		maintenance on March 28-31, 2024 and will be inaccessible during this period.<br><br>
+		Thank you for your understanding!<br><br></div></td>
+		
+    </tr>   
+</table>
+</div>
+<br>
+-->
+
+
+<div id="container_faq">
+    <center>
+        <!--[<A HREF="https://elibrary.judiciary.gov.ph/secquestion/secquestion_main"><b>REGISTER</b></A>]  | [<A HREF="https://elibrary.judiciary.gov.ph/aboutus/faq"><b>FAQs</b></A>]
+        <b>CONTACT US</b><br>
+        <STRONG>(02)8524-2706</STRONG>-->
+    </center>
+    <table border='0'>
+    <tr valign='center'>
+        <td>CONTACT:</td>
+    </tr>
+    <tr valign='center'>
+        <td>Supreme Court of the Philippines <br>
+		    Library Services,<br> 
+			Padre Faura, Ermita, Manila, Philippines 1000</td>
+    </tr>
+    <tr valign='center'>
+        <td>(632) 8524-2706</td>
+    </tr>
+    <tr valign='center'>
+        <td>libraryservices.sc@judiciary.gov.ph<br></td>
+    </tr>
+</table>
+</div>
+
+<br>
+<div id="container_seal">
+
+<center><a href="https://npcregistration.privacy.gov.ph/certificate/organizationRegistration/64a7c5e47c2074390ec3ccb5" target="_blank"><img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia/CORSeal.jpg"/></a></center>
+   
+</div>
+
+<div class="widget_quick">
+    
+<img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia
+/quick_links/header.png"/></a>
+    
+<a href="http://sc.judiciary.gov.ph/" title="Supreme Court of the Philippines" target="_blank"><img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia
+/quick_links/sc.png"  alt="Supreme Court of the Philippines"  title="Supreme Court of the Philippines" /></a>
+
+<a href="http://ca.judiciary.gov.ph/" title="Cour of Appeals" target="_blank"><img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia
+/quick_links/ca.png"  alt="Cour of Appeals"  title="Cour of Appeals" /></a>
+
+<a href="http://sb.judiciary.gov.ph/" title="Sandiganbayan" target="_blank"><img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia
+/quick_links/sb.png"  alt="Sandiganbayan"  title="Sandiganbayan" /></a>
+
+<a href="http://cta.judiciary.gov.ph/" title="Court of Tax Appeals" target="_blank"><img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia
+/quick_links/cta.png"  alt="Court of Tax Appeals"  title="Court of Tax Appeals" /></a></li>
+
+<a href="http://jbc.judiciary.gov.ph/" title="Judicial and Bar Council" target="_blank"><img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia
+/quick_links/jbc.png"  alt="Judicial and Bar Council"  title="Judicial and Bar Council" /></a>
+
+<a href="http://oca.judiciary.gov.ph/" title="Office of the Court Administrator" target="_blank"><img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia
+/quick_links/oca.png"  alt="Office of the Court Administrator"  title="Office of the Court Administrator" /></a>
+
+<a href="http://philja.judiciary.gov.ph/" title="Philippine Judicial Academy" target="_blank"><img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia
+/quick_links/philja.png"  alt="Philippine Judicial Academy"  title="Philippine Judicial Academy" /></a>
+
+<!--
+<a href="http://pmc.judiciary.gov.ph/" title="Philippine Meditation Center" target="_blank"><img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia
+/quick_links/pmc.png"  alt="Philippine Meditation Center"  title="Philippine Meditation Center" /></a>
+-->
+
+</div>
+
+<div id="linkcat-5" class="widget"><h4>Foreign Supreme Courts</h4>
+    <ul class='xoxo blogroll'>
+<li><a href="http://www.scourt.go.kr" target="_blank">Korea, South</a></li>
+<li><a href="http://www.kehakiman.gov.my/jugdment/fc/latest.shtml" target="_blank">Malaysia</a></li>
+<li><a href="http://www.supcourt.gov.sg/" target="_blank">Singapore</a></li>
+<li><a href="http://www.supremecourtus.gov/" target="_blank">United States of America</a></li>
+
+    </ul>
+</div>
+</div>
+<div id="left">
+<div class="single_content">
+<br>    
+<div align='right'><img src='https://elibrary.judiciary.gov.ph/assets/images/printer.png'>&nbsp;&nbsp;<a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocsfriendly/1/60257' target='_blank'>View printer friendly version</a></div>
+<br>
+   
+			756 Phil. 80
+			<BR><BR>			
+			<CENTER>
+			<H2>EN BANC</H2>
+			<H2 style='background-color:#cccccc;padding-top:10px;padding-bottom:10px;'>[ G.R. Nos. 211789-90, March 17, 2015 ]</H2>
+			<H3>DR. REY B. AQUINO, PETITIONER, VS. COMMISSION ON ELECTIONS, RESPONDENT.<BR><BR>D E C I S I O N</H3>
+			</CENTER>
+			<p><STRONG>BRION, J.:</STRONG></p>
+			
+			<p><div align="JUSTIFY">We resolve in this petition for <i>certiorari</i> and prohibition<sup style="color: rgb(255, 0, 0);">[1]</sup> the challenge to the <b>October 19, 2012</b><sup style="color: rgb(255, 0, 0);">[2]</sup> and <b>February 18, 2014</b><sup style="color: rgb(255, 0, 0);">[3]</sup> resolutions of respondent Commission on Elections (<i>COMELEC</i>) sitting En Banc, in E.O. Case No. 10-003 and E.O. Case No. 10-008.<br><br>The October 19, 2012 resolution, among others, directed the COMELEC's Law Department to file the appropriate information against petitioner Dr. Rey B. <b><i>Aquino</i></b> for violation of COMELEC Resolution No. 8737<sup style="color: rgb(255, 0, 0);">[4]</sup> in relation to Section 261(h) of the Batas Pambansa Blg. 881 (<i>BP 881</i>) (the Omnibus Election Code of the Philippines). The February 18, 2014 resolution, in turn, affirmed <i>in toto</i> the October 19, 2012 resolution.<br><br><center><b><u>The Factual Antecedents</u></b><br></center><br>On <b>January 8, 2010</b>, Aquino, as President and Chief Executive Officer of the Philippine Health Insurance Corporation (<i>PHIC</i>), issued PhilHealth Special Order No. 16, Series of 2010 (<i>reassignment order</i>)<sup style="color: rgb(255, 0, 0);">[5]</sup> directing the reassignment of several PHIC officers and employees.<br><br>The pertinent portion of PhilHealth SO No. 16-2010<sup style="color: rgb(255, 0, 0);">[6]</sup> reads: <br><blockquote><div style="text-align: left;">08 January 2010<br></div><br>SPECIAL ORDER No. <u>16</u>, s. 2010<br><br>Subject:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <center><b><u>Re-Assignment of PhilHealth Officials</u></b><br></center><br>In the interest of the service and further enhance organizational efficiency and synergy, the following PhilHealth officials and personnel are hereby re-assigned to the offices opposite their names. This is also being made to strengthen PhilHealth's organizational capability by providing opportunities to its key personnel for professional growth and development in strategic management, which is imperative in view of the impending vacancies in crucial 3<sup>rd</sup> level positions.<br><br><div align="center">x x x&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x x x&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x x x<br></div><br>By virtue of this Order, the above named officers are bound to perform all the duties and functions required in their respective assignments and shall receive the corresponding allowances.<br><br>This Order shall take effect immediately.<br><br>DR. REY B. AQUINO <br>President and CEO<br></blockquote>On the same date, Aquino released the reassignment order, via the PHIC's intranet service, to all PHIC officers and employees, including the following: (1) Dennis<span style="font-style: italic;"><span style="font-weight: bold;"> </span></span><b><i>Adre</i></b>, PHIC Regional Vice-President (<i>VP</i>); (2) Masiding <b><i>Alonto</i></b>, PHIC Regional VP; and (3) Khaliquzzaman M. <b><i>Macabato</i></b>, PHIC Assistant Regional VP.<br><br>On January 11, 2010, Aquino issued an <b><i>Advisory</i></b> implementing the reassignment order. The Advisory directed these officers to, among others, "<i>report to their new regional assignments; or to the central office; or to other areas, as the case may be, not later than five (5) working days from the date of issuance of the reassignment order or January 15, 2010 for officers transferred, reassigned or designated to various posts located in the central office; and/or ten (10) working days from the ADVISORY or January 22, 2010, in the case of those reassigned or transferred from a regional office to another or from the central office to a regional office and vice versa</i>."<sup style="color: rgb(255, 0, 0);">[7]</sup><br><br>In view of the reassignment order and its directive, Dean Rudyard A. Avila III, consultant to the Chairman of the Board of PHIC and former Secretary of the PHIC Board of Directors, filed before the COMELEC on January 18, 2010, a complaint against Aquino and Melinda C. <b><i>Mercado</i></b>, PHIC Officer-in-Charge, Executive VP and Chief Operating Officer, for violation of COMELEC <b>Resolution No. 8737</b> in relation to Section 261(h) of BP 881. The case was docketed as <b>E.O. Case No. 10-003</b>.<br><br>On February 1, 2010, Adre, Alonto and Macabato, along with Romeo D. <i><b>Alberto</b></i> and Johnny Y. <b><i>Sychua</i></b> (PHIC Regional VPs) likewise filed before the COMELEC a similar complaint for violation of Resolution No. 8737 in relation to Section 261(h) of BP 881 against Tito M. <b><i>Mendiola</i></b>, PHIC Senior VP for Operations Sector, and Ruben John A. <b><i>Basa</i></b>, PHIC Group VP for Corporate Affairs. The case was docketed as <b>E.O. Case No. 10-008</b>.<br><br>E.O. Case No. 10-003 and E.O. Case No. 10-008 were subsequently consolidated (<i>consolidated COMELEC complaints</i>).<br><br>Meanwhile, Aquino wrote the COMELEC a letter dated January 11, 2010,<sup style="color: rgb(255, 0, 0);">[8]</sup> asking for a "categorical declaration that the issuance of and transition to the respective office designations of concerned officers x x x is beyond the purview of COMELEC Resolution No. 8737 x x x." He posited that the reassignment order is beyond the coverage of this COMELEC resolution as he issued it on January 8, 2010, or prior to the start of the election period that began on January 11, 2010. Aquino reiterated this request in his letter dated February 26, 2010.<sup style="color: rgb(255, 0, 0);">[9]</sup><br><br>On March 29, 2010, Aquino filed a petition<sup style="color: rgb(255, 0, 0);">[10]</sup> before the COMELEC reiterating his request and maintaining that PhilHealth SO No. 16-2010 is beyond the coverage of Resolution No. 8737. This case was docketed as <b>E.M. Case No. 10-018</b>.<br><br><b><i>The assailed COMELEC resolutions</i></b><br><br><b>1. The October 19, 2012 resolution</b><sup style="color: rgb(255, 0, 0);">[11]</sup><br><br>The COMELEC directed its Law Department to file the appropriate information against Aquino for violation of Resolution No. 8737 in relation to Section 261(h) of BP 881; it dismissed, for lack of merit, the complaint against Mercado, Mendiola, and Basa.<br><br>The COMELEC declared that Aquino violated Section 261(h) of BP 881 when he directed the transfer/reassignment of the PHIC officers and employees within the declared election period without its prior approval. It pointed out that Section 261(h) considers an election offense for "<i>any public official who makes or causes the transfer or detail whatever of any public officer or employee in the civil service xxx within the election period except upon prior approval of the Commission</i>. "<br><br>Citing <i><i>Regalado</i>, Jr. v. Court of Appeals</i>,<sup style="color: rgb(255, 0, 0);">[12]</sup> the COMELEC explained in this regard that "the words 'transfer' and 'detail' [in Section 261(h) of BP 881] are modified by the word 'whatever' xxx [such that] any movement of personnel from one station to another during the election, whether or not in the same office or agency, is covered by the prohibition."<sup style="color: rgb(255, 0, 0);">[13]</sup><br><br>The COMELEC pointed out, too, that in promulgating Resolution No. 8737, it merely laid down the guidelines relative to the transfer, detail or reassignment of officers and employees of the civil service for the January 10, 2010 to June 9, 2010 election period set for the May 10, 2010 National and Local Elections (<i>May 10, 2010 elections</i>) which guidelines still fall well within the provisions of Section 261(h) of BP 881. It emphasized that Resolution No. 8737 merely reiterated Section 261(h)'s prohibition and the requirement of prior COMELEC approval in any case of personnel transfers or details; and provided penalties in case of violation of the prohibition.<br><br>In this case, the COMELEC noted that while the facts at first glance would support Aquino's contention that the reassignment order is beyond the coverage of the election transfer ban as Aquino issued it on January 8, 2010, its implementation was carried out after the transfer ban had already set in. Moreover, the circumstances surrounding its issuance supports the conclusion that Aquino violated the transfer ban, <span style="font-style: italic;">i.e.</span>, Aquino issued the reassignment order late in the afternoon of January 8, 2010, which was a Friday; he issued the guidelines implementing the transfer/reassignment order only on January 11, 2010, after the transfer ban had taken effect; and, even after the election period had already started, he still issued several transfer/reassignment orders from January 21 to February 15, 2010,<sup style="color: rgb(255, 0, 0);">[14]</sup> absent the required prior COMELEC approval.<br><br>In short, the COMELEC found a <i>prima facie</i> case against Aquino for violation of Resolution No. 8737 in relation to Section 261(h) of BP 881 because while the reassignment order was issued on January 8, 2010, or prior to the start of the transfer ban, its implementation took effect after the transfer ban had already set in. To the COMELEC, a transfer/reassignment order must be issued and implemented prior to the start of the election period to be excluded from the coverage of the transfer ban. Any personnel action issued and/or implemented during the election period must have prior COMELEC approval to be valid; otherwise, such personnel action is illegal and renders liable the person who made or caused the movement.<br><br>The COMELEC dismissed the complaint against the other respondents because: (1) the documents on record bear only Aquino's signature; and (2) conspiracy among them was not alleged nor proved.<br><br>On December 7, 2012, Aquino sought reconsideration<sup style="color: rgb(255, 0, 0);">[15]</sup> of the COMELEC's October 19, 2012 resolution. He argued that what he directed when he issued the order was only a reassignment, not a transfer, which is not covered by the transfer ban. In this regard, he pointed to Civil Service Commission Memorandum Circular No. 2, series of 2005, and the Court's ruling in <i>Tapispisan v. Court of Appeals</i><sup style="color: rgb(255, 0, 0);">[16]</sup> to support his position.<br><br>He argued, too, that he issued the directive outside of or before the start of the election period, <span style="font-style: italic;">i.e.</span>, on January 8, 2010.<br><br>Lastly, he pointed out that he thrice sought from the COMELEC the required approvals as early as January 11, 2010; as of the date of the filing of this motion, the COMELEC has yet to act on his letter-requests.<br><br><b>2. The February 18, 2014 resolution</b><sup style="color: rgb(255, 0, 0);">[17]</sup><br><br>The COMELEC affirmed <i>in toto</i> the October 19, 2012 resolution.<br><br>The COMELEC agreed with the complainants' position and ruled that the word "whatever" in Section 261(h) of BP 881 expanded the coverage of the prohibition so as to include any movement of personnel, including reassignment, among others. In fact, to dispel any ambiguity as regards Section 261(h)'s prohibition, Resolution No. 8737 defined the word "transfer" as including any personnel action.<br><br>Accordingly, the COMELEC held that insofar as the prohibition provision (under Section 261[h] of BP 881) is concerned, the terms "transfer" and "reassignment" have similar legal consequences.<br><br>Lastly, the COMELEC emphasized that only a <i>prima facie</i> finding of violation or probable cause is required for purposes of filing an Information for an election offense. In Aquino's case, the facts show such <i>prima facie</i> case against him for violation of Section 261(h) of BP 881.<br><br><b><i>COMELEC resolution on Aquino's petition (EM. Case No. 10-018)</i></b><br><br>In a resolution dated August 20, 2010,<sup style="color: rgb(255, 0, 0);">[18]</sup> the COMELEC First Division denied Aquino's petition (for declaration of the non-coverage of the reassignment order under the transfer ban) and directed the COMELEC's Law department to conduct preliminary investigation to detemine whether Aquino committed an election offense for violation of Resolution No. 8737 in relation to Section 261(h) of BP 881.<br><br>The First Division agreed that Section 261(h) of BP 881 and Resolution No. 8737 do not render illegal <i>per se</i> the transfer of a government officer or employee during election period and that the law, in fact, recognizes the inherent prerogative of the appointing authority to effect such transfers or details whenever necessary to meet the exigencies of the public service.<br><br>It nevertheless pointed out that the transfers or details in this case were effected without the required prior COMELEC approval which sufficiently renders Aquino liable for violation of Resolution No. 8737 in relation with Section 261(h).<br><br><center><b><u>The Petition</u></b><br></center><br>Aquino essentially argues that, <i>first</i>, the COMELEC exceeded its authority to implement the election laws when, in interpreting Section 261(h) of BP 881, it added reassignments as a covered offense when the prohibitions speaks only of <i>transfer</i> and <i>detail</i>. To him, the COMELEC could not legally and validly add a third mode of personnel action and hold him accountable for its violation, when the legislative Intent clearly and specifically prohibited only <i>transfer</i> and <i>detail</i> from among the several modes of personnel action enumerated under the various laws governing the civil service, <span style="font-style: italic;">i.e.</span>, Presidential Decree (PD) No. 807 and Executive Order (EO) No. 292.<br><br>He argues that while the COMELEC indeed has the exclusive authority to implement the election laws, and with it the authority to issue rules and regulations to supply details or clarify gaps in the law, it cannot validly extend what these laws provide without running afoul of the basic precept that the power to make laws is exclusively lodged in the legislature.<br><br>Thus, Aquino takes exception to the COMELEC's reliance in <i>Regalado</i><sup style="color: rgb(255, 0, 0);">[19]</sup> arguing that the term "whatever" was added simply to modify the term "detail" (which it immediately follows) or both the terms "detail and/or transfer;" the addition of the term "whatever" was never meant to include within the coverage of the prohibition any mode of personnel action other than transfer and detail.<br><br>Then too, he points out that the Court, in <i>Regalado</i>, declared the transfer as falling within the prohibition's coverage because although made in the exigencies of public service, it was, in fact, used for electioneering purposes or to harass subordinates of different political persuasion.<br><br>In this case, he argues that none of the complaining PHIC officer/personnel even alleged a situation similar to those in <i>Regalado</i>. Hence, the COMELEC cannot hold him criminally liable for an act that the law does not prohibit under the maxim <i>nullum crimen sine lege</i>.<br><br><i>Second</i>, the reassignment order did not violate Section 261(h) of BP 881 because he issued it on January 8, 2010, or before the start of the election period on January 10, 2010. He points out that by its terms, the "reassignments" were <i>immediately executory</i>; it was also released and disseminated via the PHIC's intranet service and facsimiles, to all concerned officers and employees on the same date of issue.<br><br>Further, he argues that Section 3 of BP 881 fixes the start of the election period at ninety (90) days before the day of the election, not one hundred and twenty (120) days before, which the COMELEC set in Resolution No. 8737. Hence, the election period for the May 10, 2010 elections should have commenced on February 9, 2010, not January 10, 2010.<br><br>At any rate, Aquino argues that the COMELEC's resolutions and directive to file criminal action against him were premature and without legal basis. He points out that, if only to comply with the legal requirement of prior COMELEC approval, he had thrice requested<sup style="color: rgb(255, 0, 0);">[20]</sup> the COMELEC for exemption from Resolution No. 8737. To this date and despite the issuance of the October 19, 2012 and February 18, 2014 resolutions, his request remains pending before the COMELEC <i>En Banc</i>.<sup style="color: rgb(255, 0, 0);">[21]</sup> He insists that the resolution of his request/petition for exemption is necessary as the issues raised therein were prejudicial questions to the issues in the consolidated COMELEC complaints.<br><br><center><b><u>The Case for the CQMELEC</u></b><br></center><br>The COMELEC, through the Solicitor General, argues<sup style="color: rgb(255, 0, 0);">[22]</sup> that it has the power to prosecute any reassignment of officers and employees in the civil service made during the election period. In this regard, it points out that the words "transfer" and "detail" are precisely modified by the word "whatever" such that any movement of personnel from one station to another, whether or not in the same office or agency, is covered by the prohibition under Resolution No. 8737 in relation to Section 261(h) of BP 881. Such personnel action necessarily includes "reassignment."<br><br>In addition, the COMELEC defends that it did not act with grave abuse of discretion when it directed its law department to file the appropriate information against Aquino for violation of Resolution No. 8737 in relation to Section 261(h) of BP 881. It points out that: (1) Aquino issued the reassignment order during the election period, absent its prior approval; and (2) it did not err in fixing the election period for the May 10, 2010 elections and in implementing Resolution No. 8737.<br><br>Relying on <i>Regalado</i>, the COMELEC reasons that for an act to fall under Section 261(h) of BP 881, two elements must concur: (1) a public officer or employee is transferred or detailed within the election period as fixed by it; and (2) the transfer or detail was effected without its prior approval pursuant to its implementing rules and regulations.<br><br>In this case, it argues that both elements were present. <i>First</i>, while the reassignment order was issued on January 8, 2010, it actually became effective only on January 11, 2010, well within the election period. To this end, it points out that: (1) the Order was issued at about four-thirty in the afternoon (4:30 pm) when it was already too late to be implemented; (2) the complainants in the consolidated complaints received a copy of the Order only on January 11, 2010; (3) Aquino issued the Advisory likewise only on January 11, 2010; and (4) Aquino issued other reassignment orders between January 21 and February 15, 2010.<sup style="color: rgb(255, 0, 0);">[23]</sup><br><br>In other words, the COMELEC submits that if a reassignment order was implemented during the election period, even if issued prior thereto as in this case, it is still covered by the election ban on personnel transfer.<br><br><i>Second</i>, Aquino issued the reassignment order without its prior approval. To the COMELEC, Aquino's January 11, 2010 and February 26, 2010 letters, as well as his March 18, 2010 petition (for exemption from the election transfer ban) could not have rectified the deficiency because the letter-requests were submitted and filed long after the election ban had already taken effect; and the petition for exemption was filed long after the complaints were filed against him.<br><br>Lastly, the COMELEC argues that the election period which it fixed for the May 10, 2010 election is valid and legal pursuant to its authority under Section 3 of BP 881. The period fixed is likewise valid,<sup style="color: rgb(255, 0, 0);">[24]</sup> pursuant to Section 12 of Resolution No. 8737<sup style="color: rgb(255, 0, 0);">[25]</sup> in relation to Section 52(m) of BP 881<sup style="color: rgb(255, 0, 0);">[26]</sup> and Section 30 of Republic Act (<i>RA</i>) No. 6646.<sup style="color: rgb(255, 0, 0);">[27]</sup><br><br><center><b><u>The Issues</u></b><br></center><br>The basic issues before us are whether: the COMELEC validly issued Resolution No. 8737 that defined <i>transfer</i>, as contemplated under Section 261(h) of BP 881, to include all personnel action including <i>reassignments</i>; and if so, whether the COMELEC validly found <i>prima facie</i> case against Aquino for violation of Resolution No. 8737 in relation to Section 261(h).<br><br><center><b><u>The Court's Ruling</u></b><br></center><br><b><i>Preliminary Considerations</i></b><br><br>In assailing the COMELEC's October 19, 2012 and February 18, 2014 resolutions, Aquino comes to this Court <i>via</i> Rule 64 in relation to Rule 65 of the Rules of Court.<br><br>As a Rule 64 petition (viewed from a Rule 65 approach), the Court's standard of review is "grave abuse of discretion" or such "capricious or whimsical exercise of judgment as is equivalent to lack of jurisdiction. Mere abuse of discretion is not enough; the abuse of discretion must be patent and gross as to amount to an evasion of positive duty or a virtual refusal to perform a duty enjoined by law, or to act at all in contemplation of law, as where the power is exercised in an arbitrary and despotic manner by reason of passion and hostility."<sup style="color: rgb(255, 0, 0);">[28]</sup> A lower court or tribunal's violation of the Constitution, law or existing jurisprudence<sup style="color: rgb(255, 0, 0);">[29]</sup> or their use of wrong or irrelevant considerations in deciding an issue is sufficient to taint their action with grave abuse of discretion.<sup style="color: rgb(255, 0, 0);">[30]</sup><br><br>In this petition, Aquino ascribes grave abuse of discretion on the part of the COMELEC as it found <i>prima facie</i> case to indict him for violation of Resolution No. 8737 in relation to Section 261(h) of BP 881. He presents the following main arguments:<br><ol><li>The COMELEC exceeded its rule-making authority when it issued Resolution No. 8737 that expanded the coverage of Section 261(h) of BP 881;<br><br></li><li>The reassignment order is beyond the coverage of Section 261(h) of BP 881 because he issued it before the start of the election period; and<br><br></li><li>The COMELEC prematurely issued its resolutions (finding <i>prima facie</i> case against him) as the COMELEC had, then, yet to resolve his request for exemption from the coverage of Resolution No. 8737.<br></li></ol>We approach these arguments with the consideration of the distinct role that the COMELEC plays in our government structure. We consider as well the considerable latitude which the Constitution and the laws grant it as it ensures the accomplishment of the great objective for which it was created - free, orderly and honest elections.<sup style="color: rgb(255, 0, 0);">[31]</sup> We recognize1 this legal reality and concede that we have no general powers of supervision over the COMELEC except those which the Constitution specifically grants to us, <span style="font-style: italic;">i.e.</span>, to review its decisions, orders, and rulings within the limited terms of a petition for <i>certiorari</i>.<sup style="color: rgb(255, 0, 0);">[32]</sup><br><br>Thus, in this Rule 64 petition, the scope of our review is limited to the question: <i>whether the COMELEC's exercise of its powers as it issued the prima-facie-case-finding resolution and Resolution No. 8737 was without or in excess of jurisdiction, or with grave abuse of discretion amounting to lack or excess of jurisdiction</i>.<br><br>Aquino's petition must prosper if the COMELEC, in appreciating and calibrating the evidence as it arrived at the assailed resolutions, exceeded its authority or exercised its discretion in an excessive, arbitrary, and gravely abusive manner. The grant of the petition based on these asserted violations in effect recognizes that, in acting as it did, the COMELEC committed errors of the level that effectively affected its jurisdiction.<br><br>Aquino's petition must fail, however, if the COMELEC's acts, even though viewed erroneous under the terms of the asserted violations, were still well within the limits of its powers under the Constitution and relevant statutes. The Court must, in such case, recognize the COMELEC's exercise of its discretion in issuing the assailed resolutions to be proper and well within its jurisdiction.<br><br>Viewed in this light, we <b>GRANT</b> the petition; we find grave abuse of discretion on the part of the COMELEC in the manner that it found <i>prima facie</i> case against Aquino for violation of Resolution No. 8737 in relation to Section 261(h) of BP 881.<br><br><b>A. COMELEC Resolution No. 8737 is valid</b><br><br><b><i>1. The COMELEC's enforcement and <br></i></b></div><div align="JUSTIFY"><b><i>administration power and rule-making</i></b></div><div align="JUSTIFY"><b><i> power</i></b><br><br>To determine the validity of Resolution No. 8737, we first discuss some of the basic precepts touching on the powers granted to the COMELEC as it fulfills its mandate under the Constitution and statutes.<br><br>We begin with the Constitution - the fundamental law to which all laws must conform. The pertinent provisions read:<br><blockquote><div style="text-align: center;">ARTICLE IX<br><br>CONSTITUTIONAL COMMISSIONS<br></div><br>A. COMMON PROVISIONS<br><br><div align="center">x x x&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x x x&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x x x<br></div><br><i>Section 6</i>.<span style="font-weight: bold;"> </span><b>Each Commission en banc may promulgate its own rules</b> concerning pleadings and practice before it or before any of its offices. Such rules however shall not diminish, increase, or modify substantive rights.<br><br><div align="center">x x x&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x x x&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x x x<br></div><br>C. THE COMMISSION ON ELECTIONS<br><br><i>Section 2</i>. The <u>Commission on Elections shall exercise the following powers and functions</u>:<br><br>(1) <b>Enforce and administer all laws and regulations relative to the conduct of an election,</b> plebiscite, initiative, referendum, and recall.<br><br>[emphases and underscoring supplied]<br></blockquote>By statute, BP 881 provides:<br><blockquote><center>Article VII <br><br>THE COMMISSION ON ELECTIONS<br></center><br>Sec. 52. <i>Powers and functions of the Commission on elections</i>. - In addition to the powers and functions conferred upon it by the Constitution, the Commission shall have <b>exclusive charge of the enforcement and administration of all laws relative to the conduct of elections</b> for the purpose of ensuring free, orderly and honest elections, and shall:<br><br><div align="center">x x x&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x x x&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x x x<br></div><br>(c)<span style="font-weight: bold;"> </span><b>Promulgate rules and regulations implementing </b>the provisions of this Code or other laws which the Commission is required to enforce and administer x x x x.<br><br>[emphases supplied]<br></blockquote>A common and clear conclusion that we can gather from these provisions is the obvious and unequivocal intent of the framers of the Constitution and of the law to grant the COMELEC with powers, necessary and incidental to achieve the objective of ensuring <i>free, orderly, honest, peaceful and credible elections</i>.<br><br>Thus, expressly, the Constitution and the laws grant the COMELEC with the power, first and foremost, to "<i>[e]nforce and administer all laws and regulations relative to the conduct of an election</i>," and second, to "<i>promulgate rules and regulations</i>. " Together, these powers ensure that the COMELEC is well armed to properly enforce and implement the election laws and enable it to fill in the situational gaps which the law does not provide foir or which the legislature had not foreseen.<br><br>In exercising these powers and fulfilling its mandate, the COMELEC, in addition, must necessarily interpret the provisions of the law that they are to enforce and for which they will craft the guidelines. Thus, to this extent and in this sense, the COMELEC likewise exercises the power of legal interpretation pursuant to the legal principle that the grant of a power includes all the powers necessary for the exercise of. the power expressly given.<br><br>Like all grant of powers, however, the grant to the COMELEC of its express - enforcement and administration, and rule-making - and implied -interpretative - powers are not without limitations. The exercise of these powers should always be read in conjunction with, not in isolation from, the Constitution and the laws from where it draws the power.<br><br><b><i>2. The COMELEC did not exceed the</i></b></div><div align="JUSTIFY"><b><i> exercise of its rule-making power; <br></i></b></div><div align="JUSTIFY"><b><i>reassignment is included in the <br></i></b></div><div align="JUSTIFY"><b><i>prohibition pursuant to the phrase</i></b></div><div align="JUSTIFY"><b><i> "transfer or detail whatever"</i></b><br><br>In Resolution No. 8737, the COMELEC defined the phrase "<i>transfer or detail whatever</i>" found in Section 261(h) of BP 881 as including any personnel action, <span style="font-style: italic;">i.e.</span>, "reassignment." Aquino questions this COMELEC interpretation as an unwarranted expansion of the legal prohibition which he argues renders the COMELEC liable for grave abuse of discretion.<br><br>We agree with the questioned COMELEC interpretation of the phrase "<i>transfer or detail whatever</i>."<br><br><i>a. The COMELEC's interpretation,</i></div><div align="JUSTIFY"><i> pursuant to our <i>Regalado </i>ruling, is <br></i></div><div align="JUSTIFY"><i>consistent with the constitutional <br></i></div><div align="JUSTIFY"><i>and legislative intent</i><br><br>A necessary starting point in considering how we are to interpret the phrase "<i>transfer or detail whatever</i> " is the legal provisions involved - BP 881 and the various laws governing the civil service.<br><br>On the one hand, Aquino argues that the laws on the civil service should govern in the interpretation of the phrase. Under this approach, the term "whatever" is viewed as modifying only either the term "detail" (which it immediately follows) or both the terms "detail and/or transfer." In such case, "reassignments," which is a distinct mode of personnel action under the civil service laws, are automatically excluded.<br><br>On the other hand, the COMELEC holds the position that the phrase "<i>transfer or detail whatever</i>" should be interpreted in the light of the general objectives of our election laws. Under this approach, the terms <i>transfer</i> and <i>detail</i>, as modified by the term <i>whatever</i>, are to be understood in their general sense such that any movement of personnel from one station to another, including "reassignments," is covered by the prohibition.<br><br>In <i><i>Regalado</i>, Jr. v. Court of Appeals</i>,<sup style="color: rgb(255, 0, 0);">[33]</sup> the Court already clarified the interpretation of the term whatever as used in Section 261(h) of BP 881 in relation to the terms <i>transfer</i> and <i>detail</i>. In agreeing with the Solicitor General's position, this Court declared that the terms <i>transfer</i> and <i>detail</i> are modified by the term <i>whatever</i> such that "any movement of personnel from one station to another, whether or not in the same office or agency, during the election period is covered by the prohibition."<sup style="color: rgb(255, 0, 0);">[34]</sup><br><br>Read in the light of this ruling, we affirm the COMELEC's interpretation of the phrase "<i>transfer or detail whatever</i>" as we find the <i>Regalado</i> interpretation consistent with the legislative intent.<br><br>Indeed, as used in Section 261(h) of BP 881, the term <i>whatever</i> should be not be read strictly in conjunction with only either the term <i>transfer</i> or the term detail; nor should the phrase <i>transfer</i> or <i>detail whatever</i> be read in isolation from the purpose of the legal prohibition. Rather, consistent with our rules in reading provisions of law, the term - <i>whatever</i> - as well as the phrase — <i>transfer or detail whatever</i> — should be understood within the broader context of the purpose of BP 881. They should likewise be understood within the context of all other laws that the COMELEC is required to administer and enforce. This is the proper approach that anyone, including this Court, should take when reading Section 261(h), as well as all other provisions of BP 881 and other election laws.<br><br>From this perspective, we reiterate our observation in <i>Regalado</i> that any personnel action, when caused or made during the election period, can be used for electioneering or to harass subordinates with different political persuasions. This possibility - of being used for electioneering purposes or to harass subordinates - created by any movement of personnel during the election period is precisely what the transfer ban seeks to prevent.<br><br>Thus, it is immaterial whether or not the personnel action has in fact been actually used for electioneering purposes or whether there has been any allegation in the complaint to this effect. The mere existence of such plausibility for electioneering is the reason that animated the legal prohibition against<span style="font-weight: bold;"> </span><b>any </b>personnel action, including transfers and re-assignments, during the election period.<br><br>To our mind, the interpretation that includes any form of personnel action, such as reassignment, within the coverage of the phrase precisely guards against any such electioneering and political harassment situations. This interpretation also more vigorously enforces the aim not only of BP 881, but more importantly of the Constitution to secure free, orderly, honest, peaceful, and credible elections.<br><br>Thus, to reiterate and emphasize - the election law's prohibition on transfer or detail covers <b>any movement of personnel from one station to another, whether or not in the same office or agency when made or caused during the election period</b>.<br><br><b><i>b. Its interpretation is also <br></i></b></div><div align="JUSTIFY"><b><i>consistent with basic statutory <br></i></b></div><div align="JUSTIFY"><b><i>construction rules</i></b><br><br>In addition to what has been discussed, we affirm the COMELEC's interpretation as it is more in keeping with the following basic statutory construction rules:<br><br><b><i>First</i></b>, that a word, phrase or provision in a statute should be construed not in isolation with but in relation to the whole law. The clauses and phrases of a statute must not be taken as detached and isolated expressions; but the whole and every part of it must be construed in fixing the meaning of any of its parts in order to produce a harmonious whole.<sup style="color: rgb(255, 0, 0);">[35]</sup> In short, all the words of a statute must be taken into consideration in order to ascertain and to animate the intention of the law making bodies. <i>Ut magis valeat quam pereat</i>.<br><br>In this light, Aquino's interpretation - that the term <i>whatever</i> and the transfer ban itself refers to either only the term transfer or the term <i>detail</i>, or only to both these terms - would obviously violate this well-known canon as it essentially views the phrase <i>transfer or detail whatever</i> in isolation from the entire statute.<br><br><i><b>Second</b></i>, that the words of a statute are to be understood in their natural, plain, and ordinary acceptation and the signification that they have in common use, and are to be given their ordinary meaning, unless otherwise specifically provided.<sup style="color: rgb(255, 0, 0);">[36]</sup><br><br>When, as in this case, the specific provision in which it was used or the various provisions of the statute when read as a whole do not betray a legislative intent to give the term a different sense or a technical meaning, the term <i>whatever</i> as used under Section 261(h) should, therefore, be understood in its ordinary or common sense.<br><br>As commonly understood, the term <i>whatever</i> means "anything at all: any of various other things that might also be mentioned;" or "something similar but hard to identify with certainty."<sup style="color: rgb(255, 0, 0);">[37]</sup> Based on this definition, <i>whatever</i> would have served no purpose were we to accept Aquino's constrained interpretation. This is because any of the various other forms of personnel action, under the laws governing the civil service that would have been covered by the prohibition (with its use of the term <i>whatever</i>), will automatically be excluded by Section 261(h)'s use of the terms <i>transfer</i> and <i>detail</i>.<br><br>In fact, if we were to follow the logic of Aquino's argument, the only form of personnel action that Section 261(h) would prohibit are <i>transfer</i> and <i>detail</i>; any other form of personnel action are and will simply be allowed. This strict interpretation is clearly and undoubtedly wrong for as we pointed out above, the interpretation that includes any form of personnel action under the phrase not only guards against any electioneering and political harassment situations that the prohibition seeks to avoid. It enforces more vigorously the aim of securing free, orderly, honest, peaceful, and credible elections to effectuate and safeguard the will of the electorate in choosing their representatives.<br><br>In short, Aquino's interpretation will only render the term <i>whatever</i> a mere surplusage if the legislature intended to limit the prohibition to <i>transfer</i> or <i>detail</i> only as defined by the laws governing the civil service.<br><br><b><i>Third</i></b>, that special legal provisions prevail over general ones.<sup style="color: rgb(255, 0, 0);">[38]</sup><br><br>Our civil service system is currently governed by PD 807,<sup style="color: rgb(255, 0, 0);">[39]</sup> otherwise known as the Civil Service Decree, and EO 292<sup style="color: rgb(255, 0, 0);">[40]</sup> or the Administrative Code of 1987.<br><br>PD 807 provides for the organization of the Civil Service Commission, its powers and functions, and all other matters related to the civil service and the Commission. Its primary intent and purpose is to establish a career service which ensures that appointment in the civil service is made only according to merit and fitness, and to establish a progressive system of personnel administration as well as measures that promote morale and the highest degree of responsibility, integrity, loyalty, efficiency, and professionalism in the Civil Service.<sup style="color: rgb(255, 0, 0);">[41]</sup><br><br>EO 292, on the other hand, was enacted to incorporate in a unified document the major structural, functional, and procedural principles and rules of governance.<sup style="color: rgb(255, 0, 0);">[42]</sup> Essentially, EO 292 provides the basic rules that will generally govern the organization and operation of the government.<br><br>Together, these laws operate to ensure the efficient and organized operation and administration of the government and of its various departments and offices, particularly of the executive branch. As a necessary tool to the government's efficient operation, these laws also ensure that only the fit, in terms of their satisfaction of the formal and informal qualifications, occupy positions in the government and discharge public duties.<br><br>When what is involved, however, is the exercise of the right to vote and be voted for - a particular right guaranteed to all citizens of the Philippines - the laws governing the administration of the government and of the civil service play only a minor, and perhaps, insignificant role. With regard to this particular and peculiar right and the entire system by which this right is exercised and protected, what governs are our various election laws, foremost of which is BP 881.<br><br>Thus, in reading and interpreting the provisions governing election offenses, we should consider the terms of the election laws themselves and how they operate as a whole. As a necessary and indispensable tool in this interpretation process, we must likewise consider these provisions in the light of the constitutional and legislative goal of attaining free, honest, and peaceful elections. It is only through these considerations that the right to vote and to be voted for is positively guaranteed.<br><br>Under these considerations and with particular regard to election offenses, BP 881 serves as a special law that is consistent with our basic statutory construction rules and prevails over the more "general laws governing the civil service. In other words, the treatment by the laws governing the civil service of the terms "transfer, detail and reassignment" as distinct modes of personnel action does not and cannot control the interpretation of laws dealing with election and election offenses, including the interpretation of Section 261(h) of BP 881, unless otherwise specifically provided.<br><br>In sum, we find the COMELEC's exercise of its discretion - in ruling that reassignments fall within the coverage of the prohibited <i>transfers</i> or <i>details</i> - to be well within its jurisdiction. To reiterate in clear terms, the prohibition on <i>transfer or detail whatever</i> during the election period under Section 261(h) of BP 881 covers any personnel action including reassignments.<br><br><b><i>3. The "120-day before and 30-day <br></i></b></div><div align="JUSTIFY"><b><i>after" election period was validly <br></i></b></div><div align="JUSTIFY"><b><i>fixed by the COMELEC pursuant <br></i></b></div><div align="JUSTIFY"><b><i>to its rule-making power</i></b><br><br>As a general rule, the period of election starts at ninety (90) days before and ends thirty (30) days after the election date pursuant to Section 9, Article IX-C of the Constitution and Section 3 of BP 881. This rule, however, is not without exception. Under these same provisions, the COMELEC is not precluded from setting a period different from that provided thereunder.<br><br>In this case, the COMELEC fixed the election period for the May 10, 2010 Elections at 120 days before and 30 days after the day of the election. We find this period proper as we find no arbitrariness in the COMELEC's act of fixing an election period longer than the period fixed in the Constitution and BP 881. For one, the COMELEC fixed the longer period of <i>120-days-before-and-30-days-after</i> pursuant to Section 9, Article IX-C of the Constitution and Section 3 of BP 881.<br><br>Also, Resolution No. 8737, through which the COMELEC fixed this alternate period of election, is valid as it was issued pursuant to the COMELEC's valid exercise of its rule-making power (under Section 6, Article IX-A of the Constitution and Section 52[c] of BP 881). Too, Resolution No. 8737 is valid as it complied with the publication requirement. Note that per the record, Resolution No.. 8737 was published twice — on December 31, 2009 in the Philippine Daily Inquirer and on January 4, 2010 in the Daily Tribune.<sup style="color: rgb(255, 0, 0);">[43]</sup><br><br><b><i>B. The facts and the clear terms of the law <br></i></b></div><div align="JUSTIFY"><b><i>does not support the COMELEC's <i>prima <br></i></i></b></div><div align="JUSTIFY"><b><i><i>facie</i> finding of violation of Resolution <br></i></b></div><div align="JUSTIFY"><b><i>No. 8737 in relation to Section 261 (h) <br></i></b></div><div align="JUSTIFY"><b><i>of BP 881</i></b><br><br>Under Section 261(h) of BP 881, a person commits the election offense of violation of the election transfer ban when he <b>makes or causes</b> the <i>transfer or detail whatever</i> of any official or employee of the government <b>during</b> the election period <b>absent prior approval</b> of the COMELEG.<br><br>By its terms, Section 261(h) provides at once the elements of the offense and its exceptions. The elements are: (1) the making or causing of a government official or employee's <i>transfer or detail whatever</i>, (2) the making or causing of the <i>transfer or detail whatever</i> was made during the election period; and (3) these acts were made without the required prior COMELEC approval.<br><br>As this provision operates, the <i>making</i> or <i>causing</i> of the movement of personnel during the election period but without the required COMELEC approval is covered by the prohibition and renders the responsible person liable for the offense. Conversely, the <i>making</i> or <i>causing</i> (of the movement of personnel) before or after the election period even without the required COMELEC approval, or during the election period but with the required COMELEC approval are not covered by the prohibition and do not render the responsible person liable for this election offense.<br><br>A critical point to consider in determining whether or not Aquino may be held liable under this provision is the interpretation of the phrase <i>made or caused</i> and the extent to which the prohibition (on transfer or detail whatever) applies to his case. Factually, it is likewise imperative to consider the date when Aquino <i>made or caused</i> the reassignment of the affected PHIC officers and employees.<br><br><i>Make</i> is defined as "to cause to exist. To do, perform, or execute; as to make an issue, to make oath, to make a presentment. To do in form of law; to perform with due formalities; to execute in legal form; as to make answer, to make a return or report. To execute as one's act or obligation; to prepare and sign; to issue; to sign, execute, and deliver."<sup style="color: rgb(255, 0, 0);">[44]</sup><br><br><i>Cause</i>, on the other hand, is defined as "each separate antecedent of an event. Something that precedes and brings about an effect or result. A reason for an action or condition x x x x an agent that brings about something. That which in some manner is accountable for condition that brings about an effect or that produces a cause for the resultant action or state."<sup style="color: rgb(255, 0, 0);">[45]</sup><br><br>Significantly, the terms <i>make</i> and <i>cause</i> indicate one and the same thing - the beginning, the start of something, a precursor; it pertains to an act that brings about a desired result. If we read these definitions within the context of Section 261(h) of BP 881, the legal prohibition on transfer or detail undoubtedly affects only those acts that go into the <i>making</i> or <i>causing</i> or to the antecedent acts. Any act that occurs or is performed after the antecedent act of <i>making</i> or <i>causing</i> or those acts performed to carry out an event or result desired by the antecedent acts, such as the actual or physical act of transferring, are no longer the concern of the legal prohibition.<br><br>When viewed in terms of how transfer or reassignments of government officers and employees are usually carried into place, this act of <i>making</i> or <i>causing</i> often consists in the act of <b>issuing</b> the transfer or reassignment order. To issue something means "to discharge, produce, send out, publish, put into circulation, come out,"<sup style="color: rgb(255, 0, 0);">[46]</sup> "to send forth; to emit; to promulgate; as an officer issues orders, process issues from a court."<sup style="color: rgb(255, 0, 0);">[47]</sup> In this sense, the act of issuing entails the mechanical act of drafting or writing the order, by the issuing official himself or through a subordinate; the signing of the order; and completed with its release as addressed to the. concerned officer or employee.<br><br>During this phase of the entire transfer or reassignment process, the official responsible for issuing the order plays an active role at its center. The issuing of the order are his very acts. Thus, if the orders are issued prior to the start of the election period, they are automatically rendered beyond the coverage of the prohibition and the issuing official cannot be held liable for violation of Section 261(h) of BP 881. Conversely, if the orders are issued during the election period and without COMELEC approval, these are covered by the prohibition and renders the issuing official liable for violation of Section 261(h).<br><br>Once the transfer or reassignment order is issued, the <i>making</i> or <i>causing</i> as the defining act that determines whether a government official may be held liable under Section 261(h) is deemed completed. The completion of this phase likewise ends the active role the issuing official plays.<br><br>Thus, the transfer or reassignment process moves to the next phase the implementation of the order. By definition, implement refers to "the act of fulfilling or performing."<sup style="color: rgb(255, 0, 0);">[48]</sup><br><br>At the implementation phase of the transfer or reassignment process, the issuing official shifts to passive participation. The government officer or employee to whom the order is addressed takes on the active role in performing the duties needed to implement the order.<br><br>During the implementation phase, the addressee may immediately comply with the order — assume the post and discharge its duties — or may delay compliance; or choose not to comply at all. In these situations, the issuing official has no immediate and actual control of the addressee's action.<br><br>While the issuing official holds disciplinary power over the addressee in case of delay or non-compliance, the exercise of his disciplining authority over the erring employee would come after the fact - delay or non-compliance.<br><br>In short, during the <i>making</i> or <i>causing</i> phase of the entire transfer or reassignment process - from drafting the order, to its signing, up to its release - the issuing official plays a very real and active role. Once the transfer or reassignment order is issued, the active role is shifted to the addressee of the order who should now carry out the purpose of the order. At this level - the implementation phase - the issuing official's only role is to see to it that the concerned officer or employee complies with the order. The issuing official may only exert discipline upon the addressee who refuses to comply with the order.<br><br>Following these considerations, we find that the COMELEC gravely abused its discretion in this case based on the following facts:<br><br><i><u>First</u></i>, Aquino <i>made or caused</i> the reassignment of the concerned PHIC officers and employees <b>before</b> the election period.<br><br><i><u>Second</u></i>, Aquino sent out, via the PHIC's intranet service, the reassignment order to all affected PHIC officers and employees <b>before</b> the election period.<br><br><i><u>Third</u></i>, the <u>reassignment order was complete in its terms</u>, as it enumerated clearly the affected PHIC officers and employees as well as their respective places of reassignments, and was made <b>effective immediately</b> or on the day of its issue, which was likewise <b>before</b> the election period.<br><br><u><i>Fourth</i></u>, the subsequent orders that Aquino issued were not reassignment orders <i>per se</i> contrary to the COMELEC's assessment. Rather, they were, in fact, simply either <u>orders of retention</u>, <span style="font-style: italic;">i.e.</span>, orders addressed to the incumbent officer-occupant of the affected position to effectively maintain the <i>status quo</i> and continue performing the duties of the position while the reassigned officer or employee had not yet assumed or had been refusing to assume the position and its duties; or <u>orders of temporary discharge of additional duties</u>, <span style="font-style: italic;">i.e.</span>, orders addressed to the officer occupying the position next in rank to discharge the duties of the affected position while the reassigned officer or employee had not yet assumed or had been refusing to assume the position and its duties.<br><br>Retention of duties and temporary discharge of additional duties do not contemplate or involve any movement of personnel, whether under any of the various forms of personnel action enumerated under the laws governing the civil service or otherwise. Hence, the <span style="font-style: italic;">per se</span> subsequent orders could not be covered by the legal prohibition on transfers or detail.<br><br>Based on these clear facts, Aquino completed the act of <i>making</i> or <i>causing</i> the reassignment of the affected PHIC officers and employees <b>before</b> the start of the election period. In this sense, the evils sought to be addressed by Section 261(h) of BP 881 is kept intact by the timely exercise of his management prerogative in rearranging or reassigning PHIC personnel within its various offices necessary for the PHIC's efficient and smooth operation. As Aquino's acts of issuing the order fell outside the coverage of the transfer prohibition, he cannot be held liable for violation of Section 261(h).<br><br>In sum, the COMELEC gravely abused its discretion when, <i>firstly</i>, it used wrong or irrelevant considerations when it sought to hold Aquino liable for violation of Section 261 (h) for issuing orders that were clearly not for reassignment, but which were simply orders for retention of position or orders for temporary discharge of additional duties.<br><br><i>Secondly</i>, the COMELEC also went beyond the clear contemplation and intention of the law and of existing jurisprudence when it included within the prohibition's coverage the <b>implementation</b> aspect of the reassignment process - acts that were obviously no longer within his active and immediate control and beyond the ambit of <i>making</i> or <i>causing</i> to which the prohibition applies.<br><br>In view of this conclusion, we no longer find it necessary to discuss the other issues or matters raised in this petition.<br><br><b>WHEREFORE,</b> in the light of these considerations, we hereby GRANT the petition. We REVERSE and SET ASIDE the resolutions dated October 19, 2012, and February 18, 2014, of the Commission on Elections in E.O. Case No. 10-003 and E.O. Case No. 10-008. The complaints against petitioner Dr. Rey B. Aquino for violation of RA 8737 in relation to Section 261(h) of BP 881 are hereby dismissed.<br><br><b>SO ORDERED.</b><br><br><i>Carpio,</i><sup style="color: rgb(255, 0, 0);">*</sup> <i>Velasco, Jr., Leonardo-De Castro, Peralta, Bersamin, Del Castillo, Villarama, Jr., Perez, Mendoza, Reyes, Perlas-Bernabe</i>, and <i>Leonen, JJ.</i>, concur.<br><i><br></i></div><div align="JUSTIFY"><i>Jardeleza, J.</i>, no part.</div><div align="JUSTIFY"><br></div><div align="JUSTIFY"><i>Sereno, C. J.</i>, on official leave.</div><div align="JUSTIFY"><br></div><div align="JUSTIFY"><hr width="60%" size="1" noshade="noshade" align="center"><br></div><div align="JUSTIFY"><br><center><b>NOTICE OF JUDGMENT</b><br></center><br>Sirs/Mesdames:<br><br>Please take notice that on <u>March 17, 2015</u> a <u>Decision</u>/Resolution, copy attached herewith, was rendered by the Supreme Court in the above-entitled case, the original of which was received by this Office on June 16, 2015 at 3:20 p.m.<br><br><div style="text-align: right;">Very truly yours,<br><br>ENRIQUETA ESGUERRA-VIDAL <br>Clerk of Court<br></div><br><hr width="60%" size="1" noshade="noshade" align="LEFT"><sup style="color: rgb(255, 0, 0);"><br></sup></div><div align="JUSTIFY"><sup style="color: rgb(255, 0, 0);"><br></sup></div><div align="JUSTIFY"><sup style="color: rgb(255, 0, 0);">* </sup>Associate Justice Antonio T. Carpio is hereby designated as Acting Chief Justice per Special Order No. 1945 dated March 12, 2015.<br><br><sup style="color: rgb(255, 0, 0);">[1]</sup> Petition for <i>Certiorari</i> and Prohibition with prayer for Preliminary Injunction and Temporary Restraining Order, <i>rollo</i>, pp. 3-23.<br><br><sup style="color: rgb(255, 0, 0);">[2]</sup> COMELEC <i>En Banc</i> Resolution, penned by Commissioner Rene V. Sarmiento and concurred in by COMELEC Chairman Sixto S. Brillantes, Jr. and Commissioners Lucenito N. Tagle, Armando C. Velasco, Elias R. Yusoph and Christian Robert S. Lim, <i>id</i>. at 24-32. <br><br><sup style="color: rgb(255, 0, 0);">[3]</sup> <i>Id</i>. at 33-37.<br><br><sup style="color: rgb(255, 0, 0);">[4]</sup> Promulgated on December 29, 2009. Entitled "In the Matter of Enforcing the Prohibition Against Appointment or Hiring of New Employees, Creating or Filling of New Positions, Giving Any Salary Increase or Transferring or Detailing Any Officer or Employee in the Civil Service and Suspension of Elective Local Officials, in Connection with the May 10, 2010 National and Local Elections."<br><br><sup style="color: rgb(255, 0, 0);">[5]</sup> <i>Id</i>. at 45-46.<br><br><sup style="color: rgb(255, 0, 0);">[6]</sup> <i>Supra</i> note 4.<br><br><sup style="color: rgb(255, 0, 0);">[7]</sup> <i>Id</i>. at 25-26.<br><br><sup style="color: rgb(255, 0, 0);">[8]</sup> Addressed to COMELEC Chairman Jose A.R. Melo and the COMELEC, <i>rollo</i>, pp. 47-48.<br><br><sup style="color: rgb(255, 0, 0);">[9]</sup> <i>Id</i>. at 53-57.<br><br><sup style="color: rgb(255, 0, 0);">[10] </sup><i>Id</i>. at 58-64.<br><br><sup style="color: rgb(255, 0, 0);">[11]</sup> <i>Supra</i> note 2.<br><br><sup style="color: rgb(255, 0, 0);">[12]</sup> G.R. No. 115962, February 15, 2000, <i>rollo</i>, p. 30.<br><br><sup style="color: rgb(255, 0, 0);">[13]</sup> <i>Id</i>. at 30.<br><br><sup style="color: rgb(255, 0, 0);">[14]</sup> <i>Id</i>. at 30.<br><br><sup style="color: rgb(255, 0, 0);">[15]</sup> Motion for Reconsideration dated December 7, 2012, <i>rollo</i>, pp. 38-44. <br><br><sup style="color: rgb(255, 0, 0);">[16] </sup>G.R. No. 157950, 998 Phil. 733 (2005).<br><br><sup style="color: rgb(255, 0, 0);">[17]</sup><span style="font-style: italic;"> </span><i>Supra</i> note 3.<br><br><sup style="color: rgb(255, 0, 0);">[18]</sup><span style="font-style: italic;"> </span><i>Per Curiam</i> Resolution. Composed of Presiding Commissioner Rene V. Sarmiento, and Commissioners Armando C. Velasco and Gregorio Y. Larrazabal, <i>rollo</i>, pp. 65-72.<br><br><sup style="color: rgb(255, 0, 0);">[19]</sup> <span style="font-style: italic;">Supra</span> note 9.<br><br><sup style="color: rgb(255, 0, 0);">[20]</sup> Letter dated January 11, 2010, <i>rollo</i>, pp. 47-48; Letter dated February 26, 2010, <i>rollo</i>, pp. 53-57; and Petition dated March 18, 2010 docketed as E.M. No. 10-018, <i>rollo</i>, pp. 58-64.<br><br><sup style="color: rgb(255, 0, 0);">[21] </sup>Per the Certification dated March 31, 2014, <i>id</i>. at 86.<br><br><sup style="color: rgb(255, 0, 0);">[22]</sup> Comment dated July 9, 2014, temporary <i>rollo</i>, pp. 26.<br><br><sup style="color: rgb(255, 0, 0);">[23]</sup> See also July 1, 2001 Joint Resolution issued by the COMELEC Law Department on E.O. Case Nos. 10-003 and 10-008, attached as "Annex 1" to the Comment, temporary <i>rollo</i>.<br><br><sup style="color: rgb(255, 0, 0);">[24]</sup> COMELEC Resolution No. 8737 took effect seven days after its publication per COMELEC Education and Information Department Certification dated April 16, 2011, "Annex 2" to the Comment, temporary <i>rollo</i>.<br><br><sup style="color: rgb(255, 0, 0);">[25]</sup> Section 12 of COMELEC Resolution No. 8737 reads:<br><br>Section 12. Effectivity. - This resolution shall take effect on the seventh day after its publication in two (2) daily newspapers of general publication in the Philippines.<br><br><sup style="color: rgb(255, 0, 0);">[26]</sup> Section 52(m) of BP 881 pertinently reads:<br><br>Sec. 52. <i>Powers and Functions of the Commission on Elections</i>. —<br><br></div><div align="center">x x x&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x x x&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x x x</div><div align="JUSTIFY"><div align="center">(m)x x x&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x x x&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x x x</div><br>Unless indicated in this Code, the Commission is hereby authorized to fix the appropriate period for the various prohibited acts enumerated herein, consistent with the requirements of free, orderly, and honest elections.<br><br><sup style="color: rgb(255, 0, 0);">[27]</sup> Electoral Reforms Law of 1987; approved on January 5, 1988. Section 30 of RA 6646 reads:<br><br>Sec. 30. Effectivity of Regulations and Orders of the Commission. - The rules and regulations promulgated by the Commission shall take effect on the seventh day after their publication in the Official Gazette or in at least two (2) daily newspapers of general circulation in the Philippines.<br><br>Orders and directives issued by the Commission shall be furnished by personal delivery to all parties concerned within forty-eight (48) hours from date of issuance and shall take effect immediately upon receipt thereof unless a later date is expressly specified in such orders or directives.<br><br><sup style="color: rgb(255, 0, 0);">[28]</sup> <span style="font-style: italic;">Mendoza v. COMELEC, et. al.</span>, 618 Phil. 706, 721 (2009); <span style="font-style: italic;">Varias v. Commission on Elections</span>, G.R. No. 189078, February 11, 2010, 612 SCRA 386, 405.<br><br><sup style="color: rgb(255, 0, 0);">[29] </sup><span style="font-style: italic;">Fernandez v. COMELEC</span>, 535 Phil. 122, 126 (2006).<br><br><sup style="color: rgb(255, 0, 0);">[30]</sup> <span style="font-style: italic;">Varias v. Commission on Elections, supra</span> note 28, at 405.<br><br><sup style="color: rgb(255, 0, 0);">[31]</sup> <span style="font-style: italic;">Sumulong v. Commission on Elections</span>, 73 Phil. 288, 294-295 (1941), cited in <span style="font-style: italic;">Espino v. Zaldivar</span>, 129 Phil. 451, 474 (1967).<br><br><sup style="color: rgb(255, 0, 0);">[32] </sup><span style="font-style: italic;">Atty. Macalintal v. COMELEC</span>, 453 Phil. 586, 659 (2003).<br><br>See Section 7, Article 1X-A, in relation with Section 1, Article VIII of the Constitution, which essentially provides that the only mode of review that is allowed to the Court as regards the decisions, orders and resolutions of the COMELEC is by way of petition for <i>certiorari</i>.<br><br>Section 7, Article IX-A of the Constitution pertinently provides:<br><br><i>Section 7</i>.&nbsp;&nbsp; x x x Unless otherwise provided by this Constitution or by law, any decision, order or ruling of each Commission <b>may be brought to the Supreme Court on <i>certiorari</i></b> by the aggrieved party within thirty days from receipt of a copy thereof. [Emphasis supplied]<br><br>Section 1, Article VIII of the Constitution reads:<br><br><i>Section 1</i>.&nbsp; The judicial power shall be vested in one Supreme Court and in such lower courts as may be established by law.<br><br>Judicial power includes the duty of the courts of justice to settle actual controversies involving rights which are legally demandable and enforceable, and to <b>determine whether or not there has been grave abuse of discretion amounting to lack or excess of jurisdiction on the part of any branch or instrumentality of the Government</b>. [Emphasis supplied]<br><br><sup style="color: rgb(255, 0, 0);">[33]</sup> 382 Phil. 404 (2000).<br><br><sup style="color: rgb(255, 0, 0);">[34]</sup> <i>Id</i>. at 410.<br><br><sup style="color: rgb(255, 0, 0);">[35]</sup> See <span style="font-style: italic;">Phil. International Trading Corp. v. COA</span>, 635 Phil. 447, 454 (2010); <span style="font-style: italic;">Chavez v. Judicial and Bar Council</span>, G.R. No. 202242, July 17, 2012, 676 SCRA 579, 598-599; and <span style="font-style: italic;">Aquino v. Quezon City</span>, 529 Phil. 486, 498 (2006).<br><br><sup style="color: rgb(255, 0, 0);">[36]</sup> See <span style="font-style: italic;">Chavez v. Judicial and Bar Council, supra</span> note 35, at 598. See also Brion's Concurring Opinion in <span style="font-style: italic;">Atty. Orceo v. Commission on Elections</span>, 630 Phil. 686, 688 (2010), citing Agpalo, <i>Statutory Construction</i>, pp. 177-178 (2003).<br><br><sup style="color: rgb(255, 0, 0);">[37]</sup> <i>Webster's Third New International Dictionary</i>, Unabridged (1993), p. 2600. <br><br><sup style="color: rgb(255, 0, 0);">[38]</sup> Agpalo, <i>Statutory Construction</i>, pp. 276-278 (2003).<br><br><sup style="color: rgb(255, 0, 0);">[39]</sup> Enacted on October 6, 1975.<br><br><sup style="color: rgb(255, 0, 0);">[40]</sup> Enacted on July 25, 1987.<br><br><sup style="color: rgb(255, 0, 0);">[41] </sup>See Article II of PD 807- Declaration of Policy. It reads:<br><blockquote><center>ARTICLE II <br>DECLARATION OF POLICY<br></center><br>Section 2. It shall be the policy of the State to insure and promote the Constitutional mandate that <b>appointment in the Civil Service shall be made only according to merit and fitness, to provide within the public service a progressive system of personnel administration, and to adopt measures to promote morale and the highest degree of responsibility, integrity, loyalty, efficiency, and professionalism in the Civil Service</b>; that the Civil Service Commission shall be the central personnel agency to set standards and to enforce the laws and rules governing the selection, utilization, training and discipline of civil servants; that a public office is a public trust and public officers shall serve with the highest degree of responsibility, integrity, loyalty and efficiency and shall remain accountable to the people; and that action on personnel matters shall be decentralized, with the different departments and other offices or agencies of the government delegating to their regional offices or other similar units, powers and functions. [Emphasis supplied]<br></blockquote><sup style="color: rgb(255, 0, 0);">[42]</sup> See EO 292's whereas clause, which reads:<br><br><b>WHEREAS</b>, the effectiveness of the Government will be enhanced by a new Administrative Code which incorporates in a unified document the major structural, functional and procedural principles and rules of governance;<br><br><sup style="color: rgb(255, 0, 0);">[43]</sup> Per the Certification dated April 2, 2011 of the Education and Information Department of the COMELEC, "Annex 2" to the Comment.<br><br><sup style="color: rgb(255, 0, 0);">[44]</sup> <i>Black's Law Dictionary</i>, Fifth Edition, p. 200.<br><br><sup style="color: rgb(255, 0, 0);">[45]</sup> <i>Id</i>. at 861.<br><br><sup style="color: rgb(255, 0, 0);">[46]</sup> Moreno, <i>Philippine Law Dictionary</i>, Second Edition, p. 322.<br><br><sup style="color: rgb(255, 0, 0);">[47]</sup> <i>Black's Law Dictionary</i>, fifth edition, p. 745.<br><br><sup style="color: rgb(255, 0, 0);">[48]</sup> Moreno, <i>Philippine Law Dictionary</i>, Second Edition, p. 290.</div></p>
+			  
+
+
+  
+</div>
+</div>
+</div>
+<!-- footer template -->
+<div id="appendix" class="clearfix">
+<div class="app_widget">
+<!-- sidebar_bottom_left -->
+</div>
+
+<!-- Comment out to remove Find Widget in sidebar bottom left-->
+<!--
+<div class="widget">
+<h4>Find it!</h4>
+-->
+
+<div id="credits"><center>&copy; Supreme Court E-Library 2019<br />
+This website was designed and developed, and is maintained, by the E-Library Technical Staff in collaboration with the Management Information Systems Office.</center></div>
+</div>
+
+</div>
+
+<!-- <script src="https://elibrary.judiciary.gov.ph/assets/js/jquery-3.3.1.js"></script> -->
+<!-- <script src="https://elibrary.judiciary.gov.ph/assets/js/jquery-confirm.min.js"></script> -->
+
+<!-- <script>
+var jq = jQuery.noConflict();
+    // Checks if first time to visit the site and displays a popup if it is.
+    if(sessionStorage.getItem('firstVisit')){
+        sessionStorage.setItem('firstVisit','1');
+    }else{
+        sessionStorage.setItem('firstVisit','0');
+    }
+    jq(document).ready(function(){
+        if(sessionStorage.getItem('firstVisit') === "0")
+        {
+            jq.alert({
+                icon: 'fas fa-exclamation-triangle',
+                title: 'NOTICE',
+                animation: 'scale',
+                closeAnimation: 'zoom',
+                animationBounce: 2.5,
+                animationSpeed: 500,
+                buttons:{
+                    gotIt: {
+                        text: '<b>Click Here!</b>',
+                    }
+                },
+                boxWidth: '40%',
+                useBootstrap: false,
+                content: ''+
+                '<ol>'+
+                '<li><i>(05-02-2019)</i> Registration for a new E-library account is currently unavailable. However, existing accounts may still be used and accessed. We apologize for any inconvenience.</li>'+						
+                '</ol>',
+                theme: 'custom',
+            });
+        }
+    });
+</script>-->
+
+</body>
+</html>

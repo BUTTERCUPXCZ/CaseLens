@@ -32,11 +32,12 @@ def build_catalog(first_year: int) -> None:
     """One-time read of Lawphil's monthly lists (about 9 minutes). Always frees the lock when it ends."""
     try:
         with SessionLocal() as session:
-            report = Services(session).build_catalog().build(first_year)
-        logger.info(
-            "catalog build finished: %d read, %d skipped, %d decisions, %d missing, %d failed, %d broken",
-            report.read, report.skipped, report.entries, len(report.missing), len(report.failed), len(report.broken),
-        )
+            for builder in Services(session).build_catalogs():  # Lawphil's lists, then the SC E-Library's
+                report = builder.build(first_year)
+                logger.info(
+                    "catalog build (%s) finished: %d read, %d skipped, %d decisions, %d missing, %d failed, %d broken",
+                    builder.source, report.read, report.skipped, report.entries, len(report.missing), len(report.failed), len(report.broken),
+                )
     finally:
         SqlJobLockRepository(engine).release(lock_keys.CATALOG_BUILD_KEY)
 
@@ -44,8 +45,9 @@ def build_catalog(first_year: int) -> None:
 def refresh_catalog() -> None:
     """Re-read the current and previous month (a few requests, at most once a day)."""
     with SessionLocal() as session:
-        report = Services(session).build_catalog().refresh()
-    logger.info("catalog refresh: %d read, %d decisions", report.read, report.entries)
+        for builder in Services(session).build_catalogs():
+            report = builder.refresh()
+            logger.info("catalog refresh (%s): %d read, %d decisions", builder.source, report.read, report.entries)
 
 
 def build_digest(digest_id: int, keys: list[str] | None = None) -> None:

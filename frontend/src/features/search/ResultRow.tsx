@@ -6,10 +6,10 @@ import { useFetchByLink } from '@/api/mutations'
 import type { CatalogItem } from '@/api/types'
 import { Button } from '@/components/ui/button'
 import { friendlyError, searchCopy } from '@/lib/copy'
-import { formatDate } from '@/lib/format'
+import { formatDate, libraryName } from '@/lib/format'
 
-/** One decision on Lawphil's list. The title is shown exactly as Lawphil prints it (typos and all),
- *  because this row is Lawphil's, not ours; the case page after opening has the full decision. */
+/** One decision on a library's list (Lawphil's, or the SC E-Library's). The title is shown exactly as the library prints it
+ *  (typos and all), because this row is the library's, not ours; the case page after opening has the full decision. */
 export function ResultRow({ item }: { item: CatalogItem }) {
   const navigate = useNavigate()
   const open = useFetchByLink()
@@ -53,9 +53,9 @@ export function ResultRow({ item }: { item: CatalogItem }) {
           )}
           <Button variant="outline" asChild>
             <a href={item.source_url} target="_blank" rel="noopener noreferrer">
-              Lawphil
+              {libraryName(item.source_url)}
               <ExternalLink data-icon="inline-end" aria-hidden />
-              <span className="sr-only"> (opens the decision on Lawphil in a new tab)</span>
+              <span className="sr-only"> (opens the decision on {libraryName(item.source_url)} in a new tab)</span>
             </a>
           </Button>
         </div>

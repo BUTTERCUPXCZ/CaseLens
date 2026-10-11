@@ -45,7 +45,7 @@ describe('friendlyError', () => {
     [413, 'File is larger than 5 MB.', /larger than 5 MB/],
     [422, 'PDF has no extractable text (scanned image PDFs are not supported).', /looks like a scan/],
     [422, "Not a valid G.R. number: '12'", /digits only/],
-    [400, 'Not an official Lawphil case URL: https://evil.example/a.html', /Lawphil case link/],
+    [400, 'Not an official Lawphil case URL: https://evil.example/a.html', /decision link/],
     [502, 'https://lawphil.net failed after 4 attempts', /isn't responding/],
     [404, 'Case 9 does not exist.', /couldn't find that/],
     [400, 'Individual is for one case. This has more than one: use Bulk for several cases.', /use Bulk to digest all the cases/],

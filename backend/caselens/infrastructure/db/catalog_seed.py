@@ -1,13 +1,14 @@
-"""The Lawphil catalog (about 35,000 rows) ships inside the desktop app and the website's image as `catalog.sqlite`, so search works on
-the first start without an 8-minute build. `export_catalog` makes that file from a filled database; `import_catalog` copies it in once
-(into SQLite or PostgreSQL)."""
+"""The catalog (Lawphil's and the SC E-Library's monthly lists) ships inside the desktop app and the website's image as
+`catalog.sqlite`, so search works on the first start without a build. `export_catalog` makes that file from a filled database;
+`import_catalog` copies in each library's rows the catalog does not have yet (into SQLite or PostgreSQL)."""
 import logging
 import sqlite3
 import sys
 import threading
+from datetime import UTC, date, datetime
 from pathlib import Path
 
-from sqlalchemy import Engine, func, insert, select, text
+from sqlalchemy import Engine, delete, func, insert, select, text
 
 from caselens.infrastructure.db.orm_models import CatalogEntryModel, CatalogMonthModel, CatalogNumberModel
 from caselens.infrastructure.db.session import make_engine
@@ -35,69 +36,82 @@ def export_catalog(source_url: str, seed_path: Path) -> int:
     source.dispose()
     target.dispose()
     with sqlite3.connect(seed_path, isolation_level=None) as connection:  # outside any transaction, as SQLite requires
+        # The file is only read row by row when copied in, so its indexes are dead weight: drop them before shipping it.
+        for (name,) in connection.execute("SELECT name FROM sqlite_master WHERE type = 'index' AND sql IS NOT NULL").fetchall():
+            connection.execute(f'DROP INDEX "{name}"')
         connection.execute("PRAGMA journal_mode=DELETE")  # one self-contained file to ship
         connection.execute("VACUUM")
     return count
 
 
 def import_catalog(engine: Engine, seed_path: Path) -> int:
-    """Fill an empty catalog from the shipped file. Does nothing when the catalog already has rows or there is no file."""
+    """Copy into the catalog each library's list (Lawphil, the SC E-Library) that the shipped file has and the catalog does not.
+    A fresh library gets both; one that already has Lawphil's (an update) gets only the E-Library's. Returns the rows copied.
+    Works on SQLite and PostgreSQL. An older file without a `source` column is all Lawphil."""
     if not seed_path.exists():
         return 0
-    with engine.connect() as connection:
-        if connection.execute(select(func.count()).select_from(CatalogEntryModel.__table__)).scalar_one():
+    with sqlite3.connect(f"file:{seed_path.as_posix()}?mode=ro", uri=True) as seed:
+        seed.row_factory = sqlite3.Row
+        has_source = "source" in {row["name"] for row in seed.execute("PRAGMA table_info(catalog_entries)")}
+        in_seed = [r[0] for r in seed.execute("SELECT DISTINCT source FROM catalog_entries")] if has_source else ["lawphil"]
+        entries_table, numbers_table, months_table = (t.__table__ for t in (CatalogEntryModel, CatalogNumberModel, CatalogMonthModel))
+        with engine.connect() as connection:
+            present = set(connection.scalars(select(entries_table.c.source).distinct()))
+        missing = [source for source in in_seed if source not in present]
+        if not missing:
             return 0
-    with sqlite3.connect(f"file:{seed_path.as_posix()}?mode=ro", uri=True):
-        pass  # fails early on a missing or broken file
-    if engine.dialect.name != "sqlite":
-        return _copy_rows(engine, seed_path)
-    # SQLite cannot ATTACH inside a transaction, so this uses the driver connection (it runs in autocommit mode) directly.
-    raw = engine.raw_connection()
-    try:
-        cursor = raw.driver_connection.cursor()
-        cursor.execute("ATTACH DATABASE ? AS seed", (str(seed_path),))
-        try:
-            cursor.execute("BEGIN")
-            for table in _TABLES:
-                columns = ", ".join(column.name for column in table.columns)
-                cursor.execute(f"INSERT INTO main.{table.name} ({columns}) SELECT {columns} FROM seed.{table.name}")
-            cursor.execute("COMMIT")
-        except Exception:
-            cursor.execute("ROLLBACK")
-            raise
-        finally:
-            cursor.execute("DETACH DATABASE seed")
-        count = cursor.execute(f"SELECT count(*) FROM {CatalogEntryModel.__tablename__}").fetchone()[0]
-    finally:
-        raw.close()
-    log.info("Catalog filled from the shipped list: %s cases", count)
-    return count
-
-
-def _copy_rows(engine: Engine, seed_path: Path) -> int:
-    """PostgreSQL (the website): the rows are read from the file and inserted in batches, in one transaction; then each id counter is
-    moved past the copied ids, so the catalog's own later inserts (the daily refresh) do not collide with them."""
-    seed = make_engine(f"sqlite:///{seed_path.as_posix()}")
-    try:
-        with seed.connect() as read, engine.begin() as write:
-            for table in _TABLES:
-                rows = read.execute(select(table)).mappings()
+        copied = 0
+        with engine.begin() as write:
+            entry_offset = write.scalar(select(func.coalesce(func.max(entries_table.c.id), 0)))
+            number_offset = write.scalar(select(func.coalesce(func.max(numbers_table.c.id), 0)))
+            for source in missing:
+                where = "WHERE source = ?" if has_source else "WHERE ? = ?"
+                args = (source,) if has_source else ("lawphil", "lawphil")
+                rows = seed.execute(f"SELECT * FROM catalog_entries {where}", args)
                 while batch := rows.fetchmany(_BATCH):
-                    write.execute(insert(table), [dict(row) for row in batch])
-                if "id" in table.columns:
+                    write.execute(insert(entries_table), [
+                        {**{c: row[c] for c in row.keys() if c in entries_table.c}, "id": row["id"] + entry_offset, "source": source,
+                         "decision_date": _day(row["decision_date"])} for row in batch
+                    ])
+                    copied += len(batch)
+                rows = seed.execute(
+                    f"SELECT n.id, n.entry_id, n.number FROM catalog_numbers n JOIN catalog_entries e ON e.id = n.entry_id {where.replace('source', 'e.source')}",
+                    args,
+                )
+                while batch := rows.fetchmany(_BATCH):
+                    write.execute(insert(numbers_table), [
+                        {"id": row["id"] + number_offset, "entry_id": row["entry_id"] + entry_offset, "number": row["number"]} for row in batch
+                    ])
+                write.execute(delete(months_table).where(months_table.c.source == source))  # months a started build only registered
+                months = seed.execute(f"SELECT * FROM catalog_months {where}", args).fetchall()
+                if months:
+                    write.execute(insert(months_table), [
+                        {"source": source, "year": m["year"], "month": m["month"], "status": m["status"], "entries": m["entries"],
+                         "read_at": _moment(m["read_at"])} for m in months
+                    ])
+            if engine.dialect.name == "postgresql":  # move each id counter past the copied ids, so later inserts do not collide
+                for table in (entries_table, numbers_table):
                     write.execute(text(f"SELECT setval(pg_get_serial_sequence('{table.name}', 'id'), COALESCE((SELECT max(id) FROM {table.name}), 1))"))
-            count = write.execute(select(func.count()).select_from(CatalogEntryModel.__table__)).scalar_one()
-    finally:
-        seed.dispose()
-    log.info("Catalog filled from the shipped list: %s cases", count)
-    return count
+    log.info("Catalog filled from the shipped list: %s cases from %s", copied, ", ".join(missing))
+    return copied
+
+
+def _day(value) -> date | None:
+    return date.fromisoformat(value[:10]) if isinstance(value, str) and value else value
+
+
+def _moment(value) -> datetime | None:
+    if isinstance(value, str) and value:
+        moment = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        return moment if moment.tzinfo else moment.replace(tzinfo=UTC)
+    return value
 
 
 SHIPPED_SEED = Path(__file__).resolve().parents[3] / "catalog.sqlite"  # backend/catalog.sqlite (/srv/catalog.sqlite in the image)
 
 
 def seed_catalog_in_background(engine: Engine, seed_path: Path = SHIPPED_SEED) -> threading.Thread:
-    """The website: fill an empty catalog from the shipped file on a background thread, so the site answers at once. It holds the
+    """The website: fill the catalog from the shipped file on a background thread (each library it lacks), so the site answers at once. It holds the
     catalog-build lock meanwhile, so a search does not start the 8-minute build in parallel, and two starts never copy twice."""
     from caselens.infrastructure.db.job_lock_repository import SqlJobLockRepository
     from caselens.infrastructure.queue import lock_keys

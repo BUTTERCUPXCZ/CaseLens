@@ -68,6 +68,17 @@ class DigestDraft:
         return [s for blocks in self.sections.values() for block in blocks for s in block.sentences]
 
 
+def block_heading(section: Section, heading: str | None) -> str | None:
+    """A block's heading as shown: none when it only repeats the section's name ("Doctrine" under Doctrine, "Case Summary" under Case
+    Summary), which the writer sometimes adds; a real heading ("1. Community property ...") is kept."""
+    if not heading:
+        return None
+    plain = heading.strip().rstrip(":").strip().lower()
+    if plain in {SECTION_TITLES[section].lower(), section.value.replace("_", " ")}:
+        return None
+    return heading.strip()
+
+
 def sections_for(level: Level, draft: DigestDraft) -> tuple[Section, ...]:
     """The sections a level prints for this digest. Without a Case Summary, the short level prints Facts, Issue and Ruling instead (so it
     is never only a Doctrine); the full digest already has them and simply starts with the Doctrine."""
@@ -146,3 +157,15 @@ class DigestHeader:
     citation: str  # "G.R. No. 88211, September 15, 1989 (En Banc)"
     topic: str | None  # the subject
     ponente: str | None
+    number: str = ""  # "G.R. No. 193038"
+    decided: str | None = None  # "March 11, 2015"
+    reporter: str | None = None  # "752 SCRA 602" (the student's reviewer) or "755 Phil. 656" (the E-Library page); None when unknown
+
+    @property
+    def one_line(self) -> str:
+        """The top line of "Case Summary and Doctrine", as the client's reference prints it:
+        "Nobleza v. Nuega, G.R. No. 193038 (March 11, 2015), 752 SCRA 602". Nothing is added that is not known."""
+        line = f"{self.case_name}, {self.number}" if self.number else self.case_name
+        if self.decided:
+            line += f" ({self.decided})"
+        return f"{line}, {self.reporter}" if self.reporter else line

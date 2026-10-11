@@ -2,12 +2,13 @@ import { ExternalLink } from 'lucide-react'
 import { Fragment, useMemo } from 'react'
 
 import type { Footnote } from '@/api/types'
+import { libraryName } from '@/lib/format'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 import { type Block, splitMarkers, toBlocks } from './readerBlocks'
 
 /** A footnote number in the text. It opens the footnote right there, with a link to the exact
- *  spot on Lawphil, so the student never has to scroll to the bottom and back. */
+ *  spot on the library's page, so the student never has to scroll to the bottom and back. */
 function FootnoteMarker({ number, footnote }: { number: number; footnote: Footnote | undefined }) {
   return (
     <Popover>
@@ -32,7 +33,7 @@ function FootnoteMarker({ number, footnote }: { number: number; footnote: Footno
             rel="noopener noreferrer"
             className="mt-3 inline-flex items-center gap-1.5 text-sm text-primary underline"
           >
-            See this footnote on Lawphil
+            {libraryName(footnote.source_url) === 'Lawphil' ? 'See this footnote on Lawphil' : 'Open the decision on the SC E-Library'}
             <ExternalLink className="size-3.5" aria-hidden />
             <span className="sr-only"> (opens in a new tab)</span>
           </a>

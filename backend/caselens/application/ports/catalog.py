@@ -66,8 +66,8 @@ class CatalogRepository(ABC):
         progress can be shown against a known total."""
 
     @abstractmethod
-    def read_months(self) -> set[tuple[int, int]]:
-        """(year, month) of every list already read."""
+    def read_months(self, source: str = "lawphil") -> set[tuple[int, int]]:
+        """(year, month) of every list of this library already read."""
 
     @abstractmethod
     def search(

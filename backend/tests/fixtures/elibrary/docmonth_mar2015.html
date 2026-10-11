@@ -1,0 +1,1275 @@
+ 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Show Document for Decisions / Signed Resolutions - Supreme Court E-Library</title>
+    <link rel="stylesheet" href="https://elibrary.judiciary.gov.ph/assets/css/style.css" type="text/css" media="screen" />
+    <link rel="alternate" type="application/rss+xml" title="RSS Feed" href="feed/" />
+    <link rel="pingback" href="xmlrpc.php" />
+    <link rel="shortcut icon" href="https://elibrary.judiciary.gov.ph/assets/images/favicon.ico"/>
+    <script type="text/javascript" src="https://elibrary.judiciary.gov.ph/assets/js/jquery.js"></script>
+    <script type="text/javascript" src="https://elibrary.judiciary.gov.ph/assets/js/superfish.min.js"></script>
+    <script type="text/javascript" src="https://elibrary.judiciary.gov.ph/assets/js/supersubs.js"></script>
+    <script type="text/javascript" src="https://elibrary.judiciary.gov.ph/assets/js/cookies.js"></script>
+    <script type="text/javascript" src="https://elibrary.judiciary.gov.ph/assets/js/fontResizer.js"></script>
+    <script type="text/javascript" src="https://elibrary.judiciary.gov.ph/assets/js/theme.js"></script>
+    <script type="text/javascript" src="https://elibrary.judiciary.gov.ph/assets/js/section_menu.js"></script>
+
+    <!-- START DataTable -->
+
+        <!-- START LOAD SCRIPTS -->
+        
+        <!-- ✅ load jQuery ✅ -->
+        <!-- <script type="text/javascript" src="https://elibrary.judiciary.gov.ph/assets/js/jquery-3.7.1.min.js"></script> -->
+        <link rel="stylesheet" href="https://elibrary.judiciary.gov.ph/assets/DataTables/datatables.css" type="text/css" media="screen" />
+        <!-- ✅ load DataTables ✅ -->
+        <script type="text/javascript" src="https://elibrary.judiciary.gov.ph/assets/DataTables/datatables.js"></script>
+
+        <!-- END LOAD SCRIPTS -->
+    
+        <!-- START RA -->
+        <script>
+            jQuery( function ($) {
+                $('#ra').DataTable({
+                    // Options go here
+                    "processing": true,
+                    //"stateSave": true,
+                    "serverSide": true,
+                    "order":[],
+                    "pagingType": "full_numbers",
+                    "ajax": {
+                        url: "https://elibrary.judiciary.gov.ph/republic_acts/fetch_ra",
+                        type: "POST",
+                        data:{  'csrf_test_name' : '28c4c191b5888cc95bbd7a20be314e2b' },
+                    },
+                    "columnDefs":[{
+                        "targets":[0, 2],
+                        "orderable":false,
+                        /*'targets': [2,],    // this will invoke the below function on all cells
+                        'createdCell': function(td, cellData, rowData, row, col) {
+                            // this will give each cell an ID
+                            $(td).attr('id', 'cms_default_document_title');
+                        },*/
+                    },],
+                });
+            });
+        </script>
+        <!-- END RA -->
+
+             <!-- START PHILREP -->
+        <script>
+            jQuery( function ($) {
+                $('#volumes').DataTable({
+                    "pagingType": "full_numbers",
+                    "order":[[0], "desc"],
+                    "columnDefs":[
+                        {
+							//Targets column 2 (Files column) and prevents from being
+							//orderable
+                            "targets":[2],
+                            "orderable":false,
+                        },
+                        {
+                            // Target column 1 and tells DataTables to order column 1
+							//using data from Column0
+                            "targets": [1],
+                            "orderData": [0],
+                        },
+						
+						{
+							//Hides column 0 and prevents it from being searchable.
+							target: [0],
+							visible: false,
+							searchable: false,
+						},
+                    ],
+                });
+            });
+        </script>
+
+        <!-- START CASE INDEX -->
+        <script>
+            jQuery( function ($) {
+                $('#caseindex').DataTable({
+                    "pagingType": "full_numbers",
+                    "order":[],
+                    "columnDefs":[{
+                        "targets":[0,1],
+                        "orderable":false,
+                    },],
+                });
+            });
+        </script>
+        <!-- END CASEINDEX -->
+
+        <!-- START LAWYERS LIST -->
+        <script>
+            jQuery( function ($) {
+                $('#lawlist').DataTable({
+                    // INITIALIZATION OPTIONS GO HERE.
+                    "processing": true,
+                    //"stateSave": true,
+                    "serverSide": true,
+                    // ORDERING IS ENABLED BUT THERE IS NO DEFAULT ORDER.
+                    "order":[],
+                    "pagingType": "full_numbers",
+                    "ajax": {
+                        url: "https://elibrary.judiciary.gov.ph/lawyers_list/fetch_lawlist",
+                        type: "POST",
+                        data:{  'csrf_test_name' : '28c4c191b5888cc95bbd7a20be314e2b' },
+                    },
+                    "columnDefs":[{
+                        // "targets" ARE THE TABLE COLUMNS THAT ARE TO BE INITIALIZED.
+                        // STARTING WITH 0 AS THE FIRST COLUMN. HERE, TARGETED COLUMNS ARE
+                        // 2, 3, 4.
+                        "targets":[2, 3, 4],
+                        // TARGETED COLUMNS ARE NOT ORDERABLE.
+                        "orderable":false,
+                        /*'targets': [2,],    // this will invoke the below function on all cells
+                        'createdCell': function(td, cellData, rowData, row, col) {
+                            // this will give each cell an ID
+                            $(td).attr('id', 'cms_default_document_title');
+                        },*/
+                    },],
+                });
+            });
+        </script>
+        <!-- END LAWYERS LIST -->
+
+        <!-- START DataTables STYLES -->
+    
+        <!-- START REPUBLIC ACTS STYLES-->
+        <style>
+            table#ra {
+                font-family: calibri, candara, segoe, segoe ui, optima, arial;
+                font-size: 1.25em;
+                font-weight: bold;
+            }
+            td#cms_default_document_title {
+                text-align: justify;
+            }
+        
+            td#cms_default_document_title:after {
+                content: "";
+                display: inline-block;
+                width: 100%;
+            }
+        </style>
+        <!-- END REPUBLIC ACTS START STYLES -->
+
+        <!-- START PHILREP STYLES -->
+        <style>
+            table#volumes {
+                font-family: calibri, candara, segoe, segoe ui, optima, arial;
+                font-size: 1.25em;
+                font-weight: bold;
+            }
+        </style>
+        <!-- END PHILREP STYLES -->
+
+        <!-- START CASEINDEX STYLES -->
+        <style>
+            table#caseindex {
+                font-family: calibri, candara, segoe, segoe ui, optima, arial;
+                font-size: 1.25em;
+                font-weight: bold;
+            }
+        </style>
+        <!-- END CASEINDEX STYLES -->
+
+        <!-- START LAWYERS LIST STYLES -->
+        <style>
+            table#lawlist {
+                font-family: calibri, candara, segoe, segoe ui, optima, arial;
+                font-size: 1.2em;
+            }
+            
+        </style>
+        <!-- END LAWYERS LIST STYLES -->
+
+        <!-- END DataTables STYLES -->
+    
+    <!-- END DataTable -->
+
+    <link rel="stylesheet" href="https://elibrary.judiciary.gov.ph/assets/css/mystyle.css" type="text/css" media="screen" />
+
+    
+    <meta name='robots' content='noindex,nofollow'/>
+    <!-- remove 04.29.19 for console search-->
+    <!-- <meta name='robots' content='noindex,nofollow' /> -->
+
+    <link rel='stylesheet' id='wp_sidebarlogin_css_styles-css'  href='https://elibrary.judiciary.gov.ph/assets/css/style_login.css?ver=3.3.1' type='text/css' media='all' />
+
+    <!-- Font Awesome CSS -->
+    <link rel="stylesheet" href="https://elibrary.judiciary.gov.ph/assets/css/all.css">
+    <!-- jquery confirm -->
+    <link rel="stylesheet" href="https://elibrary.judiciary.gov.ph/assets/css/jquery-confirm.min.css">
+    <!-- jconfirm modal custom theme -->
+    <style>
+        .jconfirm.jconfirm-custom .jconfirm-bg{
+            background-color: rgba(13,0,45,0.95);
+        }
+        .jconfirm.jconfirm-custom .jconfirm-box{
+            color: #ccc;
+            text-align: center;
+            background-color: transparent;
+        }
+
+        /* Exclamation animation start */
+        .jconfirm.jconfirm-custom.jconfirm-open .jconfirm-box .jconfirm-title-c .jconfirm-icon-c {
+            -webkit-transform: scale(1);
+            transform: scale(1);
+        }
+        .jconfirm.jconfirm-custom .jconfirm-box div.jconfirm-title-c .jconfirm-icon-c {
+            -webkit-transition: -webkit-transform .5s;
+            transition: -webkit-transform .5s;
+            transition: transform .5s;
+            transition: transform .5s,-webkit-transform .5s;
+            -webkit-transform: scale(0);
+            transform: scale(0);
+            display: block;
+            margin-right: 0;
+            margin-left: 0;
+            margin-bottom: 10px;
+            font-size: 69px;
+            color: #ccc;
+        }
+        /* Exclamation animation end */
+
+        .jconfirm.jconfirm-custom .jconfirm-box .jconfirm-buttons button{
+            font-size: 16px;
+            border-radius: 2px;
+            background: rgb(13,0,45);
+            text-shadow: none;
+            border: none;
+            color: #ccc;
+            padding: 10px;
+            min-width: 100px;
+        }
+        .jconfirm.jconfirm-custom .jconfirm-box .jconfirm-buttons button:hover{
+            background: #ccc;
+            color: rgb(13,0,45);
+        }
+        .jconfirm.jconfirm-custom .jconfirm-box .jconfirm-title-c{
+            font-family: Tahoma, Verdana, serif;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .jconfirm.jconfirm-custom .jconfirm-box .jconfirm-content{
+            font-family: Tahoma, Verdana, serif;
+            text-align: justify;
+            font-size: 18px;
+        }
+        /* Targets content list item */
+        .jconfirm.jconfirm-custom .jconfirm-box .jconfirm-content li{
+            margin: 20px;
+        }
+        .jconfirm.jconfirm-my-theme .jconfirm-box .jconfirm-content-pane{
+        }
+    </style>
+
+<!-- FOR DTSEARCH -->
+<!-- START -->
+    <META NAME="AddedReference" CONTENT="InsertedForFormBuilder" HREF="https://elibrary.judiciary.gov.ph/assets/searchform/dtSearch_help.html">
+    <META NAME="AddedReference" CONTENT="InsertedForFormBuilder" HREF="https://elibrary.judiciary.gov.ph/assets/searchform/dtSearch_pdfhelp.pdf">
+    <META NAME="AddedReference" CONTENT="InsertedForFormBuilder" HREF="https://elibrary.judiciary.gov.ph/assets/searchform/dtSearch_WebSearchForm.css">
+    <META NAME="AddedReference" CONTENT="InsertedForFormBuilder" HREF="https://elibrary.judiciary.gov.ph/assets/searchform/dtSearch_SearchResults.css">
+    <META NAME="AddedReference" CONTENT="InsertedForFormBuilder" HREF="https://elibrary.judiciary.gov.ph/assets/searchform/dtSearch_Utilities.js">
+    <META NAME="AddedReference" CONTENT="InsertedForFormBuilder" HREF="https://elibrary.judiciary.gov.ph/assets/searchform/dtSearch_SearchResults.js">
+    <META NAME="AddedReference" CONTENT="InsertedForFormBuilder" HREF="https://elibrary.judiciary.gov.ph/assets/searchform/dtSearch_WebSearchForm.js">
+<!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <!-- <link rel="stylesheet" href="https://elibrary.judiciary.gov.ph/searchforms/custom.css"> -->
+
+    <style type='text/css'>
+        body{
+            /*background-image:url(searchforms/images/bg-blue.jpg);*/
+            /*background-size: 100% auto;*/
+            background-position:center top;
+            background-color: #193C74;
+            background-repeat:no-repeat;
+            background-position:fixed;
+            /*font-family: "Trebuchet MS";*/
+            font-size:10px;
+            /*color:#FFFFFF;*/
+            margin:0px 0px 0px 0px;
+        }
+        .forms{
+            font-size:10px;
+            border:1px solid #000000;
+        }
+        #cont_left{
+            width: 250px;
+            height: 400px;
+            background-color: #fff;
+            margin-left: 3%;
+            margin-top: 12%;
+            position: relative;
+        }
+        #cont_main{
+            width: 900px;
+            height: 400px;
+            background-color: #fff;
+            top:153px;
+            left: 300px;
+            position: absolute;
+        }
+        table{
+            position: relative;
+            top: 3px;
+        }
+        #copyright{
+            position: fixed;
+            bottom:-1%;
+            right: 1%;
+            z-index: -10;
+        }
+        #bared{
+            position: fixed;
+            bottom:0px;
+            right: 0px;
+            z-index: -9;
+            background-color: #000;
+            width: 2000px;
+            height: 20px;
+            padding-bottom: 2px;
+            padding-right: 2px;
+        }
+        iframe{
+            display:block;
+        }
+        /*change font size from 60px to 40px*/
+        div#blog-line h1 a {font-family: Georgia, serif; font-size:40px;  color:#fff;} 
+
+        /*change font size from 40px to 14px, letter spacing from -2px to 1px*/
+        div#blog-line h1 {font:14px Arial, serif; padding:20px 0; margin:0; color:#fff; letter-spacing:1px;}
+    </style>
+    <script>
+        // this deletes the cookie when called
+        function Delete_Cookie( name, path, domain ) {
+        if ( Get_Cookie( name ) ) document.cookie = name + "=" +
+        ( ( path ) ? ";path=" + path : "") +
+        ( ( domain ) ? ";domain=" + domain : "" ) +
+        ";expires=Thu, 01-Jan-1970 00:00:01 GMT";
+        }
+    </script>
+<!-- FOR DTSEARCH -->
+<!-- END -->
+<script>
+
+</script>
+
+</head>
+<!-- <body onLoad="Delete_Cookie( name, path, domain )"> -->
+<body>
+
+<div id="outline">
+<div id="blog-line">
+    <!-- blog title and tag line -->
+    <h1><a href="https://elibrary.judiciary.gov.ph/">Supreme Court E-Library</a> <br /> Information At Your Fingertips</h1> 
+</div>
+
+<!-- page navigation -->
+<div id="nav" class="clearfix">
+    <ul class="sf-menu">
+        <!--Comment out to remove Home in the header
+        <li class="page_item "><a href="http://10.10.100.51">Home</a></li>-->
+        <li class="page_item page-item-11 current_page_item"><a href="https://elibrary.judiciary.gov.ph/">HOME</a></li>
+        <!-- <li class=""><a href="https://elibrary.judiciary.gov.ph/assets/images/memorabilia/2023 Bar Passers.pdf">2023 Bar Passers</a></li> -->
+        <!-- <li class="page_item page-item-92"><a href="https://elibrary.judiciary.gov.ph/secquestion/secquestion_main">REGISTER HERE</a></li> -->
+        <li class="page_item page-item-202"><a href="https://elibrary.judiciary.gov.ph/philippinereports">PHILIPPINE REPORTS E-BOOKS</a>
+        <li class="page_item page-item-202"><a href="https://elibrary.judiciary.gov.ph/republic_acts">REPUBLIC ACTS</a>
+        <li class="page_item page-item-202"><a href="https://elibrary.judiciary.gov.ph/supremecourtjustices/chiefjusticelist/">CHIEF JUSTICES</a> 
+   <!-- <li class="page_item page-item-202"><a href="https://elibrary.judiciary.gov.ph/supremecourtjustices/scjmain">JUDICIARY MEMORABILIA HALL</a> -->
+            <ul class="children">
+				 <!--<li class="page_item page-item-202"><a href="https://elibrary.judiciary.gov.ph/supremecourtjustices/incumbentjusticelist/">Incumbent Justices</a></li>-->
+				 <!--<li class="page_item page-item-202"><a href="https://elibrary.judiciary.gov.ph/supremecourtjustices/chiefjusticelist/">Chief Justices</a></li>-->
+                <!-- <li class="page_item page-item-202"><a href="https://elibrary.judiciary.gov.ph/supremecourtjustices/associatejusticelist">Associate Justices</a></li> -->
+            </ul> 
+        </li>
+        <li class="page_item page-item-94"><a href="https://elibrary.judiciary.gov.ph/advisory/newsandadvisories/">NEWS & ADVISORIES</a></li>
+        <!--<li class="page_item page-item-544"><a href="links/">Links</a></li>-->
+        <li class="page_item page-item-546"><a href="https://elibrary.judiciary.gov.ph/sitemap/sitemap_main">SITE MAP</a></li>
+        <!--<li class="page_item page-item-548"><a href="feedback/">Feedback</a></li>-->
+        <li class="page_item page-item-84"><a href="https://elibrary.judiciary.gov.ph/aboutus/aboutus_main">ABOUT US</a>
+            <ul class='children'>
+                <li class="page_item page-item-86"><a href="https://elibrary.judiciary.gov.ph/aboutus/scelibrary">The Supreme Court E-Library</a></li>
+            <!-- <li class="page_item page-item-88"><a href="https://elibrary.judiciary.gov.ph/aboutus/elib_history">History of the E-Library</a></li> -->
+                <li class="page_item page-item-90"><a href="https://elibrary.judiciary.gov.ph/aboutus/elibrary_team">The E-Library Development Team</a></li>
+            </ul>
+        </li>
+        <!-- <li class="page_item page-item-548"><a href="https://elibrary.judiciary.gov.ph/contactus/contactus_main">CONTACT US</a></li> -->
+         
+    </ul>
+    <ul id="mail_rss">
+    <!--<li><a href="feed/">RSS</a></li>-->
+    </ul>           
+    <!-- ending header template -->
+</div>
+
+<div id="content" class="clearfix">
+<div id="right">
+<!-- FOR Toggle posts-->
+<p id="toggle-all"><a href="#" id="toggle" class="hide-all">Toggle posts</a></p>
+<!-- For FONT-SIZE changer  -->
+<p id="font-resize">
+<a id="default" href="#">A </a><a id="larger" href="#">A+ </a><a id="largest" href="#">A++</a>
+</p>
+<!-- widget -->
+
+<!---02/28/2022--->
+<!-- Search button only appears when not in the search page. -->
+<div id="wp_sidebarlogin-3" class="widget">
+    <p>
+        <!-- <STRONG>TO START</STRONG> click <STRONG>E-Library Search</STRONG>. -->
+        <center>
+            <b>CLICK THE IMAGE TO SEARCH</b>
+            <a href="https://elibrary.judiciary.gov.ph/search" target="_self">
+                <img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia/search_button.png"  alt="Elibrary Search"  title="E-Library Search" />
+            </a>
+        </center>
+  </p>
+</div>
+
+<!-- For Advisory
+<div id="container_faq">
+
+    <table border='0'>
+    <tr valign='center'>
+        <td>ADVISORY:</td>
+    </tr>
+    <tr valign='center'>
+        <td><div align='justify'>The Supreme Court E-Library will undergo a system
+		maintenance on March 28-31, 2024 and will be inaccessible during this period.<br><br>
+		Thank you for your understanding!<br><br></div></td>
+		
+    </tr>   
+</table>
+</div>
+<br>
+-->
+
+
+<div id="container_faq">
+    <center>
+        <!--[<A HREF="https://elibrary.judiciary.gov.ph/secquestion/secquestion_main"><b>REGISTER</b></A>]  | [<A HREF="https://elibrary.judiciary.gov.ph/aboutus/faq"><b>FAQs</b></A>]
+        <b>CONTACT US</b><br>
+        <STRONG>(02)8524-2706</STRONG>-->
+    </center>
+    <table border='0'>
+    <tr valign='center'>
+        <td>CONTACT:</td>
+    </tr>
+    <tr valign='center'>
+        <td>Supreme Court of the Philippines <br>
+		    Library Services,<br> 
+			Padre Faura, Ermita, Manila, Philippines 1000</td>
+    </tr>
+    <tr valign='center'>
+        <td>(632) 8524-2706</td>
+    </tr>
+    <tr valign='center'>
+        <td>libraryservices.sc@judiciary.gov.ph<br></td>
+    </tr>
+</table>
+</div>
+
+<br>
+<div id="container_seal">
+
+<center><a href="https://npcregistration.privacy.gov.ph/certificate/organizationRegistration/64a7c5e47c2074390ec3ccb5" target="_blank"><img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia/CORSeal.jpg"/></a></center>
+   
+</div>
+
+<div class="widget_quick">
+    
+<img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia
+/quick_links/header.png"/></a>
+    
+<a href="http://sc.judiciary.gov.ph/" title="Supreme Court of the Philippines" target="_blank"><img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia
+/quick_links/sc.png"  alt="Supreme Court of the Philippines"  title="Supreme Court of the Philippines" /></a>
+
+<a href="http://ca.judiciary.gov.ph/" title="Cour of Appeals" target="_blank"><img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia
+/quick_links/ca.png"  alt="Cour of Appeals"  title="Cour of Appeals" /></a>
+
+<a href="http://sb.judiciary.gov.ph/" title="Sandiganbayan" target="_blank"><img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia
+/quick_links/sb.png"  alt="Sandiganbayan"  title="Sandiganbayan" /></a>
+
+<a href="http://cta.judiciary.gov.ph/" title="Court of Tax Appeals" target="_blank"><img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia
+/quick_links/cta.png"  alt="Court of Tax Appeals"  title="Court of Tax Appeals" /></a></li>
+
+<a href="http://jbc.judiciary.gov.ph/" title="Judicial and Bar Council" target="_blank"><img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia
+/quick_links/jbc.png"  alt="Judicial and Bar Council"  title="Judicial and Bar Council" /></a>
+
+<a href="http://oca.judiciary.gov.ph/" title="Office of the Court Administrator" target="_blank"><img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia
+/quick_links/oca.png"  alt="Office of the Court Administrator"  title="Office of the Court Administrator" /></a>
+
+<a href="http://philja.judiciary.gov.ph/" title="Philippine Judicial Academy" target="_blank"><img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia
+/quick_links/philja.png"  alt="Philippine Judicial Academy"  title="Philippine Judicial Academy" /></a>
+
+<!--
+<a href="http://pmc.judiciary.gov.ph/" title="Philippine Meditation Center" target="_blank"><img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia
+/quick_links/pmc.png"  alt="Philippine Meditation Center"  title="Philippine Meditation Center" /></a>
+-->
+
+</div>
+
+<div id="linkcat-5" class="widget"><h4>Foreign Supreme Courts</h4>
+    <ul class='xoxo blogroll'>
+<li><a href="http://www.scourt.go.kr" target="_blank">Korea, South</a></li>
+<li><a href="http://www.kehakiman.gov.my/jugdment/fc/latest.shtml" target="_blank">Malaysia</a></li>
+<li><a href="http://www.supcourt.gov.sg/" target="_blank">Singapore</a></li>
+<li><a href="http://www.supremecourtus.gov/" target="_blank">United States of America</a></li>
+
+    </ul>
+</div>
+</div>
+ <div id="left" >
+ <H3 class="title_headline"></H3>
+ <div class="single_content">
+<div id="container_title">
+   
+    <H3>Mar 2015 |  Decisions / Signed Resolutions</H3><HR>
+    <ul style='list-style:none;margin-top:20px;'>
+      
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59655'><STRONG>G.R. No. 205469</STRONG><br>
+             <small>BPI FAMILY SAVINGS BANK, INC., PETITIONER, VS. ST. MICHAEL MEDICAL CENTER, INC., RESPONDENT.   <br>
+             </small>March 25, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/60260'><STRONG>G.R. No. 206267</STRONG><br>
+             <small>PEOPLE OF THE PHILIPPINES, PLAINTIFF-APPELLEE, VS. RONNIE BUAT ALIAS DATU SINSUAT, ACCUSED-APPELLANT.   <br>
+             </small>March 25, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59613'><STRONG>G.R. No. 183511</STRONG><br>
+             <small>REPUBLIC OF THE PHILIPPINES, PETITIONER, VS. EMETERIA G. LUALHATI, RESPONDENT.   <br>
+             </small>March 25, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59633'><STRONG>G.R. No. 176908</STRONG><br>
+             <small>PURISIMO M. CABAOBAS, EXUPERIO C. MOLINA, GILBERTO V. OPINION, VICENTE R. LAURON, RAMON M. DE PAZ, JR., ZACARIAS E. CARBO, JULITO G. ABARRACOSO, DOMINGO B. GLORIA, AND FRANCISCO P. CUMPIO, PETITIONERS, VS. PEPSI-COLA PRODUCTS, PHILIPPINES, INC., RESPONDENTS.   <br>
+             </small>March 25, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59645'><STRONG>G.R. No. 209843</STRONG><br>
+             <small>TAIWAN KOLIN CORPORATION, LTD., PETITIONER, VS. KOLIN ELECTRONICS CO., INC., RESPONDENT.   <br>
+             </small>March 25, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59654'><STRONG>G.R. No. 209227</STRONG><br>
+             <small>PEOPLE OF THE PHILIPPINES, PLAINTIFF-APPELLEE, VS. CHARLIE OROSCO, ACCUSED-APPELLANT.   <br>
+             </small>March 25, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59659'><STRONG>G.R. No. 206381</STRONG><br>
+             <small>PEOPLE OF THE PHILIPPINES, PLAINTIFF-APPELLEE, VS. DANIEL MATIBAG Y DE VILLA @ “DANI” OR “DANILO,” ACCUSED-APPELLANT.
+   <br>
+             </small>March 25, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59842'><STRONG>G.R. No. 209370</STRONG><br>
+             <small>FORT BONIFACIO DEVELOPMENT CORPORATION, PETITIONER, VS. VALENTIN L. FONG, RESPONDENT.   <br>
+             </small>March 25, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59849'><STRONG>A.C. No. 8826</STRONG><br>
+             <small>SHIRLEY OLAYTA-CAMBA, COMPLAINANT, VS. ATTY. OTILIO SY BONGON, RESPONDENT.   <br>
+             </small>March 25, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59868'><STRONG>G.R. No. 200759</STRONG><br>
+             <small>FAJ CONSTRUCTION & DEVELOPMENT CORPORATION, PETITIONER, VS. SUSAN M. SAULOG, RESPONDENT.   <br>
+             </small>March 25, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59917'><STRONG>G.R. No. 202943</STRONG><br>
+             <small>THE DEPARTMENT OF HEALTH, REPRESENTED BY SECRETARY ENRIQUE T. ONA, AND THE FOOD AND DRUG ADMINISTRATION (FORMERLY THE BUREAU OF FOOD AND DRUGS), REPRESENTED BY ASSISTANT SECRETARY OF HEALTH NICOLAS B. LUTERO III, OFFICER-IN-CHARGE, PETITIONERS, VS. PHILIP MORRIS PHILIPPINES MANUFACTURING, INC., RESPONDENT.   <br>
+             </small>March 25, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59921'><STRONG>G.R. No. 160914</STRONG><br>
+             <small>MARCELA M. DELA CRUZ, PETITIONER, VS. ANTONIO O. HERMANO AND HIS WIFE REMEDIOS HERMANO, RESPONDENTS.   <br>
+             </small>March 25, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59929'><STRONG>G.R. No. 202989</STRONG><br>
+             <small>COMGLASCO CORPORATION/AGUILA GLASS, PETITIONER, VS. SANTOS CAR CHECK CENTER CORPORATION, RESPONDENT.   <br>
+             </small>March 25, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59933'><STRONG>G.R. No. 183531</STRONG><br>
+             <small>EASTERN TELECOMMUNICATIONS PHILIPPINES, INC., PETITIONER, VS. COMMISSIONER OF INTERNAL REVENUE, RESPONDENT.   <br>
+             </small>March 25, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59970'><STRONG>G.R. No. 198753</STRONG><br>
+             <small>JOSE “<i>PEPE</i>” SANICO, PETITIONER, VS. PEOPLE OF THE PHILIPPINES AND JENNIFER SON-TENIO, RESPONDENTS.   <br>
+             </small>March 25, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59971'><STRONG>G.R. No. 202970</STRONG><br>
+             <small>NATANYA JOANA D. ARGEL, PETITIONER, VS. GOV. LUIS C. SINGSON, IN HIS CAPACITY AS THE GOVERNOR OF THE PROVINCE OF ILOCOS SUR, RESPONDENT.
+   <br>
+             </small>March 25, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59974'><STRONG>G.R. No. 197556</STRONG><br>
+             <small>WATERFRONT CEBU CITY CASINO HOTEL, INC. AND MARCO PROTACIO, PETITIONERS, VS. ILDEBRANDO LEDESMA, RESPONDENT.   <br>
+             </small>March 25, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59977'><STRONG>G.R. No. 173241</STRONG><br>
+             <small>SILICON PHILIPPINES, INC. (FORMERLY INTEL PHILIPPINES MANUFACTURING, INC.), PETITIONER, VS. COMMISSIONER OF INTERNAL REVENUE, RESPONDENT.
+   <br>
+             </small>March 25, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59980'><STRONG>G.R. No. 211199</STRONG><br>
+             <small>PEOPLE OF THE PHILIPPINES, PLAINTIFF AND APPELLEE, VS. RANDY ROLLO <I>Y</I> LAGASCA, DEFENDANT AND APPELLANT.   <br>
+             </small>March 25, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/60010'><STRONG>G.R. No. 189949</STRONG><br>
+             <small>CASTILLEJOS CONSUMERS ASSOCIATION, INC. (CASCONA), PETITIONER, VS. JOSE S. DOMINGUEZ, ISIAS Q. VIDUA, VICENTE M. BARRETO, JOSE M. SANTIAGO, JOSE NASERIV C. DOLOJAN, JUAN FERNANDEZ, HONORARIO DILAG, JR., FIDEL CORREA, ALICIA MERCADO, LECIRA JUAREZ, ATTY. FULGENCIO VIGARE, JR., ANGELITO U. SACRO, MILDRED ESGUERRA, ANTONIO APALISOK, SALAMAN D. MANGCA, DANILO S. SEGOBRE, EDMUNDO D. ENGAO, P/SUPT. ROLAND FELIX, P/SUPT. JERRY SUMBAD, P/INSP. GERRY HADUCA, P/INSP. ROBIN FUGIRAN, COOPERATIVE DEVELOPMENT AUTHORITY (CDA), BARTOLOME GALARITA, JR., WILFRE0O JIMENEZ, HITLER UNTAL, JOEL JOHN PACTORES, ROLLY CADORNA, RUDY ELIPSE, IBRAHIM LAHI, RODOLFO BONIFACIO, JR., ANECITO VIEJO, JR., JONARD IRAN, ANGELITO BALDONAZA, NIKKO DAJAY, ROLANDO ASPA, JESON CABATINGAN, JOBERT UGANG (SECURITY GUARDS), JOHN DOES (MEMBERS OF THE ZAMBALES PROVINCIAL MOBILE GROUP OF THE PHILIPPINE NATIONAL POLICE), RESPONDENTS.   <br>
+             </small>March 25, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/60024'><STRONG>G.R. No. 212635</STRONG><br>
+             <small>PEOPLE OF THE PHILIPPINES, PLAINTIFF-APPELLEE, VS. CHARLIE SORIN <I>Y</I> TAGAYLO, ACCUSED-APPELLANT.   <br>
+             </small>March 25, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/60274'><STRONG>G.R. No. 169407</STRONG><br>
+             <small>BANK OF THE PHILIPPINE ISLANDS, PETITIONER, VS. AMADOR DOMINGO, RESPONDENT.   <br>
+             </small>March 25, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/60420'><STRONG>G.R. No. 175493</STRONG><br>
+             <small>REPUBLIC OF THE PHILIPPINES, PETITIONER, VS. HEIRS OF GABRIEL Q. FERNANDEZ,<SUP STYLE="COLOR: RGB(255, 0, 0);">[1]</SUP> RESPONDENTS.   <br>
+             </small>March 25, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59641'><STRONG>A.C. No. 10132</STRONG><br>
+             <small>HEIRS OF PEDRO ALILANO REPRESENTED BY DAVID ALILANO, COMPLAINANTS, VS. ATTY. ROBERTO E. EXAMEN, RESPONDENT.   <br>
+             </small>March 24, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59854'><STRONG>A.C. No. 8776</STRONG><br>
+             <small>ANTONINA S. SOSA, COMPLAINANT, VS. ATTY. MANUEL V. MENDOZA, RESPONDENT.   <br>
+             </small>March 23, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59916'><STRONG>G.R. No. 202805</STRONG><br>
+             <small>ROSARIO BANGUIS-TAMBUYAT, PETITIONER, VS. WENIFREDA BALCOM-TAMBUYAT, RESPONDENT.   <br>
+             </small>March 23, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59936'><STRONG>G.R. No. 184301</STRONG><br>
+             <small>GE MONEY BANK, INC. (FORMERLY KEPPEL BANK PHILIPPINES, INC.), PETITIONER, VS. SPOUSES VICTORINO M. DIZON AND ROSALINA L. DIZON, RESPONDENTS.
+   <br>
+             </small>March 23, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59981'><STRONG>G.R. No. 197115</STRONG><br>
+             <small>REPUBLIC OF THE PHILIPPINES, REPRESENTED BY THE SECRETARY OF AGRICULTURE, PETITIONER, VS. FEDERICO DACLAN, JOSEFINA COLLADO AND HER HUSBAND FEDERICO DACLAN, TEODORO DACLAN AND MINVILUZ DACLAN AS SURVIVING HEIRS OF DECEASED JOSE DACLAN, RESPONDENTS.   [G.R. NO. 197267]</BR></BR> FEDERICO DACLAN, JOSEFINA COLLADO, TEODORO DACLAN AND MINVILUZ DACLAN AS SURVIVING HEIRS OF DECEASED JOSE DACLAN, PETITIONERS, VS. REPUBLIC OF THE PHILIPPINES, REPRESENTED BY THE SECRETARY OF AGRICULTURE AND PROVINCE OF LA UNION, REPRESENTED BY ITS PROVINCIAL GOVERNOR, RESPONDENTS.   <br>
+             </small>March 23, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59994'><STRONG>G.R. No. 193809</STRONG><br>
+             <small>SATURNINO NOVECIO, GAVINO NOVECIO, ANASTACIO GOLEZ, ABUNDIO SOMBILON, BERTING RODRIGUEZ, MELITON CATALAN, PETITIONERS, VS. HON. RODRIGO F. LIM, JR., AS CHAIRMAN, HON. LEONCIA R. DIMAGIBA AS <I>PONENTE</I> AND AS MEMBER AND HON. ANGELITA A. GACUTAN AS MEMBER, FORMER TWENTY-THIRD DIVISION, COURT OF APPEALS, MINDANAO STATION, HON. JUDGE BENJAMIN ESTRADA, IN HIS CAPACITY AS PRESIDING JUDGE OF BRANCH 9, RTC, MALAYBALAY, BUKIDNON, MARIA CARMEN J. TUAZON, REP. BY HER ATTORNEY-IN-FACT, LOPE DUROTAN, RESPONDENTS.    VERGELIO ROSALES, LUIS TEQUILIO, GREGORIO PANANGIN, JOSEPH RODRIQUEZ, EDDIE RODRIGUEZ, PETITIONERS, VS. HON. RODRIGO F. LIM, JR., AS CHAIRMAN, HON. LEONCIA R. DIMAGIBA AS <I>PONENTE</I> AND AS MEMBER AND HON. ANGELITA A. GACUTAN AS MEMBER, FORMER TWENTY-THIRD DIVISION, COURT OF APPEALS, MINDANAO STATION, HON. JUDGE BENJAMIN ESTRADA, IN HIS CAPACITY AS PRESIDING JUDGE OF BRANCH 9, RTC, MALAYBALAY, BUKIDNON, MANUEL V. NIETO, REP. BY HIS ATTORNEY-IN-FACT, LOPE DUROTAN, RESPONDENTS.   <br>
+             </small>March 23, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/60525'><STRONG>G.R. No. 197546</STRONG><br>
+             <small>PEOPLE OF THE PHILIPPINES, PLAINTIFF-APPELLEE, VS. BAYANI DE LEON, ANTONIO DE LEON, DANILO DE LEON AND YOYONG DE LEON, ACCUSED-APPELLANTS.
+   <br>
+             </small>March 23, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/60684'><STRONG>G.R. No. 184355</STRONG><br>
+             <small>ARNULFO A.K.A. ARNOLD JACABAN, PETITIONER, VS. PEOPLE OF THE PHILIPPINES, RESPONDENT.   <br>
+             </small>March 23, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59380'><STRONG>G.R. No. 211497</STRONG><br>
+             <small>HOCHENG PHILIPPINES CORPORATION, PETITIONER, VS. ANTONIO M. FARRALES, RESPONDENT.   <br>
+             </small>March 18, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59409'><STRONG>G.R. No. 199113</STRONG><br>
+             <small>RENATO M. DAVID, PETITIONER, VS. EDITHA A. AGBAY AND PEOPLE OF THE PHILIPPINES, RESPONDENTS.   <br>
+             </small>March 18, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59411'><STRONG>G.R. No. 206019</STRONG><br>
+             <small>PHILIPPINE NATIONAL BANK, PETITIONER, VS. COMMISSIONER OF INTERNAL REVENUE, RESPONDENT.   <br>
+             </small>March 18, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59415'><STRONG>G.R. No. 205300</STRONG><br>
+             <small>FONTERRA BRANDS PHILS., INC., PETITIONER, VS. LEONARDO<SUP STYLE="COLOR: RGB(255, 0, 0);">[1]</SUP> LARGADO AND TEOTIMO ESTRELLADO, RESPONDENTS.   <br>
+             </small>March 18, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59626'><STRONG>G.R. No. 200983</STRONG><br>
+             <small>REPUBLIC OF THE PHILIPPINES, PETITIONER, VS. HUANG TE FU, A.K.A. ROBERT UY, RESPONDENT.   <br>
+             </small>March 18, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59629'><STRONG>G.R. No. 201427</STRONG><br>
+             <small>TEOFILO B. ADOLFO, PETITIONER, VS. FE. T. ADOLFO, RESPONDENT.
+   <br>
+             </small>March 18, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59637'><STRONG>G.R. No. 200620</STRONG><br>
+             <small>ROBERTO L. ABAD, MANUEL D. ANDAL, BENITO V. ARANETA, PHILIP G. BRODETT, ENRIQUE L. LOCSIN AND ROBERTO V. SAN JOSE, PETITIONERS, VS. PHILIPPINE COMMUNICATIONS SATELLITE CORPORATION, REPRESENTED BY VICTOR AFRICA, RESPONDENT.
+   <br>
+             </small>March 18, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59651'><STRONG>G.R. No. 203655</STRONG><br>
+             <small>SM LAND, INC., PETITIONER, VS. BASES CONVERSION AND DEVELOPMENT AUTHORITY AND ARNEL PACIANO D. CASANOVA, ESQ., IN HIS OFFICIAL CAPACITY AS PRESIDENT AND CEO OF BCDA, RESPONDENTS.   <br>
+             </small>March 18, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59753'><STRONG>G.R. No. 179640</STRONG><br>
+             <small>HACIENDA CATAYWA/MANUEL VILLANUEVA, owner, JOEMARIE VILLANUEVA, manager, MANCY AND SONS ENTERPRISES, INC., PETITIONERS, VS. ROSARIO LOREZO, RESPONDENT.   <br>
+             </small>March 18, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59760'><STRONG>G.R. No. 212496</STRONG><br>
+             <small>NESTOR BRACERO, PETITIONER, VS. RODULFO ARCELO AND THE HEIRS OF VICTORIANO MONISIT, namely: LOURDES MENCHAVEZ, ROGELIO RUELO, AND MARTINIANA APOR, RESPONDENTS.   <br>
+             </small>March 18, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59851'><STRONG>G.R. No. 203240</STRONG><br>
+             <small>NORTHERN ISLANDS, CO., INC., PETITIONER, VS. SPOUSES DENNIS AND CHERYLIN<SUP STYLE="COLOR: RGB(255, 0, 0);">*</SUP> GARCIA, DOING BUSINESS UNDER THE NAME AND STYLE “ECOLAMP MULTI RESOURCES,” RESPONDENTS.   <br>
+             </small>March 18, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59860'><STRONG>A.C. No. 10672</STRONG><br>
+             <small>EDUARDO A. MAGLENTE,<SUP STYLE="COLOR: RGB(255, 0, 0);">*</SUP> COMPLAINANT, VS. ATTY. DELFIN R. AGCAOILI, JR., RESPONDENT.   <br>
+             </small>March 18, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59863'><STRONG>A.C. No. 10695</STRONG><br>
+             <small>CRESCENCIANO M. PITOGO, COMPLAINANT, VS. ATTY. JOSELITO TROY SUELLO, RESPONDENT.   <br>
+             </small>March 18, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59996'><STRONG>G.R. No. 207422</STRONG><br>
+             <small>ANGEL ABAD, PETITIONER, VS. HERMINIO DELA CRUZ, RESPONDENT.
+   <br>
+             </small>March 18, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/60004'><STRONG>G.R. No. 211159</STRONG><br>
+             <small>PEOPLE OF THE PHILIPPINES, PLAINTIFF-APPELLEE, VS. MARCELINO OLOVERIO, ACCUSED-APPELLANT.   <br>
+             </small>March 18, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/60007'><STRONG>G.R. No. 175842</STRONG><br>
+             <small>NILO MACAYAN, JR. Y MALANA, PETITIONER, VS. PEOPLE OF THE PHILIPPINES, RESPONDENT.   <br>
+             </small>March 18, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/60013'><STRONG>G.R. No. 178407</STRONG><br>
+             <small>METROPOLITAN BANK AND TRUST COMPANY, PETITIONER, VS. S.F. NAGUIAT ENTERPRISES, INC., RESPONDENT.   <br>
+             </small>March 18, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/60017'><STRONG>G.R. No. 155405</STRONG><br>
+             <small>THE HEIRS OF EUGENIO LOPEZ, SR. NAMELY, OSCAR M. LOPEZ, MANUEL M. LOPEZ AND PRESENTACION L. PSINAKIS, PETITIONERS, VS. THE HONORABLE FRANCISCO QUERUBIN, IN HIS CAPACITY AS PRESIDING JUDGE OF THE REGIONAL TRIAL COURT OF ANTIPOLO, BRANCH 74, AND THE HEIRS OF ALFONSO SANDOVAL AND HIS WIFE ROSA RUIZ, REPRESENTED BY THEIR ATTORNEY-IN-FACT, MRS. IMELDA RIVERA, RESPONDENTS.  [G.R. No. 164092]   HEIRS OF EUGENIO LOPEZ, PETITIONERS, VS. ALFONSO SANDOVAL AND ROMAN OZAETA, JR., RESPONDENTS.   <br>
+             </small>March 18, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/67814'><STRONG>G.R. No. 167134</STRONG><br>
+             <small>COMMISSIONER OF INTERNAL REVENUE, PETITIONER, VS. TRADERS ROYAL BANK, RESPONDENT.   <br>
+             </small>March 18, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/60257'><STRONG>G.R. Nos. 211789-90</STRONG><br>
+             <small>DR. REY B. AQUINO, PETITIONER, VS. COMMISSION ON ELECTIONS, RESPONDENT.   <br>
+             </small>March 17, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59421'><STRONG>G.R. No. 204757</STRONG><br>
+             <small>ATTY. JANET D. NACION, PETITIONER, VS. COMMISSION ON AUDIT, MA. GRACIA PULIDO-TAN, JUANITO ESPINO AND HEIDI MENDOZA, RESPONDENTS.
+   <br>
+             </small>March 17, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59664'><STRONG>OCA IPI No. 14-220-CA-J</STRONG><br>
+             <small>RE: COMPLAINT DATED JANUARY 28, 2014 OF WENEFREDO PARREÑO, <I>ET AL.,</I> AGAINST HON. CELIA C. LIBREA-LEAGOGO, HON. ELIHU A. YBAÑEZ AND HON. AMY C. LAZARO-JAVIER, ASSOCIATE JUSTICES OF THE COURT OF APPEALS, RELATIVE TO CA G.R. SP NO. 108807   <br>
+             </small>March 17, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59386'><STRONG>G.R. No. 190828</STRONG><br>
+             <small>ONOFRE V. MONTERO, EDGARDO N. ESTRAÑERO, RENING P. PADRE, GABRIEL A. MADERA, HERMINIO T. TACLA, NELSON C. VILORIA, DEMETRIO Q. PAJARILLO, ALFREDO R. AGANON, REYNALDO AVILA, ALBERT T. RUIZ, NESTOR Y. YAGO, HARTY M. TUPASI, AGUSTIN R. AVILA, JR. OR MARCOS R. AVILA, BONIFACIO G. BALITNANG, JOSELITO D. CUENTA, JONAS P. ESTILONG, DOMINADOR C. CANARIA, GENARO C. RONDARIS, HERARDO M. DULAY, FRANKLIN A. RAVINA, JR., AND RUBEN C. CABELLO, PETITIONERS, VS. TIMES TRANSPORTATION CO., INC., AND SANTIAGO RONDARIS, MENCORP TRANSPORT SYSTEMS, INC., VIRGINIA R. MENDOZA AND REYNALDO MENDOZA, RESPONDENTS.
+   <br>
+             </small>March 16, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59617'><STRONG>G.R. No. 198024</STRONG><br>
+             <small>PEOPLE OF THE PHILIPPINES, PLAINTIFF-APPELLEE, VS. RAFAEL CUNANAN Y DAVID <i>ALIAS</i> “PAENG PUTOL”, ACCUSED-APPELLANT.   <br>
+             </small>March 16, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59746'><STRONG>A.C. No. 8330</STRONG><br>
+             <small>TERESITA B. ENRIQUEZ, COMPLAINANT, VS. ATTY. TRINA DE VERA, RESPONDENT.   <br>
+             </small>March 16, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59749'><STRONG>G.R. No. 183212</STRONG><br>
+             <small>WALLEM PHILIPPINES SERVICES, INC. AND WALLEM SHIP MANAGEMENT, LTD., PETITIONERS, VS. HEIRS OF THE LATE PETER PADRONES, RESPONDENTS.
+   <br>
+             </small>March 16, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59866'><STRONG>G.R. No. 208908</STRONG><br>
+             <small>THE COFFEE BEAN AND TEA LEAF PHILIPPINES, INC. AND WALDEN CHU, PETITIONERS, VS. ROLLY P. ARENAS, RESPONDENT.   <br>
+             </small>March 11, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/60265'><STRONG>A.C. No. 8261</STRONG><br>
+             <small>JESSIE T. CAMPUGAN AND ROBERT C. TORRES, COMPLAINANTS, VS. ATTY. FEDERICO S. TOLENTINO, JR., ATTY. RENATO G. CUNANAN, ATTY. DANIEL F. VICTORIO, JR., AND ATTY. ELBERT T. QUILALA, RESPONDENTS.  [A.C. No. 8725]   JESSIE T. CAMPUGAN AND ROBERT C. TORRES, COMPLAINANTS, VS. ATTY. CONSTANTE P. CALUYA, JR., AND ATTY. ELBERT T. QUILALA, RESPONDENTS.   <br>
+             </small>March 11, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59398'><STRONG>A.C. No. 7593</STRONG><br>
+             <small>ALVIN S. FELICIANO, COMPLAINANT, VS. ATTY. CARMELITA BAUTISTA-LOZADA, RESPONDENT.   <br>
+             </small>March 11, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59395'><STRONG>G.R. No. 195661</STRONG><br>
+             <small>UNKNOWN OWNER OF THE VESSEL M/V CHINA JOY, SAMSUN SHIPPING LTD., AND INTER-ASIA MARINE TRANSPORT, INC., PETITIONERS, VS. ASIAN TERMINALS, INC., RESPONDENT.   <br>
+             </small>March 11, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59401'><STRONG>A.C. No. 5914</STRONG><br>
+             <small>SPOUSES ROGELIO AMATORIO AND AIDA AMATORIO, COMPLAINANTS, VS. ATTY. FRANCISCO DY YAP AND ATTY. WHELMA F. SITON-YAP, RESPONDENTS.
+   <br>
+             </small>March 11, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59610'><STRONG>G.R. No. 207747</STRONG><br>
+             <small>SPOUSES CHIN KONG WONG CHOI AND ANA O. CHUA, PETITIONERS, VS. UNITED COCONUT PLANTERS BANK, RESPONDENT.   <br>
+             </small>March 11, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59616'><STRONG>G.R. No. 203774</STRONG><br>
+             <small>CARGILL PHILIPPINES, INC., PETITIONER, VS. COMMISSIONER OF INTERNAL REVENUE, RESPONDENT.   <br>
+             </small>March 11, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59612'><STRONG>G.R. No. 209383</STRONG><br>
+             <small>SEACREST MARITIME MANAGEMENT, INC., ROLANDO B. MAGCALE, AND SEALION SHIPPING LIMITED – UNITED KINGDOM, PETITIONERS, VS. MAURICIO G. PICAR, JR., RESPONDENT.   <br>
+             </small>March 11, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59624'><STRONG>G.R. No. 212054</STRONG><br>
+             <small>ST. LUKE’S MEDICAL CENTER, INC., PETITIONER, VS. MARIA THERESA V. SANCHEZ, RESPONDENT.   <br>
+             </small>March 11, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59627'><STRONG>G.R. No. 175433</STRONG><br>
+             <small>ATTY. JACINTO C. GONZALES, PETITIONER, VS. MAILA CLEMEN F. SERRANO, RESPONDENT.   <br>
+             </small>March 11, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59631'><STRONG>G.R. No. 155701</STRONG><br>
+             <small>LIM TECK CHUAN, PETITIONER, VS. SERAFIN UY AND LEOPOLDA CECILIO, LIM SING CHAN @ HENRY LIM, RESPONDENTS.   <br>
+             </small>March 11, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59739'><STRONG>G.R. No. 192284</STRONG><br>
+             <small>ALEX TIONCO <I>Y</I> ORTEGA, PETITIONER, VS. PEOPLE OF THE PHILIPPINES, RESPONDENT.   <br>
+             </small>March 11, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59844'><STRONG>G.R. No. 196750</STRONG><br>
+             <small>MA. ELENA R. DIVINAGRACIA, AS ADMINISTRATRIX OF THE ESTATE OF THE LATE SANTIAGO C. DIVINAGRACIA, PETITIONER, VS. CORONACION PARILLA, CELESTIAL NOBLEZA, CECILIA LELINA, CELEDONIO NOBLEZA, AND MAUDE NOBLEZA, RESPONDENTS.
+   <br>
+             </small>March 11, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59858'><STRONG>G.R. No. 209283</STRONG><br>
+             <small>CECILIA RACHEL V. QUISUMBING, PETITIONER, VS. LORETTA ANN P. ROSALES, MA. VICTORIA V. CARDONA AND NORBERTO DELA CRUZ, IN THEIR CAPACITIES AS CHAIRPERSON AND MEMBERS, RESPECTIVELY, OF THE COMMISSION ON HUMAN RIGHTS, RESPONDENTS.   <br>
+             </small>March 11, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59876'><STRONG>G.R. No. 207988</STRONG><br>
+             <small>THE PEOPLE OF THE PHILIPPINES, PLAINTIFF-APPELLEE, VS. BRIAN MERCADO <I>Y</I> SARMIENTO, ACCUSED-APPELLANT.   <br>
+             </small>March 11, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59878'><STRONG>G.R. No. 185374</STRONG><br>
+             <small>SIMPLICIA CERCADO-SIGA AND LIGAYA CERCADO-BELISON, PETITIONERS, VS. VICENTE CERCADO, JR., MANUELA C. ARABIT, LOLITA C. BASCO, MARIA C. ARALAR AND VIOLETA C. BINADAS, RESPONDENTS.   <br>
+             </small>March 11, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59882'><STRONG>G.R. No. 176033</STRONG><br>
+             <small>FELILIBETH AGUINALDO AND BENJAMIN PEREZ, PETITIONERS, VS. REYNALDO P. VENTUS AND JOJO B. JOSON, RESPONDENTS.   <br>
+             </small>March 11, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59883'><STRONG>G.R. No. 205492</STRONG><br>
+             <small>REPUBLIC OF THE PHILIPPINES, PETITIONER, VS. SPOUSES DANTE AND LOLITA BENIGNO, RESPONDENTS.   <br>
+             </small>March 11, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59923'><STRONG>G.R. No. 189296</STRONG><br>
+             <small>PEOPLE OF THE PHILIPPINES, PLAINTIFF-APPELLEE, VS. RECTO ANGNGAO <I>Y</I> MAKAY AND ROBERT CARLIN <I>Y</I> PECDASEN, ACCUSED, RECTO ANGNGAO <I>Y</I> MAKAY, ACCUSED-APPELLANT.   <br>
+             </small>March 11, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59927'><STRONG>G.R. No. 167052</STRONG><br>
+             <small>BANK OF THE PHILIPPINE ISLANDS SECURITIES CORPORATION, PETITIONER, VS. EDGARDO V. GUEVARA, RESPONDENT.   <br>
+             </small>March 11, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59942'><STRONG>G.R. No. 160728</STRONG><br>
+             <small>CLT REALTY DEVELOPMENT CORPORATION, PETITIONER, VS. PHIL-VILLE DEVELOPMENT AND HOUSING CORPORATION, REPUBLIC OF THE PHILIPPINES (THROUGH THE OFFICE OF THE SOLICITOR GENERAL), AND THE REGISTER OF DEEDS OF METRO MANILA DISTRICT III, CALOOCAN CITY, RESPONDENTS.   <br>
+             </small>March 11, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/60057'><STRONG>G.R. No. 171127</STRONG><br>
+             <small>NOEL CASUMPANG, RUBY SANGA-MIRANDA AND SAN JUAN DE DIOS HOSPITAL, PETITIONERS, VS. NELSON CORTEJO, RESPONDENT.  [G.R. No. 171217]   DRA. RUBY SANGA-MIRANDA, PETITIONER, VS. NELSON CORTEJO, RESPONDENT.  [G.R. No. 171228]   SAN JUAN DE DIOS HOSPITAL, PETITIONER, VS. NELSON CORTEJO, RESPONDENT.   <br>
+             </small>March 11, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/60169'><STRONG>G.R. No. 193038</STRONG><br>
+             <small>JOSEFINA V. NOBLEZA, PETITIONER, VS. SHIRLEY B. NUEGA, RESPONDENT.
+   <br>
+             </small>March 11, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/60348'><STRONG>G.R. No. 201248</STRONG><br>
+             <small>LETICIA NAGUIT AQUINO, MELVIN NAGUIT, ROMMEL NAGUIT, ELMA NAGUIT TAYAG, YSSEL L. NAGUIT, ROSALINA NAGUIT AUMENTADO, RIZEL NAGUIT CUNANAN, CARIDAD NAGUIT PARAJAS, MILLIE NAGUIT FLORENDO, MARNEL NAGUIT, EDUARDO NAGUIT, JOSE NAGUIT, ZOILO NAGUIT, AND AMELIA NAGUIT DIZON, REPRESENTED BY YSSEL L. NAGUIT, PETITIONERS, VS. CESAR B. QUIAZON, AMANDA QUIAZON, JOSE B. QUIAZON AND REYNALDO B. QUIAZON, REPRESENTED BY JAIME B. QUIAZON, RESPONDENTS.   <br>
+             </small>March 11, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/60391'><STRONG>G.R. No. 193890</STRONG><br>
+             <small>ESTANISLAO AND AFRICA SINAMBAN, PETITIONERS, VS. CHINA BANKING CORPORATION, RESPONDENT.   <br>
+             </small>March 11, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/60523'><STRONG>G.R. No. 191945</STRONG><br>
+             <small>NATIONAL POWER CORPORATION, PETITIONER, VS. SOCORRO T. POSADA, RENATO BUENO, ALICE BALIN, ADRIAN TABLIZO, TEOFILO TABLIZO, AND LYDIA T. OLIVO, SUBSTITUTED BY HER HEIRS, ALFREDO M. OLIVO, ALICIA O. SALAZAR, ANITA O. ORDONO, ANGELITA O. LIM, AND ADELFA O. ESPINAS, RESPONDENTS.   <br>
+             </small>March 11, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/60524'><STRONG>G.R. No. 195956</STRONG><br>
+             <small>ABS-CBN CORPORATION, PETITIONER, VS. FELIPE GOZON, GILBERTO R. DUAVIT, JR., MARISSA L. FLORES, JESSICA A. SOHO, GRACE DELA PEÑA-REYES, JOHN OLIVER T. MANALASTAS, JOHN DOES AND JANE DOES, RESPONDENTS.   <br>
+             </small>March 11, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/61213'><STRONG>G.R. No. 179047</STRONG><br>
+             <small>SECURITIES AND EXCHANGE COMMISSION, PETITIONER, VS. SUBIC BAY GOLF AND COUNTRY CLUB, INC. AND UNIVERSAL INTERNATIONAL GROUP DEVELOPMENT CORPORATION, RESPONDENTS.   <br>
+             </small>March 11, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59378'><STRONG>A.C. No. 5816</STRONG><br>
+             <small>DR. ELMAR O. PEREZ, COMPLAINANT, VS. ATTY. TRISTAN A. CATINDIG AND ATTY. KAREN E. BAYDO, RESPONDENTS.   <br>
+             </small>March 10, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59424'><STRONG>G.R. No. 187836</STRONG><br>
+             <small>SOCIAL JUSTICE SOCIETY (SJS) OFFICERS, NAMELY, SAMSON S. ALCANTARA, AND VLADIMIR ALARIQUE T. CABIGAO, PETITIONERS, VS. ALFREDO S. LIM, IN HIS CAPACITY AS MAYOR OF THE CITY OF MANILA, RESPONDENT.  [G.R. No. 187916]   JOSE L. ATIENZA, JR., BIENVINIDO M. ABANTE, MA. LOURDES M. ISIP-GARCIA, RAFAEL P. BORROMEO JOCELYN DAWIS-ASUNCION, MINORS MARIAN REGINA B. TARAN, MACAILA RICCI B. TARAN, RICHARD KENNETH B. TARAN, REPRESENTED AND JOINED BY THEIR PARENTS RICHARD AND MARITES TARAN, MINORS CZARINA ALYSANDRA C. RAMOS, CEZARAH ADRIANNA C. RAMOS, AND CRISTEN AIDAN C. RAMOS REPRESENTED AND JOINED BY THEIR MOTHER DONNA C. RAMOS, MINORS JAZMIN SYLLITA T. VILA AND ANTONIO T. CRUZ IV, REPRESENTED AND JOINED BY THEIR MOTHER MAUREEN C. TOLENTINO, PETITIONERS, VS. MAYOR ALFREDO S. LIM, VICE MAYOR FRANCISCO DOMAGOSO, COUNCILORS ARLENE W. KOA, MOISES T. LIM, JESUS FAJARDO LOUISITO N. CHUA, VICTORIANO A. MELENDEZ, JOHN MARVIN C. NIETO, ROLANDO M. VALERIANO, RAYMUNDO R. YUPANGCO, EDWARD VP MACEDA, RODERICK D. VALBUENA, JOSEFINA M. SISCAR, SALVADOR PHILLIP H. LACUNA, LUCIANO M. VELOSO, CARLO V. LOPEZ, ERNESTO F. RIVERA,<SUP STYLE="COLOR: RGB(255, 0, 0);">[1]</SUP> DANILO VICTOR H. LACUNA, JR., ERNESTO G. ISIP, HONEY H. LACUNA-PANGAN, ERNESTO M. DIONISO, JR. AND ERICK IAN O. NIEVA, RESPONDENTS. CHEVRON PHILIPPINES INC., PETRON CORPORATION AND PILIPINAS SHELL PETROLEUM CORPORATION, INTERVENORS.   <br>
+             </small>March 10, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59615'><STRONG>A.C. No. 10679</STRONG><br>
+             <small>PO1 JOSE B. CASPE, COMPLAINANT, VS. ATTY. AQUILINO A. MEJICA, RESPONDENT.   <br>
+             </small>March 10, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59376'><STRONG>A.C. No. 7158</STRONG><br>
+             <small>YOLANDA A. ANDRES, MINETTE A. MERCADO, AND ELITO P. ANDRES , COMPLAINANTS, VS. ATTY. SALIMATHAR V. NAMBI, RESPONDENT.   <br>
+             </small>March 09, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59404'><STRONG>G.R. No. 215630</STRONG><br>
+             <small>METROGUARDS SECURITY AGENCY CORPORATION (FORMERLY KNOWN AS BEEGUARDS CORPORATION) AND MS. MILAGROS T. CHAN, PETITIONERS, VS. ALBERTO N. HILONGO, RESPONDENT.   <br>
+             </small>March 09, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59602'><STRONG>G.R. No. 187606</STRONG><br>
+             <small>NORMA V. JAVATE, PETITIONER, VS. SPOUSES RENATO J. TIOTUICO AND LERMA C. TIOTUICO, RESPONDENTS.   <br>
+             </small>March 09, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/59607'><STRONG>G.R. No. 207133</STRONG><br>
+             <small>SWIRE REALTY  DEVELOPMENT CORPORATION, PETITIONER, VS. JAYNE YU, RESPONDENT.   <br>
+             </small>March 09, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/60001'><STRONG>G.R. No. 208685</STRONG><br>
+             <small>PEOPLE OF THE PHILIPPINES, PLAINTIFF-APPELLEE, VS. RODRIGO CASACOP <I>Y</I> DE CASTRO, ACCUSED-APPELLANT.   <br>
+             </small>March 09, 2015 </a>
+             
+            <hr><br>
+          </li>   
+                 <li style='text-align:justify;'>
+             <a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/60298'><STRONG>G.R. No. 182886</STRONG><br>
+             <small>SPOUSES SALVADOR P. NORBERTE, JR. AND ELIZABETH S. NORBERTE, PETITIONERS, VS. SPOUSES FELICISIMO G. MEJIA AND ELVIRA C. MEJIA AND/OR THEIR HEIRS, REPRESENTED BY ALEXIS MEJIA-QUERUBIN, RESPONDENTS.   <br>
+             </small>March 09, 2015 </a>
+             
+            <hr><br>
+          </li>   
+           </ul>
+    
+    
+</div>  
+</div>
+</div>
+</div>
+<!-- footer template -->
+<div id="appendix" class="clearfix">
+<div class="app_widget">
+<!-- sidebar_bottom_left -->
+</div>
+
+<!-- Comment out to remove Find Widget in sidebar bottom left-->
+<!--
+<div class="widget">
+<h4>Find it!</h4>
+-->
+
+<div id="credits"><center>&copy; Supreme Court E-Library 2019<br />
+This website was designed and developed, and is maintained, by the E-Library Technical Staff in collaboration with the Management Information Systems Office.</center></div>
+</div>
+
+</div>
+
+<!-- <script src="https://elibrary.judiciary.gov.ph/assets/js/jquery-3.3.1.js"></script> -->
+<!-- <script src="https://elibrary.judiciary.gov.ph/assets/js/jquery-confirm.min.js"></script> -->
+
+<!-- <script>
+var jq = jQuery.noConflict();
+    // Checks if first time to visit the site and displays a popup if it is.
+    if(sessionStorage.getItem('firstVisit')){
+        sessionStorage.setItem('firstVisit','1');
+    }else{
+        sessionStorage.setItem('firstVisit','0');
+    }
+    jq(document).ready(function(){
+        if(sessionStorage.getItem('firstVisit') === "0")
+        {
+            jq.alert({
+                icon: 'fas fa-exclamation-triangle',
+                title: 'NOTICE',
+                animation: 'scale',
+                closeAnimation: 'zoom',
+                animationBounce: 2.5,
+                animationSpeed: 500,
+                buttons:{
+                    gotIt: {
+                        text: '<b>Click Here!</b>',
+                    }
+                },
+                boxWidth: '40%',
+                useBootstrap: false,
+                content: ''+
+                '<ol>'+
+                '<li><i>(05-02-2019)</i> Registration for a new E-library account is currently unavailable. However, existing accounts may still be used and accessed. We apologize for any inconvenience.</li>'+						
+                '</ol>',
+                theme: 'custom',
+            });
+        }
+    });
+</script>-->
+
+</body>
+</html>

@@ -116,3 +116,58 @@ def test_a_section_the_writer_left_empty_is_not_printed(level):
     thin = DigestDraft({Section.FACTS: DRAFT.sections[Section.FACTS]})
     document = docx.Document(io.BytesIO(DocxCaseDigestExporter().export(HEADER, thin, level)))
     assert [p.text for p in document.paragraphs if p.style.name.startswith("Heading 1")] == ["Facts"]
+
+
+# -- "Case Summary and Doctrine", as the client's reference (Nobleza v. Nuega) prints it ----------------------------------------
+
+NOBLEZA = DigestHeader("Nobleza v. Nuega", "G.R. No. 193038, March 11, 2015 (Third Division)", "Civil Law", "Villarama, Jr.",
+                       number="G.R. No. 193038", decided="March 11, 2015", reporter="752 SCRA 602")
+REFERENCE = DigestDraft({
+    Section.CASE_SUMMARY: (
+        block("Shirley and Rogelio Nuega married on September 1, 1990."),
+        DigestBlock((AnswerSentence("The Supreme Court denied the petition.", ("P30",), True),)),
+    ),
+    Section.DOCTRINE: (
+        DigestBlock((AnswerSentence("A buyer claiming good faith bears the burden of proving it.", ("P19",), True),
+                     AnswerSentence("The ordinary presumption of good faith is not enough.", ("P19",))),
+                    "1. Innocent purchaser for value: burden and due diligence"),
+        DigestBlock((AnswerSentence("Under Art. 96, a sale without written consent is void.", ("P27",), True),),
+                    "2. Sale of community property without written consent is void in its entirety"),
+    ),
+})
+
+
+def short_file(header=NOBLEZA, draft=REFERENCE):
+    return docx.Document(io.BytesIO(DocxCaseDigestExporter().export(header, draft, Level.SHORT)))
+
+
+def test_the_short_file_opens_with_the_references_one_line_top():
+    first = short_file().paragraphs[0]
+    assert first.text == "Nobleza v. Nuega, G.R. No. 193038 (March 11, 2015), 752 SCRA 602"
+    assert first.runs[0].text == "Nobleza v. Nuega" and first.runs[0].italic
+    assert "CASE DIGEST" not in [p.text for p in short_file().paragraphs]
+
+
+def test_the_top_line_adds_only_what_is_known():
+    from dataclasses import replace
+
+    assert short_file(replace(NOBLEZA, reporter="755 Phil. 656")).paragraphs[0].text == "Nobleza v. Nuega, G.R. No. 193038 (March 11, 2015), 755 Phil. 656"
+    assert short_file(replace(NOBLEZA, reporter=None)).paragraphs[0].text == "Nobleza v. Nuega, G.R. No. 193038 (March 11, 2015)"
+
+
+def test_the_summary_is_plain_and_each_doctrine_is_one_paragraph_led_by_its_label_in_bold():
+    paragraphs = [p for p in short_file().paragraphs if p.text.strip()]
+    disposition = next(p for p in paragraphs if p.text == "The Supreme Court denied the petition.")
+    assert not any(run.bold for run in disposition.runs)  # no bold inside the summary, as in the reference
+    first = next(p for p in paragraphs if p.text.startswith("1. "))
+    assert first.text == ("1. Innocent purchaser for value: burden and due diligence: A buyer claiming good faith bears the burden of "
+                          "proving it. The ordinary presumption of good faith is not enough.")
+    assert first.runs[0].bold and first.runs[0].text == "1. Innocent purchaser for value: burden and due diligence: "
+    assert not first.runs[1].bold
+    assert not any(p.style.name.startswith("Heading 2") for p in paragraphs)  # the label is not a separate heading
+
+
+def test_a_heading_that_only_repeats_the_section_name_is_not_printed():
+    repeated = DigestDraft({Section.DOCTRINE: (DigestBlock((AnswerSentence("The rule.", ("P1",)),), "Doctrine"),)})
+    paragraphs = [p.text for p in docx.Document(io.BytesIO(DocxCaseDigestExporter().export(HEADER, repeated, Level.FULL))).paragraphs]
+    assert paragraphs.count("Doctrine") == 1 and "The rule." in paragraphs  # the section title once, no "Doctrine:" label

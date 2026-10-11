@@ -103,7 +103,7 @@ describe('decisions on Lawphil that are not saved yet, found from the library se
   it('lists the unsaved matches under the saved ones, each with a button that saves it, and leaves out the saved ones (real catalog answer)', async () => {
     const { LawphilMatches } = await import('@/features/library/LawphilMatches')
     await renderApp(<LawphilMatches q="Ermita" />)
-    const region = await screen.findByRole('region', { name: 'Also on Lawphil, not saved yet' })
+    const region = await screen.findByRole('region', { name: 'Also on Lawphil or the SC E-Library, not saved yet' })
     expect(within(region).getByText(/not in your library yet/)).toBeInTheDocument()
     expect(within(region).getAllByRole('button', { name: 'Open this case' }).length).toBeGreaterThan(0)
     expect(within(region).queryByText('In your library')).not.toBeInTheDocument()
@@ -115,6 +115,6 @@ describe('decisions on Lawphil that are not saved yet, found from the library se
     server.use(http.get(`${API}/catalog/search`, () => HttpResponse.json(empty)))
     const { LawphilMatches } = await import('@/features/library/LawphilMatches')
     await renderApp(<LawphilMatches q="zzzzqq" />)
-    expect(await screen.findByText('Nothing else on Lawphil’s list matches.')).toBeInTheDocument()
+    expect(await screen.findByText('Nothing else on the list matches.')).toBeInTheDocument()
   })
 })

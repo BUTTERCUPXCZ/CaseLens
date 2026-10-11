@@ -21,8 +21,12 @@ class BulkStartIn(BaseModel):
     subject_ids: list[int] = Field(default_factory=list, max_length=20)  # the tags for every case of this upload (may be none)
     topic_scope: str = Field("", max_length=300)  # narrows every digest of this upload to one doctrine or issue
     kind: Literal["individual", "bulk"] = "bulk"  # individual: one case, opened for its full text
-    # Individual only: the exact Lawphil page picked from the search (a decision and its Resolution share the number and year).
-    source_url: str | None = Field(None, max_length=500, pattern=r"^https://(www\.)?lawphil\.net/judjuris/.+\.html$")
+    # Individual only: the exact page picked from the search, on Lawphil or the SC E-Library (a decision and its Resolution share the
+    # number and year).
+    source_url: str | None = Field(
+        None, max_length=500,
+        pattern=r"^https://((www\.)?lawphil\.net/judjuris/.+\.html|elibrary\.judiciary\.gov\.ph/thebookshelf/showdocs/1/\d+)$",
+    )
 
 
 class BulkCountsOut(BaseModel):

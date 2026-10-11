@@ -83,6 +83,39 @@ describe('the case digest in the client’s format', () => {
   })
 })
 
+describe('Case Summary and Doctrine, as the client’s reference prints them', () => {
+  const withReference = (): CaseDigest => ({
+    ...digest,
+    sections: [
+      {
+        key: 'case_summary', title: 'Case Summary', edited: false, text: '',
+        blocks: [{ heading: null, as_list: false, sentences: [{ text: 'The Supreme Court denied the petition.', key: true, cites: ['P30'] }] }],
+      },
+      {
+        key: 'doctrine', title: 'Doctrine', edited: false, text: '',
+        blocks: [{
+          heading: '1. Innocent purchaser for value: burden and due diligence', as_list: false,
+          sentences: [{ text: 'A buyer claiming good faith bears the burden of proving it.', key: true, cites: ['P19'] }],
+        }],
+      },
+    ],
+  })
+
+  it('leads each doctrine with its label in bold, in the same paragraph', async () => {
+    await show(withReference())
+    const doctrine = screen.getByRole('region', { name: 'Doctrine' })
+    const label = within(doctrine).getByText('1. Innocent purchaser for value: burden and due diligence:')
+    expect(label).toHaveClass('font-semibold')
+    expect(label.closest('p')).toHaveTextContent('1. Innocent purchaser for value: burden and due diligence: A buyer claiming good faith bears the burden of proving it.')
+    expect(within(doctrine).queryByRole('heading', { level: 4 })).not.toBeInTheDocument()
+  })
+
+  it('prints the summary as plain paragraphs, without bold sentences', async () => {
+    await show(withReference())
+    expect(screen.getByText('The Supreme Court denied the petition.')).not.toHaveClass('font-semibold')
+  })
+})
+
 describe('the progress of a digest being written', () => {
   it('names the step, shows a bar, and the time so far', async () => {
     await renderApp(<DigestProgress stage="checking" seconds={10} total={84} />)

@@ -1,5 +1,7 @@
 """The case digest as a Word file, laid out like the client's sample: "CASE DIGEST", the case name, the citation line,
-the topic and ponente, then one heading per section."""
+the topic and ponente, then one heading per section. "Case Summary and Doctrine" follows the client's reference instead: one top line
+("Nobleza v. Nuega, G.R. No. 193038 (March 11, 2015), 752 SCRA 602"), the summary's paragraphs, then the numbered doctrines, each
+one paragraph led by its label in bold."""
 import io
 from datetime import date
 
@@ -7,23 +9,23 @@ import docx
 from docx.document import Document as DocxDocument
 from docx.shared import Pt, RGBColor
 
-from caselens.domain.digest_v2 import SECTION_TITLES, DigestBlock, DigestDraft, DigestHeader, Level, Section, sections_for
+from caselens.domain.digest_v2 import SECTION_TITLES, DigestBlock, DigestDraft, DigestHeader, Level, Section, block_heading, sections_for
+from caselens.infrastructure.source_notice import digest_notice
 
 _GREY = RGBColor(0x59, 0x59, 0x59)
 _REMEMBER = "Remember for recitation:"
 _SUBSECTIONS = {Section.ARGUMENTS_PETITIONERS, Section.ARGUMENTS_RESPONDENTS}  # printed as a Heading 2 under Facts
-_NOTICE = (
-    "Written from the Court's decision on Lawphil (Arellano Law Foundation), https://lawphil.net. Every sentence is tied to the "
-    "decision's paragraphs, but it is a draft: check it against the Court's text. Informational only, not legal advice."
-)
 
 
 class DocxCaseDigestExporter:
-    def export(self, header: DigestHeader, draft: DigestDraft, level: Level, *, show_sources: bool = False) -> bytes:
+    def export(self, header: DigestHeader, draft: DigestDraft, level: Level, *, show_sources: bool = False, source_url: str | None = None) -> bytes:
         document = docx.Document()
         document.styles["Normal"].font.name = "Calibri"
         document.styles["Normal"].font.size = Pt(11)
-        self._header(document, header)
+        if level is Level.SHORT:
+            self._one_line(document, header)
+        else:
+            self._header(document, header)
         for section in sections_for(level, draft):  # in the level's order: the short file is Case Summary, then Doctrine
             if section not in draft.sections:
                 continue
@@ -33,13 +35,36 @@ class DocxCaseDigestExporter:
             if section is Section.WHY and blocks and blocks[0].as_list:
                 document.add_paragraph().add_run(_REMEMBER).bold = True  # the sample's lead-in to the recitation points
             for block in blocks:
-                self._block(document, block, show_sources, name_first=section is Section.DISSENTS)
+                block = DigestBlock(block.sentences, block_heading(section, block.heading), block.as_list)  # no "Doctrine" under Doctrine
+                if section is Section.DOCTRINE and not block.as_list:
+                    self._doctrine(document, block, show_sources)
+                else:
+                    self._block(document, block, show_sources, name_first=section is Section.DISSENTS, plain=section is Section.CASE_SUMMARY)
         note = document.add_paragraph()
-        run = note.add_run(_NOTICE)
+        run = note.add_run(digest_notice(source_url))
         run.italic, run.font.size, run.font.color.rgb = True, Pt(9), _GREY
         out = io.BytesIO()
         document.save(out)
         return out.getvalue()
+
+    @staticmethod
+    def _one_line(document: DocxDocument, header: DigestHeader) -> None:
+        """"Nobleza v. Nuega, G.R. No. 193038 (March 11, 2015), 752 SCRA 602", the case name in italics, as the reference prints it."""
+        line = document.add_paragraph()
+        name = line.add_run(header.case_name)
+        name.italic = True
+        rest = header.one_line[len(header.case_name):]
+        if rest:
+            line.add_run(rest)
+
+    @classmethod
+    def _doctrine(cls, document: DocxDocument, block: DigestBlock, show_sources: bool) -> None:
+        """One doctrine as one paragraph: "1. Innocent purchaser for value: burden and due diligence:" in bold, then its sentences."""
+        paragraph = document.add_paragraph()
+        if block.heading:
+            paragraph.add_run(block.heading.rstrip(":") + ": ").bold = True
+        paragraph.add_run(" ".join(sentence.text for sentence in block.sentences))
+        cls._sources(document, block, show_sources)
 
     @staticmethod
     def _header(document: DocxDocument, header: DigestHeader) -> None:
@@ -53,8 +78,9 @@ class DocxCaseDigestExporter:
         if line:
             document.add_paragraph(line)
 
-    @staticmethod
-    def _block(document: DocxDocument, block: DigestBlock, show_sources: bool, *, name_first: bool = False) -> None:
+    @classmethod
+    def _block(cls, document: DocxDocument, block: DigestBlock, show_sources: bool, *, name_first: bool = False, plain: bool = False) -> None:
+        """`plain`: no bold key sentences (the Case Summary, as the reference prints it)."""
         if block.heading:
             document.add_heading(block.heading, level=2)
         if block.as_list:
@@ -69,7 +95,11 @@ class DocxCaseDigestExporter:
         elif block.sentences:
             paragraph = document.add_paragraph()
             for n, sentence in enumerate(block.sentences):
-                paragraph.add_run(("" if n == 0 else " ") + sentence.text).bold = sentence.key  # a key sentence is bold, as in the sample
+                paragraph.add_run(("" if n == 0 else " ") + sentence.text).bold = sentence.key and not plain  # a key sentence is bold, as in the sample
+        cls._sources(document, block, show_sources)
+
+    @staticmethod
+    def _sources(document: DocxDocument, block: DigestBlock, show_sources: bool) -> None:
         if show_sources:
             numbers = list(dict.fromkeys(c[1:] for s in block.sentences for c in s.cites if c.startswith("P")))
             if numbers:

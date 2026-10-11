@@ -283,3 +283,41 @@ def test_an_old_number_typed_without_its_l_prefix_is_still_found(loaded):
     repo, _ = loaded
     assert [h.entry.numbers for h in search(repo, "28156").hits] == [("L-28156",)]
     assert [h.entry.numbers for h in search(repo, "G.R. No. 2815").hits][:1] == [("L-28156",)]  # prefix, too
+
+
+# -- two libraries: Lawphil and the SC E-Library -------------------------------------------------------------------------------
+
+
+def _two_libraries(db_session):
+    """G.R. 180046 is listed by both (same date); 193038 only by the E-Library."""
+    repo = SqlCatalogRepository(db_session)
+    lawphil = IndexPage(2009, 4, "https://lawphil.net/judjuris/juri2009/apr2009/apr2009.html")
+    elibrary = IndexPage(2009, 4, "https://elibrary.judiciary.gov.ph/thebookshelf/docmonth/Apr/2009/1", "elibrary")
+    lawphil_url = "https://lawphil.net/judjuris/juri2009/apr2009/gr_180046_2009.html"
+    repo.replace_month(lawphil, [CatalogEntry(GrNumber("180046"), ("180046",), "Review Center vs. Ermita", date(2009, 4, 2), lawphil_url, lawphil.url)])
+    repo.replace_month(elibrary, [
+        CatalogEntry(GrNumber("180046"), ("180046",), "REVIEW CENTER VS. ERMITA", date(2009, 4, 2), "https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/1", elibrary.url, "elibrary"),
+        CatalogEntry(GrNumber("193038"), ("193038",), "NOBLEZA VS. NUEGA", date(2015, 3, 11), "https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/60169", elibrary.url, "elibrary"),
+    ])
+    return repo, lawphil_url
+
+
+def test_a_decision_both_libraries_list_shows_once_from_lawphil(db_session):
+    repo, lawphil_url = _two_libraries(db_session)
+    hits, total = repo.search(CatalogQueryParser().parse("180046"), None, 10, 0)
+    assert total == 1 and [h.entry.source_url for h in hits] == [lawphil_url]
+    hits, total = repo.search(CatalogQueryParser().parse("193038"), None, 10, 0)
+    assert total == 1 and hits[0].entry.source == "elibrary"
+
+
+def test_a_number_on_both_libraries_gives_lawphil_first(db_session):
+    repo, lawphil_url = _two_libraries(db_session)
+    entries = repo.find_by_number(GrNumber("180046"))
+    assert [e.source for e in entries] == ["lawphil", "elibrary"] and entries[0].source_url == lawphil_url
+
+
+def test_each_library_keeps_its_own_months(db_session):
+    repo, _ = _two_libraries(db_session)
+    assert repo.read_months("lawphil") == {(2009, 4)} and repo.read_months("elibrary") == {(2009, 4)}
+    repo.replace_month(IndexPage(2009, 4, "https://lawphil.net/judjuris/juri2009/apr2009/apr2009.html"), [])  # re-reading Lawphil's month
+    assert repo.find_by_number(GrNumber("193038"))[0].source == "elibrary"  # leaves the E-Library's rows of that month alone

@@ -147,6 +147,7 @@ class CatalogEntry:
     decision_date: date | None
     source_url: str
     index_url: str
+    source: str = "lawphil"  # the library whose list it is: "lawphil" | "elibrary"
 
     @property
     def also_decided_with(self) -> tuple[str, ...]:
@@ -156,11 +157,12 @@ class CatalogEntry:
 
 @dataclass(frozen=True)
 class IndexPage:
-    """One of Lawphil's monthly list pages."""
+    """One monthly list page of a library (Lawphil, or the SC E-Library)."""
 
     year: int
     month: int
     url: str
+    source: str = "lawphil"
 
 
 @dataclass(frozen=True)

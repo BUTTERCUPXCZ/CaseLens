@@ -1,7 +1,7 @@
 from datetime import date
 
 from sqlalchemy import and_, case, delete, exists, func, or_, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 
 from caselens.application.ports.catalog import CatalogRepository
 from caselens.domain.entities import CatalogEntry, CatalogHit, CatalogStatus, IndexPage
@@ -36,7 +36,7 @@ class SqlCatalogRepository(CatalogRepository):
         # month is re-read daily) never duplicates rows, and a crash never leaves half a month.
         self._session.execute(
             delete(CatalogEntryModel).where(
-                CatalogEntryModel.year == page.year, CatalogEntryModel.month == page.month
+                CatalogEntryModel.source == page.source, CatalogEntryModel.year == page.year, CatalogEntryModel.month == page.month
             )
         )
         seen: set[tuple[str, str]] = set()
@@ -46,6 +46,7 @@ class SqlCatalogRepository(CatalogRepository):
                 continue
             seen.add((entry.source_url, label_key))
             model = CatalogEntryModel(
+                source=page.source,
                 source_url=entry.source_url,
                 link_number=entry.gr_no.value,
                 label_key=label_key,
@@ -60,6 +61,7 @@ class SqlCatalogRepository(CatalogRepository):
 
         self._session.merge(
             CatalogMonthModel(
+                source=page.source,
                 year=page.year,
                 month=page.month,
                 status="broken" if broken else "read",
@@ -71,20 +73,22 @@ class SqlCatalogRepository(CatalogRepository):
 
     def mark_absent(self, page: IndexPage) -> None:
         self._session.merge(
-            CatalogMonthModel(year=page.year, month=page.month, status="absent", entries=0, read_at=func.now())
+            CatalogMonthModel(source=page.source, year=page.year, month=page.month, status="absent", entries=0, read_at=func.now())
         )
         self._session.commit()
 
     def register_months(self, pages: list[IndexPage]) -> None:
-        existing = {(m.year, m.month) for m in self._session.scalars(select(CatalogMonthModel))}
+        existing = {(m.source, m.year, m.month) for m in self._session.scalars(select(CatalogMonthModel))}
         for page in pages:
-            if (page.year, page.month) not in existing:
-                self._session.add(CatalogMonthModel(year=page.year, month=page.month, status="pending", entries=0))
+            if (page.source, page.year, page.month) not in existing:
+                self._session.add(CatalogMonthModel(source=page.source, year=page.year, month=page.month, status="pending", entries=0))
         self._session.commit()
 
-    def read_months(self) -> set[tuple[int, int]]:
+    def read_months(self, source: str = "lawphil") -> set[tuple[int, int]]:
         rows = self._session.execute(
-            select(CatalogMonthModel.year, CatalogMonthModel.month).where(CatalogMonthModel.status == "read")
+            select(CatalogMonthModel.year, CatalogMonthModel.month).where(
+                CatalogMonthModel.source == source, CatalogMonthModel.status == "read"
+            )
         )
         return {(r.year, r.month) for r in rows}
 
@@ -129,7 +133,19 @@ class SqlCatalogRepository(CatalogRepository):
 
     @staticmethod
     def _conditions(query: CatalogQuery, year: int | None) -> list:
-        conditions = []
+        # A decision both libraries list shows once, from Lawphil: an E-Library row is left out when Lawphil has a row with the
+        # same number and date.
+        lawphil = aliased(CatalogEntryModel)
+        conditions = [
+            or_(
+                CatalogEntryModel.source == "lawphil",
+                ~exists().where(
+                    lawphil.source == "lawphil",
+                    lawphil.link_number == CatalogEntryModel.link_number,
+                    lawphil.decision_date == CatalogEntryModel.decision_date,
+                ),
+            )
+        ]
         if year is not None:
             conditions.append(CatalogEntryModel.year == year)
         if query.number is not None:
@@ -151,7 +167,11 @@ class SqlCatalogRepository(CatalogRepository):
             select(CatalogEntryModel)
             .join(CatalogNumberModel, CatalogNumberModel.entry_id == CatalogEntryModel.id)
             .where(CatalogNumberModel.number == gr_no.value)
-            .order_by(CatalogEntryModel.decision_date.desc().nulls_last(), CatalogEntryModel.id.desc())
+            .order_by(
+                case((CatalogEntryModel.source == "lawphil", 0), else_=1),  # Lawphil first: the E-Library fills its gaps
+                CatalogEntryModel.decision_date.desc().nulls_last(),
+                CatalogEntryModel.id.desc(),
+            )
         )
         return [self._entity(model) for model in models]
 
@@ -195,4 +215,5 @@ class SqlCatalogRepository(CatalogRepository):
             decision_date=model.decision_date if isinstance(model.decision_date, date) else None,
             source_url=model.source_url,
             index_url=model.index_url,
+            source=model.source or "lawphil",
         )

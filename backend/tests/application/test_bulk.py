@@ -145,7 +145,7 @@ def test_a_number_that_lawphil_does_not_have_is_not_found_with_its_reason(world)
 def test_a_number_with_a_year_that_is_not_found_says_which_year_was_tried(world):
     batch = world.start.execute("999999 (1969)")
     world.run_all(batch.id)
-    assert world.bulk.items_by_id[batch.items[0].id].message == "G.R. No. 999999 was not found on Lawphil near 1969."
+    assert world.bulk.items_by_id[batch.items[0].id].message == "G.R. No. 999999 was not found on Lawphil near 1969, nor on the SC E-Library."
 
 
 def test_the_same_case_given_twice_or_under_two_of_its_numbers_is_shown_once(world):

@@ -55,7 +55,7 @@ export function LawphilLinkForm({
                   id={id}
                   type="url"
                   inputMode="url"
-                  placeholder="https://lawphil.net/judjuris/…"
+                  placeholder="https://lawphil.net/judjuris/… or https://elibrary.judiciary.gov.ph/…"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(event) => field.handleChange(event.target.value)}

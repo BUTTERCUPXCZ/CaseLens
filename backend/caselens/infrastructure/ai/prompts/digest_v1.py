@@ -8,7 +8,9 @@ check it. Edit the client's part only on the client's say-so."""
 # v3: Topic Explained and Why only as the decision explains them (no general law in the AI's own words); no Dissents block without a dissent
 # v4: the same digest in a shorter answer format (short field names, compact JSON), and the writer thinks less: fewer output tokens
 # v5: a "case_summary" (one paragraph of facts, issue and ruling) for the client's short "Case Summary and Doctrine" download
-DIGEST_PROMPT_VERSION = "digest-v5"
+# v6: the client's reference for "Case Summary and Doctrine" (Nobleza v. Nuega): a 4-paragraph summary (facts; the lower courts; the
+#     issues; the ruling and its reasons) and numbered doctrines ("1. Label" + the rule, its legal basis, how it applies)
+DIGEST_PROMPT_VERSION = "digest-v6"
 # What a READY digest was made with: the writer's prompt and the checking pipeline. Stored on each digest (`prompt_version`); a digest
 # with another stamp is still served (no surprise AI spend after an update) but reported as not current; "Write it again" renews it.
 # check-v2: code sorts every sentence, the second model sees only flagged and key sentences, repair sees only nearby paragraphs.
@@ -58,9 +60,15 @@ SYSTEM_RULES = """HOW THIS SYSTEM WORKS (these rules come first; they make "NO H
 OUTPUT: compact JSON only (no spaces or line breaks between fields), in this shape. Each section is a list of blocks. A block is
 {"h": heading or omitted, "l": true for a bullet list (omit for a paragraph), "s": [sentences]}; a sentence is {"t": text, "c": [ids it cites],
 "k": true only for a key sentence (omit otherwise)}. Use as many blocks and sentences as the section needs.
-Mark "k": true on the few sentences a student must not miss (they are printed in bold): the doctrine, the main issue, the disposition of the
-ruling, the first sentence of each reasoning block, and each point to remember. Most sentences are not key; the dissents are not key.
-- "doctrine": the controlling principle, concise (a block of 1 to 3 sentences).
+Mark "k": true on the few sentences a student must not miss (they are printed in bold): the first sentence of each doctrine, the main issue,
+the disposition of the ruling, the first sentence of each reasoning block, and each point to remember. Most sentences are not key; the
+dissents are not key. Never give a block a heading that only repeats its section's name (no "Doctrine", "Case Summary" or "Facts" heading).
+- "doctrine": the legal rules this case decides, as NUMBERED blocks: one block per doctrine (one when the case turns on a single rule, up to
+  five when it decides several). Each block's heading is "N. " plus a short label naming the rule, for example
+  "1. Innocent purchaser for value: burden and due diligence" or "3. Sale of community property without written consent is void in its
+  entirety". Each block has 2 to 5 sentences: the rule as the Court states it (key); the provision or principle it rests on, named as the
+  decision names it ("Under Art. 96, ..."); and how it applies or where it stops, as the decision says. A rule the decision does not state
+  is not a doctrine of this case.
 - "facts": the material facts in story order, COMPLETE enough that a student who has not read the case understands what happened and why it reached the Court: the background events, who the parties are, what each did, how the case came to the Court. Write 4 to 6 paragraphs of 3 to 6 sentences each, as a story (the client's own sample has about 20 sentences of facts for a case like Marcos v. Manglapus); when the decision lists a series of events or threats, put them in a list block between the paragraphs. End with a paragraph naming who filed the case and what they asked the Court to do (a key sentence). Include every material fact the passages give; leave out only detail that does not matter to the ruling.
 - "arguments_petitioners" and "arguments_respondents": what each side argued (bullet points). Say whose argument it is.
 - "issue": first a block whose sentence begins "Main issue:" and states the main legal question as a YES/NO question (key). Then, if the Court took it
@@ -76,9 +84,14 @@ ruling, the first sentence of each reasoning block, and each point to remember. 
   Then numbered blocks with headings ("1. What is executive power?"): the rule, its elements or requirements and its exceptions ONLY where the
   passages state them, and finally how this case shows it. Every sentence cites the passages that state it.
 - "why": the main lessons to remember for recitation: a list block of 3 to 6 points (key), each a lesson the decision itself states. No vote count.
-- "case_summary": ONE paragraph block of 4 to 6 sentences that tells the whole case in short, in this order: what happened, who brought the
-  case and what they asked the Court to do, the question the Court had to answer, and the Court's disposition in its own terms ("The Supreme
-  Court dismissed the petition.", key). Plain words, no heading, no list; every sentence cites its passages like the others.
+- "case_summary": the whole case told in short, as FOUR paragraph blocks (no headings, no lists), about 12 to 20 sentences in all:
+  1. The facts: who the parties are and what happened, in story order, with the names, dates, places and amounts the decision gives
+     (introduce a person by full name, then by first name or surname as the decision does).
+  2. How the case reached the Court: each lower court or agency, what it ruled and when, ending with the ruling brought to the Court.
+  3. The issues, as ONE sentence: "The issues were (1) whether ..., and (2) whether ...". Questions only, without the answers.
+  4. The ruling: first the disposition in the Court's own terms ("The Supreme Court denied the petition.", the ONLY key sentence of the
+     summary), then the Court's main reasons, one sentence each, as the decision states them.
+  Every sentence cites its passages like the others; a detail the decision does not give is left out, never guessed.
 THE DIGEST SAYS ONLY WHAT THE DECISION SAYS, in every section, "topic" and "why" included: no general law, no other cases, no textbook
 explanation and nothing you know from elsewhere that the passages do not contain. If the decision does not explain an element, a requirement or an
 exception, leave it out; do not fill it in. A shorter section is better than one sentence the decision does not support."""

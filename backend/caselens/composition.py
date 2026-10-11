@@ -93,6 +93,13 @@ from caselens.infrastructure.lawphil.catalog_parser import LawphilCatalogParser
 from caselens.infrastructure.lawphil.catalog_source import LawphilIndexFetcher, LawphilYearDiscovery
 from caselens.infrastructure.lawphil.html_parser import PARSER_VERSION, LawphilCaseParser
 from caselens.infrastructure.lawphil.http_client import ThrottledPageClient
+from caselens.infrastructure.elibrary.case_source import ElibraryCaseSource
+from caselens.infrastructure.elibrary.catalog_parser import ElibraryCatalogParser
+from caselens.infrastructure.elibrary.catalog_source import ElibraryIndexFetcher, ElibraryYearDiscovery
+from caselens.infrastructure.elibrary.html_parser import ElibraryCaseParser
+from caselens.infrastructure.elibrary.http import elibrary_pages
+from caselens.infrastructure.elibrary.url_scheme import ElibraryUrlScheme
+from caselens.infrastructure.source_router import LibraryRouter
 from caselens.infrastructure.lawphil.url_scheme import LawphilUrlScheme
 from caselens.infrastructure.db.job_lock_repository import SqlJobLockRepository
 from caselens.infrastructure.db.session import engine
@@ -103,6 +110,12 @@ from caselens.infrastructure.queue import lock_keys
 def _lawphil_pages() -> ThrottledPageClient:
     """One client per process, so the 1 request/second limit holds across all jobs."""
     return ThrottledPageClient.from_settings(get_settings())
+
+
+@lru_cache
+def _elibrary_pages() -> ThrottledPageClient:
+    """The SC E-Library's own client: its own one-page-a-second limit and TLS trust (see infrastructure/elibrary/certificates.py)."""
+    return elibrary_pages(get_settings())
 
 
 @lru_cache
@@ -184,11 +197,25 @@ class Services:
             catalog=SqlCatalogRepository(self._session),
         )
 
+    def _elibrary_scheme(self) -> ElibraryUrlScheme:
+        return ElibraryUrlScheme(self._settings.elibrary_base_url)
+
+    def _libraries(self) -> LibraryRouter:
+        """Lawphil first; the SC E-Library (when turned on) for what Lawphil does not have. Each page is read by its own library."""
+        elibrary = None
+        if self._settings.elibrary_enabled:
+            elibrary = ElibraryCaseSource(_elibrary_pages(), self._elibrary_scheme(), SqlCatalogRepository(self._session))
+        return LibraryRouter(self._lawphil(), LawphilCaseParser(), elibrary, ElibraryCaseParser(), self._elibrary_scheme())
+
+    def _parser(self) -> LibraryRouter:
+        """Reads a page with the parser of the library its address belongs to (no network)."""
+        return LibraryRouter(None, LawphilCaseParser(), None, ElibraryCaseParser(), self._elibrary_scheme())
+
     def _locator(self) -> CaseLocator:
-        return self._case_locator or self._lawphil()
+        return self._case_locator or self._libraries()
 
     def _fetcher(self) -> CaseFetcher:
-        return self._case_fetcher or self._lawphil()
+        return self._case_fetcher or self._libraries()
 
     def _job_queue(self) -> JobQueue:
         return self._jobs or _job_queue()
@@ -213,7 +240,7 @@ class Services:
     # -- use cases -----------------------------------------------------------------
 
     def ingest_case(self) -> IngestCase:
-        return IngestCase(self._fetcher(), LawphilCaseParser(), self._cases, self._uow)
+        return IngestCase(self._fetcher(), self._parser(), self._cases, self._uow)
 
     def fetch_case_by_gr_number(self) -> FetchCaseByGrNumber:
         return FetchCaseByGrNumber(self._locator(), self.ingest_case(), self._cases)
@@ -276,12 +303,30 @@ class Services:
         return AttachCaseToCitation(self.ingest_case(), self._matcher, self._uploads, self._uow, self._auto_digests())
 
     def refetch_damaged_cases(self) -> RefetchDamagedCases:
-        return RefetchDamagedCases(self._cases, self._fetcher(), LawphilCaseParser(), self._uow)
+        return RefetchDamagedCases(self._cases, self._fetcher(), self._parser(), self._uow)
 
     def build_catalog(self) -> BuildCatalog:
+        """Lawphil's lists."""
         return BuildCatalog(
             self._discovery(), self._index_source(), LawphilCatalogParser(), SqlCatalogRepository(self._session)
         )
+
+    def build_catalogs(self) -> list[BuildCatalog]:
+        """Every library's lists: Lawphil's, then the SC E-Library's (when turned on, and not in a test that supplies its own pages)."""
+        builders = [self.build_catalog()]
+        if self._settings.elibrary_enabled and self._year_discovery is None and self._index_fetcher is None:
+            scheme = self._elibrary_scheme()
+            builders.append(BuildCatalog(
+                ElibraryYearDiscovery(scheme, self._settings.elibrary_first_year),
+                ElibraryIndexFetcher(_elibrary_pages()),
+                ElibraryCatalogParser(scheme),
+                SqlCatalogRepository(self._session),
+                source="elibrary",
+            ))
+        return builders
+
+    def catalog_sources(self) -> list[str]:
+        return ["lawphil", "elibrary"] if self._settings.elibrary_enabled else ["lawphil"]
 
     def search_catalog(self) -> SearchCatalog:
         return SearchCatalog(SqlCatalogRepository(self._session))
@@ -294,11 +339,11 @@ class Services:
 
     def keep_catalog_fresh(self) -> KeepCatalogFresh:
         return KeepCatalogFresh(
-            SqlCatalogRepository(self._session), self._job_queue(), self._settings.catalog_first_year
+            SqlCatalogRepository(self._session), self._job_queue(), self._settings.catalog_first_year, self.catalog_sources()
         )
 
     def reparse_stored_cases(self) -> ReparseStoredCases:
-        return ReparseStoredCases(self._cases, LawphilCaseParser(), PARSER_VERSION, self._uow)
+        return ReparseStoredCases(self._cases, self._parser(), PARSER_VERSION, self._uow)
 
     def get_case_insights(self) -> GetCaseInsights:
         return GetCaseInsights(self._cases, CaseInsightBuilder())

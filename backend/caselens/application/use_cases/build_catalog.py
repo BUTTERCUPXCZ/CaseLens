@@ -26,7 +26,7 @@ class BuildReport:
 
 
 class BuildCatalog:
-    """Reads Lawphil's monthly lists into the searchable catalog.
+    """Reads one library's monthly lists (Lawphil's, or the SC E-Library's) into the searchable catalog.
 
     * Newest first, so recent cases can be searched within a minute of starting.
     * Safe to stop and start again: months already read are skipped.
@@ -42,12 +42,14 @@ class BuildCatalog:
         parser: CatalogIndexParser,
         catalog: CatalogRepository,
         today: Callable[[], date] = date.today,
+        source: str = "lawphil",
     ) -> None:
         self._discovery = discovery
         self._fetcher = fetcher
         self._parser = parser
         self._catalog = catalog
         self._today = today
+        self.source = source  # whose lists these are: "lawphil" | "elibrary"
 
     def build(self, first_year: int) -> BuildReport:
         """Everything from `first_year` to now."""
@@ -82,7 +84,7 @@ class BuildCatalog:
 
     def _read(self, pages: list[IndexPage]) -> BuildReport:
         report = BuildReport()
-        done = self._catalog.read_months()
+        done = self._catalog.read_months(self.source)
         always = self._recent_months()
 
         for index, page in enumerate(pages, start=1):

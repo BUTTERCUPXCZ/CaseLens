@@ -15,8 +15,9 @@ from caselens.domain.finished_reviewer import FinishedReviewer, ReviewerBox
 _AFTER_BORDERS = {qn(f"w:{name}") for name in ("shd", "tblLayout", "tblCellMar", "tblLook", "tblCaption", "tblDescription")}
 _GREY = RGBColor(0x59, 0x59, 0x59)
 _ATTRIBUTION = (
-    "Court text from Lawphil (Arellano Law Foundation), https://lawphil.net. Informational only, not legal advice; "
-    "Lawphil gives no warranty of accuracy or completeness: confirm with the Supreme Court. "
+    "Court text from Lawphil (Arellano Law Foundation), https://lawphil.net, or the Supreme Court E-Library, "
+    "https://elibrary.judiciary.gov.ph. Informational only, not legal advice; neither gives a warranty of accuracy or "
+    "completeness: confirm with the Supreme Court. "
     "Explanations marked 'Drafted from the decision' were written by an AI service from that decision: check them."
 )
 _PDF_NOTE = "Rebuilt from your PDF: the text is the same, but the fonts and layout differ from the original."

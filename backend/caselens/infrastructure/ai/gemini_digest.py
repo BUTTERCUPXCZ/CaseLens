@@ -1,7 +1,7 @@
 """Gemini as the digest writer: the client's prompt, one call, every section as cited sentences."""
 from caselens.application.ports.ai import DigestRequest, DigestWriter
 from caselens.domain.digest import AnswerSentence
-from caselens.domain.digest_v2 import DigestBlock, DigestDraft, Section
+from caselens.domain.digest_v2 import DigestBlock, DigestDraft, Section, block_heading
 from caselens.infrastructure.ai.calls import CHECKER, REPAIR, WRITER
 from caselens.infrastructure.ai.gemini_answerer import _GeminiCall, strip_inline_citations
 from caselens.infrastructure.ai.prompts.digest_v1 import CLIENT_PROMPT, DIGEST_PROMPT_VERSION, DIGEST_VERSION, SYSTEM_RULES
@@ -115,7 +115,7 @@ class GeminiDigestWriter(_Repair, DigestWriter):
                         sentences.append(AnswerSentence(text=text, cites=cites, key=bool(_field(raw, "k", "key"))))
                 if sentences:
                     as_list = bool(item.get("l")) or item.get("kind") == "list"
-                    blocks.append(DigestBlock(tuple(sentences), (_field(item, "h", "heading") or None), as_list))
+                    blocks.append(DigestBlock(tuple(sentences), block_heading(section, _field(item, "h", "heading")), as_list))
             if blocks:
                 draft.sections[section] = tuple(blocks)
         return draft

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { formatDate, formatWhen, justiceName, plural, shortCaseName } from '@/lib/format'
+import { formatDate, formatWhen, justiceName, plural, shortCaseName, libraryName } from '@/lib/format'
 
 import realCase from '../fixtures/api/case-180046.json'
 
@@ -104,5 +104,14 @@ describe('justiceName', () => {
     ['CARPIO', 'Carpio'],
   ])('%s -> %s (names as the real decision prints them)', (printed, expected) => {
     expect(justiceName(printed)).toBe(expected)
+  })
+})
+
+describe('the library a decision comes from', () => {
+  it('names the SC E-Library for its pages and Lawphil otherwise', () => {
+    expect(libraryName('https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/60169')).toBe('SC E-Library')
+    expect(libraryName('https://lawphil.net/judjuris/juri2009/apr2009/gr_180046_2009.html')).toBe('Lawphil')
+    expect(libraryName('https://elibrary.judiciary.gov.ph.evil.com/x')).toBe('Lawphil')
+    expect(libraryName(null)).toBe('Lawphil')
   })
 })

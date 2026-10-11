@@ -1,0 +1,611 @@
+ 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>G.R. No. 203655 - SM LAND, INC., PETITIONER, VS. BASES CONVERSION AND DEVELOPMENT AUTHORITY AND ARNEL PACIANO D. CASANOVA, ESQ., IN HIS OFFICIAL CAPACITY AS PRESIDENT AND CEO OF BCDA, RESPONDENTS.R E S O L U T I O N - Supreme Court E-Library</title>
+    <link rel="stylesheet" href="https://elibrary.judiciary.gov.ph/assets/css/style.css" type="text/css" media="screen" />
+    <link rel="alternate" type="application/rss+xml" title="RSS Feed" href="feed/" />
+    <link rel="pingback" href="xmlrpc.php" />
+    <link rel="shortcut icon" href="https://elibrary.judiciary.gov.ph/assets/images/favicon.ico"/>
+    <script type="text/javascript" src="https://elibrary.judiciary.gov.ph/assets/js/jquery.js"></script>
+    <script type="text/javascript" src="https://elibrary.judiciary.gov.ph/assets/js/superfish.min.js"></script>
+    <script type="text/javascript" src="https://elibrary.judiciary.gov.ph/assets/js/supersubs.js"></script>
+    <script type="text/javascript" src="https://elibrary.judiciary.gov.ph/assets/js/cookies.js"></script>
+    <script type="text/javascript" src="https://elibrary.judiciary.gov.ph/assets/js/fontResizer.js"></script>
+    <script type="text/javascript" src="https://elibrary.judiciary.gov.ph/assets/js/theme.js"></script>
+    <script type="text/javascript" src="https://elibrary.judiciary.gov.ph/assets/js/section_menu.js"></script>
+
+    <!-- START DataTable -->
+
+        <!-- START LOAD SCRIPTS -->
+        
+        <!-- ✅ load jQuery ✅ -->
+        <!-- <script type="text/javascript" src="https://elibrary.judiciary.gov.ph/assets/js/jquery-3.7.1.min.js"></script> -->
+        <link rel="stylesheet" href="https://elibrary.judiciary.gov.ph/assets/DataTables/datatables.css" type="text/css" media="screen" />
+        <!-- ✅ load DataTables ✅ -->
+        <script type="text/javascript" src="https://elibrary.judiciary.gov.ph/assets/DataTables/datatables.js"></script>
+
+        <!-- END LOAD SCRIPTS -->
+    
+        <!-- START RA -->
+        <script>
+            jQuery( function ($) {
+                $('#ra').DataTable({
+                    // Options go here
+                    "processing": true,
+                    //"stateSave": true,
+                    "serverSide": true,
+                    "order":[],
+                    "pagingType": "full_numbers",
+                    "ajax": {
+                        url: "https://elibrary.judiciary.gov.ph/republic_acts/fetch_ra",
+                        type: "POST",
+                        data:{  'csrf_test_name' : 'e6bd4cf35808fca4ba2affa51d61a2a4' },
+                    },
+                    "columnDefs":[{
+                        "targets":[0, 2],
+                        "orderable":false,
+                        /*'targets': [2,],    // this will invoke the below function on all cells
+                        'createdCell': function(td, cellData, rowData, row, col) {
+                            // this will give each cell an ID
+                            $(td).attr('id', 'cms_default_document_title');
+                        },*/
+                    },],
+                });
+            });
+        </script>
+        <!-- END RA -->
+
+             <!-- START PHILREP -->
+        <script>
+            jQuery( function ($) {
+                $('#volumes').DataTable({
+                    "pagingType": "full_numbers",
+                    "order":[[0], "desc"],
+                    "columnDefs":[
+                        {
+							//Targets column 2 (Files column) and prevents from being
+							//orderable
+                            "targets":[2],
+                            "orderable":false,
+                        },
+                        {
+                            // Target column 1 and tells DataTables to order column 1
+							//using data from Column0
+                            "targets": [1],
+                            "orderData": [0],
+                        },
+						
+						{
+							//Hides column 0 and prevents it from being searchable.
+							target: [0],
+							visible: false,
+							searchable: false,
+						},
+                    ],
+                });
+            });
+        </script>
+
+        <!-- START CASE INDEX -->
+        <script>
+            jQuery( function ($) {
+                $('#caseindex').DataTable({
+                    "pagingType": "full_numbers",
+                    "order":[],
+                    "columnDefs":[{
+                        "targets":[0,1],
+                        "orderable":false,
+                    },],
+                });
+            });
+        </script>
+        <!-- END CASEINDEX -->
+
+        <!-- START LAWYERS LIST -->
+        <script>
+            jQuery( function ($) {
+                $('#lawlist').DataTable({
+                    // INITIALIZATION OPTIONS GO HERE.
+                    "processing": true,
+                    //"stateSave": true,
+                    "serverSide": true,
+                    // ORDERING IS ENABLED BUT THERE IS NO DEFAULT ORDER.
+                    "order":[],
+                    "pagingType": "full_numbers",
+                    "ajax": {
+                        url: "https://elibrary.judiciary.gov.ph/lawyers_list/fetch_lawlist",
+                        type: "POST",
+                        data:{  'csrf_test_name' : 'e6bd4cf35808fca4ba2affa51d61a2a4' },
+                    },
+                    "columnDefs":[{
+                        // "targets" ARE THE TABLE COLUMNS THAT ARE TO BE INITIALIZED.
+                        // STARTING WITH 0 AS THE FIRST COLUMN. HERE, TARGETED COLUMNS ARE
+                        // 2, 3, 4.
+                        "targets":[2, 3, 4],
+                        // TARGETED COLUMNS ARE NOT ORDERABLE.
+                        "orderable":false,
+                        /*'targets': [2,],    // this will invoke the below function on all cells
+                        'createdCell': function(td, cellData, rowData, row, col) {
+                            // this will give each cell an ID
+                            $(td).attr('id', 'cms_default_document_title');
+                        },*/
+                    },],
+                });
+            });
+        </script>
+        <!-- END LAWYERS LIST -->
+
+        <!-- START DataTables STYLES -->
+    
+        <!-- START REPUBLIC ACTS STYLES-->
+        <style>
+            table#ra {
+                font-family: calibri, candara, segoe, segoe ui, optima, arial;
+                font-size: 1.25em;
+                font-weight: bold;
+            }
+            td#cms_default_document_title {
+                text-align: justify;
+            }
+        
+            td#cms_default_document_title:after {
+                content: "";
+                display: inline-block;
+                width: 100%;
+            }
+        </style>
+        <!-- END REPUBLIC ACTS START STYLES -->
+
+        <!-- START PHILREP STYLES -->
+        <style>
+            table#volumes {
+                font-family: calibri, candara, segoe, segoe ui, optima, arial;
+                font-size: 1.25em;
+                font-weight: bold;
+            }
+        </style>
+        <!-- END PHILREP STYLES -->
+
+        <!-- START CASEINDEX STYLES -->
+        <style>
+            table#caseindex {
+                font-family: calibri, candara, segoe, segoe ui, optima, arial;
+                font-size: 1.25em;
+                font-weight: bold;
+            }
+        </style>
+        <!-- END CASEINDEX STYLES -->
+
+        <!-- START LAWYERS LIST STYLES -->
+        <style>
+            table#lawlist {
+                font-family: calibri, candara, segoe, segoe ui, optima, arial;
+                font-size: 1.2em;
+            }
+            
+        </style>
+        <!-- END LAWYERS LIST STYLES -->
+
+        <!-- END DataTables STYLES -->
+    
+    <!-- END DataTable -->
+
+    <link rel="stylesheet" href="https://elibrary.judiciary.gov.ph/assets/css/mystyle.css" type="text/css" media="screen" />
+
+    
+    
+    <!-- remove 04.29.19 for console search-->
+    <!-- <meta name='robots' content='noindex,nofollow' /> -->
+
+    <link rel='stylesheet' id='wp_sidebarlogin_css_styles-css'  href='https://elibrary.judiciary.gov.ph/assets/css/style_login.css?ver=3.3.1' type='text/css' media='all' />
+
+    <!-- Font Awesome CSS -->
+    <link rel="stylesheet" href="https://elibrary.judiciary.gov.ph/assets/css/all.css">
+    <!-- jquery confirm -->
+    <link rel="stylesheet" href="https://elibrary.judiciary.gov.ph/assets/css/jquery-confirm.min.css">
+    <!-- jconfirm modal custom theme -->
+    <style>
+        .jconfirm.jconfirm-custom .jconfirm-bg{
+            background-color: rgba(13,0,45,0.95);
+        }
+        .jconfirm.jconfirm-custom .jconfirm-box{
+            color: #ccc;
+            text-align: center;
+            background-color: transparent;
+        }
+
+        /* Exclamation animation start */
+        .jconfirm.jconfirm-custom.jconfirm-open .jconfirm-box .jconfirm-title-c .jconfirm-icon-c {
+            -webkit-transform: scale(1);
+            transform: scale(1);
+        }
+        .jconfirm.jconfirm-custom .jconfirm-box div.jconfirm-title-c .jconfirm-icon-c {
+            -webkit-transition: -webkit-transform .5s;
+            transition: -webkit-transform .5s;
+            transition: transform .5s;
+            transition: transform .5s,-webkit-transform .5s;
+            -webkit-transform: scale(0);
+            transform: scale(0);
+            display: block;
+            margin-right: 0;
+            margin-left: 0;
+            margin-bottom: 10px;
+            font-size: 69px;
+            color: #ccc;
+        }
+        /* Exclamation animation end */
+
+        .jconfirm.jconfirm-custom .jconfirm-box .jconfirm-buttons button{
+            font-size: 16px;
+            border-radius: 2px;
+            background: rgb(13,0,45);
+            text-shadow: none;
+            border: none;
+            color: #ccc;
+            padding: 10px;
+            min-width: 100px;
+        }
+        .jconfirm.jconfirm-custom .jconfirm-box .jconfirm-buttons button:hover{
+            background: #ccc;
+            color: rgb(13,0,45);
+        }
+        .jconfirm.jconfirm-custom .jconfirm-box .jconfirm-title-c{
+            font-family: Tahoma, Verdana, serif;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .jconfirm.jconfirm-custom .jconfirm-box .jconfirm-content{
+            font-family: Tahoma, Verdana, serif;
+            text-align: justify;
+            font-size: 18px;
+        }
+        /* Targets content list item */
+        .jconfirm.jconfirm-custom .jconfirm-box .jconfirm-content li{
+            margin: 20px;
+        }
+        .jconfirm.jconfirm-my-theme .jconfirm-box .jconfirm-content-pane{
+        }
+    </style>
+
+<!-- FOR DTSEARCH -->
+<!-- START -->
+    <META NAME="AddedReference" CONTENT="InsertedForFormBuilder" HREF="https://elibrary.judiciary.gov.ph/assets/searchform/dtSearch_help.html">
+    <META NAME="AddedReference" CONTENT="InsertedForFormBuilder" HREF="https://elibrary.judiciary.gov.ph/assets/searchform/dtSearch_pdfhelp.pdf">
+    <META NAME="AddedReference" CONTENT="InsertedForFormBuilder" HREF="https://elibrary.judiciary.gov.ph/assets/searchform/dtSearch_WebSearchForm.css">
+    <META NAME="AddedReference" CONTENT="InsertedForFormBuilder" HREF="https://elibrary.judiciary.gov.ph/assets/searchform/dtSearch_SearchResults.css">
+    <META NAME="AddedReference" CONTENT="InsertedForFormBuilder" HREF="https://elibrary.judiciary.gov.ph/assets/searchform/dtSearch_Utilities.js">
+    <META NAME="AddedReference" CONTENT="InsertedForFormBuilder" HREF="https://elibrary.judiciary.gov.ph/assets/searchform/dtSearch_SearchResults.js">
+    <META NAME="AddedReference" CONTENT="InsertedForFormBuilder" HREF="https://elibrary.judiciary.gov.ph/assets/searchform/dtSearch_WebSearchForm.js">
+<!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <!-- <link rel="stylesheet" href="https://elibrary.judiciary.gov.ph/searchforms/custom.css"> -->
+
+    <style type='text/css'>
+        body{
+            /*background-image:url(searchforms/images/bg-blue.jpg);*/
+            /*background-size: 100% auto;*/
+            background-position:center top;
+            background-color: #193C74;
+            background-repeat:no-repeat;
+            background-position:fixed;
+            /*font-family: "Trebuchet MS";*/
+            font-size:10px;
+            /*color:#FFFFFF;*/
+            margin:0px 0px 0px 0px;
+        }
+        .forms{
+            font-size:10px;
+            border:1px solid #000000;
+        }
+        #cont_left{
+            width: 250px;
+            height: 400px;
+            background-color: #fff;
+            margin-left: 3%;
+            margin-top: 12%;
+            position: relative;
+        }
+        #cont_main{
+            width: 900px;
+            height: 400px;
+            background-color: #fff;
+            top:153px;
+            left: 300px;
+            position: absolute;
+        }
+        table{
+            position: relative;
+            top: 3px;
+        }
+        #copyright{
+            position: fixed;
+            bottom:-1%;
+            right: 1%;
+            z-index: -10;
+        }
+        #bared{
+            position: fixed;
+            bottom:0px;
+            right: 0px;
+            z-index: -9;
+            background-color: #000;
+            width: 2000px;
+            height: 20px;
+            padding-bottom: 2px;
+            padding-right: 2px;
+        }
+        iframe{
+            display:block;
+        }
+        /*change font size from 60px to 40px*/
+        div#blog-line h1 a {font-family: Georgia, serif; font-size:40px;  color:#fff;} 
+
+        /*change font size from 40px to 14px, letter spacing from -2px to 1px*/
+        div#blog-line h1 {font:14px Arial, serif; padding:20px 0; margin:0; color:#fff; letter-spacing:1px;}
+    </style>
+    <script>
+        // this deletes the cookie when called
+        function Delete_Cookie( name, path, domain ) {
+        if ( Get_Cookie( name ) ) document.cookie = name + "=" +
+        ( ( path ) ? ";path=" + path : "") +
+        ( ( domain ) ? ";domain=" + domain : "" ) +
+        ";expires=Thu, 01-Jan-1970 00:00:01 GMT";
+        }
+    </script>
+<!-- FOR DTSEARCH -->
+<!-- END -->
+<script>
+
+</script>
+
+</head>
+<!-- <body onLoad="Delete_Cookie( name, path, domain )"> -->
+<body>
+
+<div id="outline">
+<div id="blog-line">
+    <!-- blog title and tag line -->
+    <h1><a href="https://elibrary.judiciary.gov.ph/">Supreme Court E-Library</a> <br /> Information At Your Fingertips</h1> 
+</div>
+
+<!-- page navigation -->
+<div id="nav" class="clearfix">
+    <ul class="sf-menu">
+        <!--Comment out to remove Home in the header
+        <li class="page_item "><a href="http://10.10.100.51">Home</a></li>-->
+        <li class="page_item page-item-11 current_page_item"><a href="https://elibrary.judiciary.gov.ph/">HOME</a></li>
+        <!-- <li class=""><a href="https://elibrary.judiciary.gov.ph/assets/images/memorabilia/2023 Bar Passers.pdf">2023 Bar Passers</a></li> -->
+        <!-- <li class="page_item page-item-92"><a href="https://elibrary.judiciary.gov.ph/secquestion/secquestion_main">REGISTER HERE</a></li> -->
+        <li class="page_item page-item-202"><a href="https://elibrary.judiciary.gov.ph/philippinereports">PHILIPPINE REPORTS E-BOOKS</a>
+        <li class="page_item page-item-202"><a href="https://elibrary.judiciary.gov.ph/republic_acts">REPUBLIC ACTS</a>
+        <li class="page_item page-item-202"><a href="https://elibrary.judiciary.gov.ph/supremecourtjustices/chiefjusticelist/">CHIEF JUSTICES</a> 
+   <!-- <li class="page_item page-item-202"><a href="https://elibrary.judiciary.gov.ph/supremecourtjustices/scjmain">JUDICIARY MEMORABILIA HALL</a> -->
+            <ul class="children">
+				 <!--<li class="page_item page-item-202"><a href="https://elibrary.judiciary.gov.ph/supremecourtjustices/incumbentjusticelist/">Incumbent Justices</a></li>-->
+				 <!--<li class="page_item page-item-202"><a href="https://elibrary.judiciary.gov.ph/supremecourtjustices/chiefjusticelist/">Chief Justices</a></li>-->
+                <!-- <li class="page_item page-item-202"><a href="https://elibrary.judiciary.gov.ph/supremecourtjustices/associatejusticelist">Associate Justices</a></li> -->
+            </ul> 
+        </li>
+        <li class="page_item page-item-94"><a href="https://elibrary.judiciary.gov.ph/advisory/newsandadvisories/">NEWS & ADVISORIES</a></li>
+        <!--<li class="page_item page-item-544"><a href="links/">Links</a></li>-->
+        <li class="page_item page-item-546"><a href="https://elibrary.judiciary.gov.ph/sitemap/sitemap_main">SITE MAP</a></li>
+        <!--<li class="page_item page-item-548"><a href="feedback/">Feedback</a></li>-->
+        <li class="page_item page-item-84"><a href="https://elibrary.judiciary.gov.ph/aboutus/aboutus_main">ABOUT US</a>
+            <ul class='children'>
+                <li class="page_item page-item-86"><a href="https://elibrary.judiciary.gov.ph/aboutus/scelibrary">The Supreme Court E-Library</a></li>
+            <!-- <li class="page_item page-item-88"><a href="https://elibrary.judiciary.gov.ph/aboutus/elib_history">History of the E-Library</a></li> -->
+                <li class="page_item page-item-90"><a href="https://elibrary.judiciary.gov.ph/aboutus/elibrary_team">The E-Library Development Team</a></li>
+            </ul>
+        </li>
+        <!-- <li class="page_item page-item-548"><a href="https://elibrary.judiciary.gov.ph/contactus/contactus_main">CONTACT US</a></li> -->
+         
+    </ul>
+    <ul id="mail_rss">
+    <!--<li><a href="feed/">RSS</a></li>-->
+    </ul>           
+    <!-- ending header template -->
+</div>
+
+<div id="content" class="clearfix">
+<div id="right">
+<!-- FOR Toggle posts-->
+<p id="toggle-all"><a href="#" id="toggle" class="hide-all">Toggle posts</a></p>
+<!-- For FONT-SIZE changer  -->
+<p id="font-resize">
+<a id="default" href="#">A </a><a id="larger" href="#">A+ </a><a id="largest" href="#">A++</a>
+</p>
+<!-- widget -->
+
+<!---02/28/2022--->
+<!-- Search button only appears when not in the search page. -->
+<div id="wp_sidebarlogin-3" class="widget">
+    <p>
+        <!-- <STRONG>TO START</STRONG> click <STRONG>E-Library Search</STRONG>. -->
+        <center>
+            <b>CLICK THE IMAGE TO SEARCH</b>
+            <a href="https://elibrary.judiciary.gov.ph/search" target="_self">
+                <img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia/search_button.png"  alt="Elibrary Search"  title="E-Library Search" />
+            </a>
+        </center>
+  </p>
+</div>
+
+<!-- For Advisory
+<div id="container_faq">
+
+    <table border='0'>
+    <tr valign='center'>
+        <td>ADVISORY:</td>
+    </tr>
+    <tr valign='center'>
+        <td><div align='justify'>The Supreme Court E-Library will undergo a system
+		maintenance on March 28-31, 2024 and will be inaccessible during this period.<br><br>
+		Thank you for your understanding!<br><br></div></td>
+		
+    </tr>   
+</table>
+</div>
+<br>
+-->
+
+
+<div id="container_faq">
+    <center>
+        <!--[<A HREF="https://elibrary.judiciary.gov.ph/secquestion/secquestion_main"><b>REGISTER</b></A>]  | [<A HREF="https://elibrary.judiciary.gov.ph/aboutus/faq"><b>FAQs</b></A>]
+        <b>CONTACT US</b><br>
+        <STRONG>(02)8524-2706</STRONG>-->
+    </center>
+    <table border='0'>
+    <tr valign='center'>
+        <td>CONTACT:</td>
+    </tr>
+    <tr valign='center'>
+        <td>Supreme Court of the Philippines <br>
+		    Library Services,<br> 
+			Padre Faura, Ermita, Manila, Philippines 1000</td>
+    </tr>
+    <tr valign='center'>
+        <td>(632) 8524-2706</td>
+    </tr>
+    <tr valign='center'>
+        <td>libraryservices.sc@judiciary.gov.ph<br></td>
+    </tr>
+</table>
+</div>
+
+<br>
+<div id="container_seal">
+
+<center><a href="https://npcregistration.privacy.gov.ph/certificate/organizationRegistration/64a7c5e47c2074390ec3ccb5" target="_blank"><img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia/CORSeal.jpg"/></a></center>
+   
+</div>
+
+<div class="widget_quick">
+    
+<img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia
+/quick_links/header.png"/></a>
+    
+<a href="http://sc.judiciary.gov.ph/" title="Supreme Court of the Philippines" target="_blank"><img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia
+/quick_links/sc.png"  alt="Supreme Court of the Philippines"  title="Supreme Court of the Philippines" /></a>
+
+<a href="http://ca.judiciary.gov.ph/" title="Cour of Appeals" target="_blank"><img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia
+/quick_links/ca.png"  alt="Cour of Appeals"  title="Cour of Appeals" /></a>
+
+<a href="http://sb.judiciary.gov.ph/" title="Sandiganbayan" target="_blank"><img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia
+/quick_links/sb.png"  alt="Sandiganbayan"  title="Sandiganbayan" /></a>
+
+<a href="http://cta.judiciary.gov.ph/" title="Court of Tax Appeals" target="_blank"><img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia
+/quick_links/cta.png"  alt="Court of Tax Appeals"  title="Court of Tax Appeals" /></a></li>
+
+<a href="http://jbc.judiciary.gov.ph/" title="Judicial and Bar Council" target="_blank"><img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia
+/quick_links/jbc.png"  alt="Judicial and Bar Council"  title="Judicial and Bar Council" /></a>
+
+<a href="http://oca.judiciary.gov.ph/" title="Office of the Court Administrator" target="_blank"><img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia
+/quick_links/oca.png"  alt="Office of the Court Administrator"  title="Office of the Court Administrator" /></a>
+
+<a href="http://philja.judiciary.gov.ph/" title="Philippine Judicial Academy" target="_blank"><img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia
+/quick_links/philja.png"  alt="Philippine Judicial Academy"  title="Philippine Judicial Academy" /></a>
+
+<!--
+<a href="http://pmc.judiciary.gov.ph/" title="Philippine Meditation Center" target="_blank"><img src="https://elibrary.judiciary.gov.ph/assets/images/memorabilia
+/quick_links/pmc.png"  alt="Philippine Meditation Center"  title="Philippine Meditation Center" /></a>
+-->
+
+</div>
+
+<div id="linkcat-5" class="widget"><h4>Foreign Supreme Courts</h4>
+    <ul class='xoxo blogroll'>
+<li><a href="http://www.scourt.go.kr" target="_blank">Korea, South</a></li>
+<li><a href="http://www.kehakiman.gov.my/jugdment/fc/latest.shtml" target="_blank">Malaysia</a></li>
+<li><a href="http://www.supcourt.gov.sg/" target="_blank">Singapore</a></li>
+<li><a href="http://www.supremecourtus.gov/" target="_blank">United States of America</a></li>
+
+    </ul>
+</div>
+</div>
+<div id="left">
+<div class="single_content">
+<br>    
+<div align='right'><img src='https://elibrary.judiciary.gov.ph/assets/images/printer.png'>&nbsp;&nbsp;<a href='https://elibrary.judiciary.gov.ph/thebookshelf/showdocsfriendly/1/59651' target='_blank'>View printer friendly version</a></div>
+<br>
+   
+			756 Phil. 354
+			<BR><BR>			
+			<CENTER>
+			<H2>SPECIAL THIRD DIVISION</H2>
+			<H2 style='background-color:#cccccc;padding-top:10px;padding-bottom:10px;'>[ G.R. No. 203655, March 18, 2015 ]</H2>
+			<H3>SM LAND, INC., PETITIONER, VS. BASES CONVERSION AND DEVELOPMENT AUTHORITY AND ARNEL PACIANO D. CASANOVA, ESQ., IN HIS OFFICIAL CAPACITY AS PRESIDENT AND CEO OF BCDA, RESPONDENTS.<BR><BR>R E S O L U T I O N</H3>
+			</CENTER>
+			<p><STRONG>VELASCO JR., J.:</STRONG></p>
+			
+			<p><div align="JUSTIFY">For reconsideration is the Decision of this Court dated August 13, 2014, which granted the petition for certiorari filed by SM Land, Inc. (SMLI) and directed respondent Bases Conversion Development Authority (BCDA) and its president to, among other things, subject SMLI’s duly accepted unsolicited proposal for the development of the Bonifacio South Property to a competitive challenge.<br><br>The gravamen of respondents’ motion is that BCDA and SMLI do not have a contract that would bestow upon the latter the right to demand that its unsolicited proposal be subjected to a competitive challenge. Assuming <i>arguendo</i> the existence of such an agreement between the parties, respondents contend that the same may be terminated by reasons of public interest.<br><br>We are not convinced.<br><br><b>There exists a valid agreement<br>between SMLI and BCDA</b><br><br>Article 1305 of the New Civil Code defines a contract as “a meeting of minds between two persons whereby one binds himself, with respect to the other, to give something or to render some service.” It is a “juridical convention manifested in legal form, by virtue of which one or more persons bind themselves in favor of another or others, or reciprocally, to the fulfilment of a prestation to give, to do, or not to do.”<sup style="color: rgb(255, 0, 0);">[1]</sup> The succeeding Article 1318 of the Code lays down the essential requisites of a valid contract, to wit:<br><blockquote>(1) Consent of the contracting parties;<br>(2) Object certain which is the subject matter of the contract; and<br>(3) Cause of the obligation which is established.<br></blockquote>In the case at bar, there is, between BCDA and SMLI, a perfected contract––a source of rights and reciprocal obligations on the part of both parties. Consequently, a breach thereof may give rise to a cause of action against the erring party.<br><br>The first requisite, <i>consent</i>, is manifested by the meeting of the offer and the acceptance upon the thing and the cause which are to constitute the contract.<sup style="color: rgb(255, 0, 0);">[2]</sup>In the case at bar, when SMLI submitted the first Unsolicited Proposal to BCDA on December 14, 2009, the submission constituted an <b>offer</b> to undertake the development of the subject property. BCDA then entered into <b>negotiations</b> with SMLI until the BCDA finally <b>accepted </b>the terms of the final unsolicited proposal.<sup style="color: rgb(255, 0, 0);">[3]</sup> Their agreement was thereafter reduced into writing through the issuance of the Certification of Successful Negotiations where the meeting of the parties’ minds was reflected in this wise:<br><br><blockquote>NOW, THEREFORE, for and in consideration of the foregoing, <b>BCDA and SMLI have, after successful negotiations</b> pursuant to Stage II of Annex C xxx, <b>reached an agreement</b> on the purpose, terms and conditions on the JV development of the subject property, which shall become the terms for the Competitive Challenge pursuant to Annex C of the JV Guidelines xxx.<sup style="color: rgb(255, 0, 0);">[4]</sup> (emphasis ours)</blockquote><br>Then,<b> to manifest their assent</b> to the terms thereof and their respective obligations, both parties––BCDA and SMLI, represented by Gen. Narciso L. Abaya and Ms. Ana Bess Pingol, respectively––<b>affixed their signatures</b> on the Certification of Successful Negotiations and had it <b>notarized</b> on August 6, 2010.<br><br><i>Cause</i>, on the other hand, is the essential reason which moves the parties to enter into the contract. It is the immediate, direct and proximate reason which justifies the creation of an obligation through the will of the contracting parties.<sup style="color: rgb(255, 0, 0);">[5]</sup> Complementing this is Article 1350 of the New Civil Code which provides that “[i]n onerous contracts the cause is understood to be, for each contracting party, the prestation or promise of a thing or service by the other.” As such, the cause of the agreement in the case at hand is their interest in the sale or acquisition and development of the property and their undertaking to perform their respective obligations, among others, as reflected in the Certificate of Successful Negotiations and in the Terms of Reference (TOR) issued by BCDA.<br><br>Lastly,<i> object certain</i> refers to the subject matter of the contract. It is the thing to be delivered or the service to be performed.<sup style="color: rgb(255, 0, 0);">[6]</sup> Here, when the BCDA Board issued, on August 6, 2010, the Certification of Successful Negotiations,<sup style="color: rgb(255, 0, 0);">[7]</sup> it not only accepted SMLI’s Unsolicited Proposal and declared SMLI eligible to enter into the proposed JV activity. It also “<b>agreed to subject [SMLI]’s Original Proposal to Competitive Challenge</b> pursuant to Annex C [of the NEDA JV Guidelines], which competitive challenge process shall be immediately implemented following the [TOR] Volumes 1 and 2.”<sup style="color: rgb(255, 0, 0);">[8]</sup> Moreover, said Certification provides that “<b>the BCDA shall, thus, commence the activities for the solicitation for comparative proposals</b> xxx starting on August 10, 2010, on which date [SMLI] shall post the required Proposal Security xxx.”<sup style="color: rgb(255, 0, 0);">[9]</sup><br><br>The elements of a valid contract being present, <b>there thus exists between SMLI and BCDA a <i>perfected contract</i>, embodied in the Certification of Successful Negotiations, upon which certain rights and obligations spring forth</b>, including the <b>commencement of activities for the solicitation for comparative proposals</b>.&nbsp; Thus, as evinced in the Certification of Successful Negotiation:<br><br><blockquote><b>BCDA and SMLI have agreed to subject SMLI’s Original Proposal to Competitive Challenge</b> pursuant to Annex C – Detailed Guidelines for Competitive Challenge Procedure for Public-Private Joint Ventures of the NEDA JV guidelines, which competitive challenge process shall be immediately implemented following the Terms of Reference (TOR) Volumes 1 and 2.<sup style="color: rgb(255, 0, 0);">[10] </sup>x x x</blockquote><br>This agreement is the law between the contracting parties with which they are required to comply in good faith.<sup style="color: rgb(255, 0, 0);">[11]</sup> Verily, it is BCDA’s subsequent unilateral cancellation of this perfected contract which this Court deemed to have been tainted with grave abuse of discretion. BCDA could not validly renege on its obligation to subject the unsolicited proposal to a competitive challenge in view of this perfected contract, and especially so after BCDA gave its assurance that it would respect the rights that accrued in SMLI’s favor arising from the same.<sup style="color: rgb(255, 0, 0);">[12]</sup><br><br><b>The NEDA JV Guidelines has <br>the force and effect of law</b><br><br>Aside from the agreement between the parties, the ruling in favor of SMLI is likewise based on the NEDA JV Guidelines. As mandated by the rules, the Joint Venture activity, upon the successful completion of the detailed negotiation phase, shall be subjected to a competitive challenge.<sup style="color: rgb(255, 0, 0);">[13]</sup> While it is not disputed that respondents failed to comply with the pertinent provisions of the NEDA JV Guidelines, the dissent postulates that it is justifiable since it is a mere guideline and not law.<sup style="color: rgb(255, 0, 0);">[14]</sup><br><br>We regretfully disagree.<br><br>Under the Administrative Code of 1987,<sup style="color: rgb(255, 0, 0);">[15]</sup> acts of the President providing for rules of a general or permanent character in implementation or execution of constitutional or statutory powers shall be promulgated in Executive Orders (EOs).<sup style="color: rgb(255, 0, 0);">[16]</sup> In other words, it is through these orders that the President ensures that laws are faithfully executed, by handing out instructions to subordinate executive officials and the public, in the form of implementing rules and regulations, on how the law should be executed by subordinate officials and complied with by the public.<sup style="color: rgb(255, 0, 0);">[17]</sup><br><br>For government contracts and procurement in the Philippines, then President Gloria Macapagal-Arroyo, adopting the recommendation of the NEDA, issued EO 109<sup style="color: rgb(255, 0, 0);">[18]</sup> on May 27, 2002.As its title indicates, EO 109 streamlined the rules and procedures on the review and approval of all contracts of departments, bureaus, offices and agencies of the government, including government-owned and controlled corporations and their subsidiaries. This executive issuance was, however, later amended by EO 109-A,<sup style="color: rgb(255, 0, 0);">[19]</sup> to conform to RA 9184 which was enacted barely two months after the issuance of EO 109.<sup style="color: rgb(255, 0, 0);">[20]</sup> Two years later, or on April 30, 2005, EO 423<sup style="color: rgb(255, 0, 0);">[21]</sup> was issued, repealing EO 109-A and simplifying the procurement process. Section 4 of EO 423 was later amended by EO 645.<sup style="color: rgb(255, 0, 0);">[22]</sup><br><br>Amidst the changes effected on procurement rules, the NEDA’s duty to issue a JV Guidelines under the said executive orders remained unaffected.<sup style="color: rgb(255, 0, 0);">[23]</sup> Through Section 5 of EO 109, Section 8 of EO 109-A and now Section 8 of EO 423, the President effectively delegated her inherent executive power to issue rules and regulations on procurement to her subordinate executive officials,<sup style="color: rgb(255, 0, 0);">[24]</sup> her <i>alter egos,</i> the most recent of which reads in this wise:<br><br><blockquote>Section 8. <u>Joint Venture Agreements</u>. The NEDA, in consultation with the GPPB, <b>shall issue guidelines regarding joint venture agreements</b> with private entities with the objective of promoting transparency, competitiveness, and accountability in government transactions, and, where applicable, complying with the requirements of an open and competitive public bidding.</blockquote><br>Pursuant to said repeated directives from no less than the Chief Executive, the NEDA issued the JV Guidelines providing the procedures for the coagulation of joint ventures between the government and a private entity. In this regard, attention must be drawn to the well-established rule that <b>administrative issuances, such as the NEDA JV Guidelines, duly promulgated pursuant to the rule-making power granted by statute, have the force and effect of law</b>.<sup style="color: rgb(255, 0, 0);">[25]</sup> As elucidated in the August 13, 2014 Decision:<br><br><blockquote>x x x <b>Being an issuance in compliance with an executive edict, the NEDA JV Guidelines, therefore, has the same binding effect as if it were issued by the President himself</b>, who parenthetically is a member of NEDA. As such, no agency or instrumentality covered by the JV Guidelines can validly deviate from the mandatory procedures set forth therein, even if the other party acquiesced therewith or not.<sup style="color: rgb(255, 0, 0);">[26]</sup></blockquote><br><b>Articles III (4) and VIII (3) only refer to<br>Private Sector Entities (PSEs), effectively <br>excluding the Original Proponent</b><br><br>The dissent would next draw our attention to Article III (on General Information) and VIII (on Qualifications and Waivers) of the TOR Volume 1, which read:<br><br><blockquote><b>III. GENERAL INFORMATION</b><br><br><div align="center">x x x&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x x x&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x x x<br></div><br>4. Amendment of these TOR. The information and/or procedures contained in these TOR may be amended or replaced at any time, at the discretion of the BCDA Board, without giving prior notice or providing for any reason. Should any of the information and/or procedures contained in these TOR be amended or replaced, the JV-SC shall inform and send Supplemental Notices to all <b><u>PSEs</u></b> xxx.<sup style="color: rgb(255, 0, 0);">[27]</sup><br><br><div align="center">x x x&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x x x&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x x x<br></div><br><b>VIII. QUALIFICATIONS AND WAIVERS</b><br><br>3. BCDA further reserves the right to call off this disposition prior to acceptance of the proposal(s) and call for a new disposition process under amended rules, and without any liability whatsoever to any or all of the <b><u>PSEs</u></b>, except the obligation to return the Proposal Security.<sup style="color: rgb(255, 0, 0);">[28]</sup> (emphasis added)</blockquote><br>On this point, it is well to emphasize that <b>the TOR containing the said provisions details the requirements for eligibility to qualify as a PSEthat may submit its technical and financial proposals for the JV, and does not encompass the entire Swiss Challenge procedure</b>. This is bolstered by the provisions’ perfect consonance with the procedure for Stage Three per Annex C of the Guidelines, thus:<br><br><blockquote>3. The Private Sector Entity shall post the proposal security at the date of the first day of the publication of the invitation for comparative proposals in the amount and form stated in the tender documents.<br><br>4. The procedure for the determination of eligibility of comparative proponents/private sector participants, issuance of supplemental competitive selection bulletins and pre-selection conferences, submission and receipt of proposals, opening and evaluation of proposals shall follow the procedure stipulated under Annex A hereof. In the evaluation of proposals, the best offer shall be determined to include the original proposal of the Private Sector Entity. If the Government Entity determines that an offer made by a comparative private sector participant other than the Original Proponent is superior or more advantageous to the government than the original proposal, the Private Sector Entity who submitted the original proposal shall be given the right to match such superior or more advantageous offer within thirty (30) calendar days from receipt of notification from the Government Entity of the results of the competitive selection. Should no matching offer be received within the stated period, the JV activity shall be awarded to the comparative private sector participant submitting the most advantageous proposal. If a matching offer is received within the prescribed period, the JV activity shall be awarded to the Original Proponent. If no comparative proposal is received by the Government Entity, the JV activity shall be immediately awarded to the original private sector proponent.</blockquote><br>Pursuant to the above-quoted provisions from the NEDA JV Guidelines, the interested PSEs, in order to be able to participate in the competitive challenge, must first post their respective proposal securities before submitting their comparative proposals for evaluation and consideration. Consequently, per the reservation clause, should the government entity (GE) decide to make material changes in the TORs issued, it must do so before it accepts the comparative proposals from the interested PSEs. This deadline is intended to protect the participating PSEs from alterations in the benchmarks set forth in the TOR after their proposals have already been seen and reviewed by the GE. Furthermore, should modifications be validly made, such may affect the computation for the amount of the proposal security to be posted by the comparative proponents,<sup style="color: rgb(255, 0, 0);">[29]</sup> hence the need for the GE to return the PSEs’ proposal securities should it decide to pre-terminate the competitive challenge.<br><br>As to SMLI’s proposal security, suffice it to state that it is not covered by the clauses––hence will not be returned even if the <i>competitive challenge</i> is terminated––because <b>SMLI cannot be considered as a PSE within the context of the TOR and the JV Guidelines.</b><br><br>It must be emphasized that while an Original Proponent necessarily comes from the private sector, the term “Private Sector Entity” has a definite meaning in the Swiss Challenge procedure. <b>Under the TOR, a “Private Sector Entity” means “the party/ies that shall have submitted proposals in compliance with the requirements specified in Article V, Volume 1 of these TOR for the privatization and development of the property</b>.”<sup style="color: rgb(255, 0, 0);">[30] </sup>On the other hand, under the same document, an <b>“Original Proponent” means “SMLI, whose unsolicited proposal for the development and privatization of [the] subject Property through JV with BCDA has been accepted by the latter, subject to certain conditions, and is now being subjected to a competitive challenge.”</b><sup style="color: rgb(255, 0, 0);">[31]</sup><br><br>To be sure, the Original Proponent, as duly noted in the assailed Decision herein, is bestowed several rights under the JV Guidelines, including the right to the conduct and completion of a competitive challenge and the right to match a superior or more advantageous offer, among others. As such, it is clear that SMLI, being the Original Proponent, cannot be considered as a Private Sector Entity to which the reservation clause applies.<br><br>Moreover, pertinent to our reading of the above-cited provisions in the TOR is Article 1373 of the Civil Code, which provides that “[i]f some stipulation of any contract should admit of several meanings, it shall be understood as bearing that import which is most adequate to render it effectual.” For this purpose, an interpretation which renders every word operative is preferred over that which makes some words idle and nugatory.<br><br>Applying the doctrine in the case at bar, a contrary reading––that the adverted provisions in the TOR entitle BCDA to cancel the entire Swiss Challenge––would violate the NEDA JV Guidelines, which, as earlier explained, has the force and effect of law. As elucidated in the main Decision:<br><br><blockquote>A review of the outlined three-stage framework reveals that there are only two occasions where pre-termination of the Swiss Challenge process is allowed: at <b>Stage One,</b> prior to acceptance of the unsolicited proposal; and at <b>Stage Two,</b> should the detailed negotiations prove unsuccessful.&nbsp; In the Third Stage, the BCDA can no longer withdraw with impunity from conducting the Competitive Challenge as it becameministerial for the agency to commence and complete the same. Thus, <b>acceding to the interpretation of the TOR offered by BCDA will, in effect, result not only in the alteration of the agreement between the parties but also of the NEDA JV Guidelines itself, both of which has the force and effect of law</b>.<br><br>The interpretation offered by BCDA is, therefore, unacceptable. Between procedural guidelines promulgated by an agency pursuant to its rule-making power and a condition unilaterally designed and imposed for the implementation of the same, the former must prevail. BCDA does not wield any rule-making power such that it can validly alter or abandon a clear and definite provision in the NEDA JV Guidelines under the guise of a condition under the TOR. As We have time and again harped, the ones duty-bound to ensure observance with laws and rules should not be the ones to depart therefrom. A contrary rule would open the floodgates to abuses and anomalies more detrimental to public interest. For how can others be expected to respect the rule of law if the very persons or entities tasked to administer laws and their implementing rules and regulations are the first to violate them, blatantly or surreptitiously?</blockquote><br><b>Estoppel can be invoked <br>against herein respondents&nbsp; </b><br><br>Respondents cannot plausibly shift the blame on what it perceived to be a bad bargain on the previous administration by arguing that the latter was negligent in its actions or that it entered into questionable transactions,for as can be gleaned, the negotiations and agreement between BCDA and SMLI was authorized by the BCDA’s Board through Resolution No. 2010-05-100. Acting as a collegial body, the BCDA’s Board could still validly authorize its president to enter into transactions over the protestation of some of its members through a democratic vote.<br><br>Respondents cannot also find solace in the general rule that the State is not barred by estoppel by the mistakes or errors of its officials or agents.As jurisprudence elucidates, the doctrine issubject to exceptions, viz:<br><br><blockquote>Estoppels against the public are little favored. They should not be invoked except [in rare] and unusual circumstances, and may not be invoked where they would operate to defeat the effective operation of a policy adopted to protect the public. They must be applied with circumspection and should be applied only in those special cases where the interests of justice clearly require it. <b>Nevertheless, the government must not be allowed to deal dishonorably or capriciously with its citizens, and must not play an ignoble part or do a shabby thing; and subject to limitations</b> . . ., the doctrine of equitable estoppel may be invoked against public authorities as well as against private individuals.<sup style="color: rgb(255, 0, 0);">[32]</sup> (emphasis added)</blockquote><br>Clearly, estoppel against the government can be invoked in this case. This is in view of the fact that despite BCDA’s repeated assurances that it would respect SMLI’s rights as an original proponent, and after putting the latter to considerable trouble and expense, BCDA went back on its word to comply with its obligations under their agreement and instead ultimately cancelled the same. BCDA’s capriciousness becomes all the more evident in its conflicting statements as regards whether or not SMLI’s proposal would be advantageous to the government. As enunciated in the assailed Decision:<br><br><blockquote>Noticeably, in its November 8, 2010 Memorandum, the BCDA posited that competitive challenge is more advantageous to the government than straight bidding, to wit:<br><blockquote>The price of the Bonifacio South properties has already been set by the winning price in the bidding for the joint venture development of the JUSMAG property (P31,111/sq.m.). Thus, BCDA has established the benchmark for the price of the remaining Bonifacio South properties, of which the JUSMAG property is the most prime. Logically the minimum bid price under straight bidding for the BNS/PMC/ASCOM/SSU property, which is a far less inferior property, would be P31,111/sq.m. However, with SM’s submission of a revised unsolicited proposal at P31,732/sq.m. and later further revised to P32,500/sq.m., <b>BCDA saw the opportunity to negotiate for better terms and eventually arrived at a higher price of P36,900/sq.m.&nbsp; In this case, BCDA deemed that going into Competitive Challenge was more advantageous to the government than Competitive Selection (straight bidding) because of the opportunity to increase the price.</b><br><br>Furthermore, subjecting the price to subsequent price challenge will possibly drive up the price even higher than P38,900/sq.m. These opportunities cannot be taken advantage of under a straight bidding where failure of bidding would likely ensue if in case BCDA immediately sets the price of the property too high. The competition in the real estate industry and as experienced by BCDA is such that the other developers will usually challenge the original proposal to “up the ante” as they cannot allow the original proponent to get the property easily.<br></blockquote>Despite this testament, the BCDA, over a year later, made a complete turnaround stating that straight bidding will be best for the Government.As can be gleaned from the BCDA’s Memorandum to the President dated February 13, 2012, respondents themselves recommended to the President that the selection proceedings be terminated. To reiterate:<br><blockquote>In view of the foregoing, may we respectfully recommend the President’s approval for BCDA to terminate the proceedings for the privatization and development of the BNS/PMC/ASCOM/SSU Properties in Bonifacio South through Competitive Challenge and proceed with the bidding of the property.</blockquote>The BCDA offered no explanation to reconcile its opposing positions. It also neglected to inform SMLI of the provisions in its proposal that it deemed disadvantageous to the government. x x x</blockquote><br>Respondents harp on the alleged dubiousness of the proceeding that led to the perfection of the agreement, but to rule now that irregularities marred the actions of BCDA’s board and officers, as respondents would have us believe, would be tantamount to prematurely exposing its former officers to potential administrative liability without due process of law. If respondent would insist on such argument, it could have at least shown that the proper disciplinary cases have been initiated as evidence that BCDA reasonably believed that its previous officers indeed deviated from lawful procedure.<br><br><b>The perceived government <br>losses remain speculative</b><br><br>The alleged adverse economic impact on the government, in finding for SMLI, does not constitute, under the premises, a valid cause for the reversal of the assailed Decision. To clarify, Our ruling did not award the project in petitioner’s favor but merely ordered that SMLI’s proposal be subjected to a competitive challenge. Consequently, any alleged disadvantage the government would suffer is speculative at most as there is no final award for the project as of yet.<br><br>Lest it be misunderstood, <b>the perceived low floor price forthe project, based on SMLI’s proposal, remains just that––a floor price</b>. There is, thus, an opportunity to increase the price, the government share as it were, through competitive challenge, as respondents themselves previously observed. Such offers can even surpass the property’s current market value and, in which case,constitute sufficient consideration for the project.Without first subjecting SMLI’s proposal to a competitive challenge, no bid can yet be obtained from PSEs and, corollarily, no determination can be made at present as to whether or not the <b>final</b> bid price for the project is,indeed, below the property’s fair market value.<br><br>Public bidding may generally be more preferred than a competitive challenge for reasons explained in the dissent. However, there must be a careful balance between what is best for the government and what is fair to the persons it deals with. Otherwise, any and all unsolicited proposal can be cancellable, despite its acceptance, by the mere allegation that straight bidding is what public interest so requires. Worse, the government can very well ignore, at will, its contractual obligations by invoking that familiar mantra––public interest.<br><br>To be sure, the government has not strayed from accepting <i>suo moto</i> proposals from private entities and subjecting said proposals to a Swiss Challenge. In fact, the recent “Price Challenge” as regards Metro Pacific Investment Corporation’s (MPIC’s) proposal for the expansion of the North Luzon Expressway as well as its integration with the Subic-Clark-Tarlac Expressway was undertaken by none other than BCDA itself.<sup style="color: rgb(255, 0, 0);">[33]</sup> Thereafter, the BCDA board, in its February 4, 2015 meeting, adopted the result of the concluded Price Challenge, wherein no firm has tried to match MPIC’s proposal, and, consequently, approved the notice of award in the company’s favor.<sup style="color: rgb(255, 0, 0);">[34]</sup> Curiously enough, if straight bidding is, indeed, more beneficial, more transparent, and would yield a better offer for the government, then there is no reason for respondents not to have cancelled the process instead of awarding the project to MPIC. Otherwise stated, if public interest requires the conduct of a straight bidding instead of a Swiss Challenge, then MPIC can never rest easy, thinking the contract it entered into with the government can be terminated at any time.<br><br>It is, thus, recognized that there are instances wherein the agreement stemming from faithful negotiations of the parties should be upheld, especially so when, as in this case,the alleged adverse effects on the government remain speculative at best. Respondents should, therefore, honor its commitment with petitioner, not as a message conveying the coddling of PSEs, and not only pursuant to its contractual and legal obligations under the TOR and the NEDA JV Guidelines, but also as a balancing mechanism between the tangible benefits the government stands to reap in terms of contract consideration, and its intangible benefits including improved public confidence in the government in terms of ease of doing business with. Moreover, and guilty of reiteration, it is worth emphasizing that <b>SMLI’s offer, which was duly accepted by the BCDA, only serves as the floor price and does not foreclose better offers that can even surpass the property’s current market value</b>. This being said, the government is not without protection for it is not precluded from availing of safeguards and remedies it is entitled to after soliciting comparative proposals, as provided under the TOR and the NEDA JV Guidelines.<br><br><b>WHEREFORE</b>, in view of the foregoing, the Court’s August 13, 2014 Decision is hereby <b>AFFIRMED</b>. Respondents’ Motion for Reconsideration is accordingly <b>DENIED</b> with <b>FINALITY</b>.<br><br>No further pleadings, motions, letters or other communications shall be entertained in this case. Let entry of judgment be issued.<br><br><b>SO ORDERED.</b><br><br><i>Peralta, and Mendoza, JJ.</i> concur.<br><i><br></i></div><div align="JUSTIFY"><i>Villarama, Jr., J</i>., joins <i>J</i>. Leonen in his dissent.<br><i><br></i></div><div align="JUSTIFY"><i>Leonen, J.</i>, I dissent. See separate opinion.<br><br><br><hr width="60%" size="1" noshade="noshade" align="CENTER"><br><br><div align="right"><b><u>March 18, 2015</u></b><br></div><br><br><center><b>N O T I C E OF J U D G M E N T</b></center><br><br>Sirs/Mesdames:<br><br>Please take notice that on ___<u><b>March 18, 2015</b></u>___ a Decision, copy attached herewith, was rendered by the Supreme Court in the above-entitled case, the original of which was received by this Office on March 31, 2015 at 1:55 p.m.<br><br><br><center>Very truly yours,<br><b>(SGD)<br>WILFREDO V. LAPITAN</b><br><i>Division Clerk of Court</i></center><br><br><hr width="60%" size="1" noshade="noshade" align="LEFT"><sup style="color: rgb(255, 0, 0);"><br></sup></div><div align="JUSTIFY"><sup style="color: rgb(255, 0, 0);"><br></sup></div><div align="JUSTIFY"><sup style="color: rgb(255, 0, 0);">[1]</sup> 14 Sanchez Roman 148-149, cited in Pineda, Obligations and Contracts (2000).<br><br><sup style="color: rgb(255, 0, 0);">[2]</sup> Article 1319, New Civil Code<br><br><sup style="color: rgb(255, 0, 0);">[3]</sup> See Certification of Successful Negotiations, <i>rollo, </i>p. 64. [WHEREAS, after evaluation of the unsolicited proposal submitted by SMLI in accordance with the provisions of Annex “C” of the Guidelines, the [JV-SC] created by BCDA for the selection of a private partner for the [project] recommended to the BCDA Board, and the BCDA Board approved, per Board Resolution No. 2010-05-100, the acceptance of the unsolicited proposal, subject to the condition that such acceptance shall not bind BCDA to enter into a JV activity, but shall mean that authorization is given to proceed with detailed negotiations on the terms and conditions of the JV activity;<br><br>WHEREAS, pursuant to the authorization granted by the Board and issued pursuant to Annex “C”, Part III, Stage One of the JV Guidelines, BCDA <b>went into detailed negotiations</b> with SMLI. The JV-SC simultaneously ascertained the eligibility of SMLI in accordance with Annex “C”, Part III, Stage 2 (2) of the JV Guidelines xxx.] (emphasis ours)<br><br><sup style="color: rgb(255, 0, 0);">[4]</sup> <i>Id</i>. at 65. Certification of Successful Negotiations, p. 2.<br><br><sup style="color: rgb(255, 0, 0);">[5]</sup> <i>Basic Books [Phils.], Inc. v. Lopez, et al.</i>, No. L-20753, February 28, 1966.<br><br><sup style="color: rgb(255, 0, 0);">[6]</sup> Pineda, <i>Obligations and Contracts</i> (2000), p. 372.<br><br><sup style="color: rgb(255, 0, 0);">[7]</sup> <i>Rollo</i>, p. 64.<br><br><sup style="color: rgb(255, 0, 0);">[8]</sup> <i>Id</i>. at 71.<br><br><sup style="color: rgb(255, 0, 0);">[9]</sup> <i>Id</i>.<br><br><sup style="color: rgb(255, 0, 0);">[10]</sup> <i>Id</i>.<br><br><sup style="color: rgb(255, 0, 0);">[11]</sup> <i>See</i> Article 1159. Obligations arising from contracts have the force of law between the contracting parties and should be complied with in good faith. (New Civil Code)<br><br><sup style="color: rgb(255, 0, 0);">[12]</sup> <i>Rollo</i>, p. 109.<br><br><sup style="color: rgb(255, 0, 0);">[13]</sup> <i>Id</i>. at 374-375.<br><br><sup style="color: rgb(255, 0, 0);">[14]</sup> Dissenting Opinion, p.5, per <i>J</i>. Leonen.<br><br><sup style="color: rgb(255, 0, 0);">[15]</sup> Executive Order No. 292.<br><br><sup style="color: rgb(255, 0, 0);">[16]</sup> Administrative Code of 1987 (EO 292), Book III (Office of the President), Title I (Powers of the President), Chapter 2 (Ordinance Power), Section 2 (Executive Orders).<br><br><sup style="color: rgb(255, 0, 0);">[17]</sup> See Associate Justice Antonio T. Carpio’s Separate Concurring Opinion in <i>Abakada Guro Partylist v. Purisima,</i> G.R. No. 166715, August 14, 2008, citing Section 17, Article VII, Constitution; See also<i> Biraogo v. Philippine Truth Commission of 2010, </i>G.R. Nos. 192935 and 193036, December 7, 2010 where the Court upheld the creation by the President of the Philippine Truth Commission by way of an Executive Order, ruling that such creation is an exercise by the President of his duty to ensure that laws are faithfully executed (Sec. 17, Article VII, 1987 Constitution), thus, the issuance of the EO does not have to be backed by a statute.<br><br><sup style="color: rgb(255, 0, 0);">[18]</sup> <i>Streamlining the Rules and Procedures on the Review and Approval of all Contracts of Departments, Bureaus, Offices and Agencies of the Government, including Government-Owned and Controlled Corporations and their Subsidiaries</i>. Published in the <i>Philippine Star</i> on June 7, 2002.<br><br><sup style="color: rgb(255, 0, 0);">[19]</sup> <i>Amending Executive Order No. 109 Dated May 27, 2002 Prescribing the Rules and Procedures on the Review and Approval of all Government contracts to Conform with Republic Act No. 9184, otherwise known as the Government Procurement reform Act.</i> EO 109-A was issued on September 18, 2003.<br><br><sup style="color: rgb(255, 0, 0);">[20]</sup> RA 9184 was enacted on July 22, 2002 and signed into law by then President Arroyo on January 10, 2003. It was then published on January 11, 2003 in two (2) newspapers of general nationwide circulation and took effect fifteen (15) days thereafter, or on January 26, 2003.<br><br><sup style="color: rgb(255, 0, 0);">[21]</sup><i> Repealing Executive Order No. 109-A dated September 18, 2003 Prescribing the Rules and Procedures on the Review and Approval of All Government Contracts to conform with Republic Act No. 9184, otherwise known as the “Government Procurement Reform Act.”</i><br><br><sup style="color: rgb(255, 0, 0);">[22]</sup> <i>Amending Section 4 of Executive Order No. 423 dated 18 September 2003 which&nbsp; prescribes the rules and procedures on the review and approval of all government contracts to conform with Republic Act No. 9184 otherwise known as the “Government Procurement Reform Act.”</i><br><br><sup style="color: rgb(255, 0, 0);">[23]</sup> See: EO 109, Section 5 [SECTION 5. Joint Venture Agreements. NEDA shall, in consultation with the Department of Justice issue guidelines regarding joint venture agreements with private entities with the objective of promoting transparency, impartiality, and accountability in government transactions and, where applicable complying with the requirement of an open and competitive public bidding.];<br><br>EO 109-A, Section 8 [SECTION 8. Joint Venture Agreements. — The NEDA, in consultation with the GPPB, shall issue guidelines regarding joint venture agreements with private entities with the objective of promoting transparency, competitiveness, and accountability in government transactions and, where applicable, complying with the requirements of an open and competitive public bidding.];<br><br>EO 423, Section 8 [Section 8. <u>Joint Venture Agreements</u>. The NEDA, in consultation with the GPPB, shall issue guidelines regarding joint venture agreements with private entities with the objective of promoting transparency, competitiveness, and accountability in government transactions, and, where applicable, complying with the requirements of an open and competitive public bidding.]<br><br><sup style="color: rgb(255, 0, 0);">[24]</sup> See Associate Justice Antonio T. Carpio’s Separate Concurring Opinion in <i>Abakada Guro Partylist v. Purisima</i>, G.R. No. 166715, August 14, 2008, citing Section 17, Article VII, Constitution.<br><br><sup style="color: rgb(255, 0, 0);">[25]</sup> <i>Eslao v. COA</i>, G.R. No. 108310, September 1, 1994, cited in <i>Atlas Consolidated Mining and Development v. Commissioner of Internal Revenue</i>, G.R. No. 159490, February 18, 2008.<br><br><sup style="color: rgb(255, 0, 0);">[26]</sup> <i>Rollo</i>, p.988.<br><br><sup style="color: rgb(255, 0, 0);">[27]</sup> <i>Id</i>. at 78.<br><br><sup style="color: rgb(255, 0, 0);">[28]</sup> <i>Id</i>. at 87 [Article VIII (Qualifications and Waivers), Terms of Reference Volume 1].<br><br><sup style="color: rgb(255, 0, 0);">[29]</sup> See schedule for determination of the amount of the proposal security, Section VI, Item 1.a.6., Annex A, NEDA JV Guidelines.<br><br><sup style="color: rgb(255, 0, 0);">[30]</sup> <i>Rollo,</i> p. 77.<br><br><sup style="color: rgb(255, 0, 0);">[31]</sup> <i>Id</i>. at 76.<br><br><sup style="color: rgb(255, 0, 0);">[32]</sup> <i>Republic v. Court of Appeals,</i> G.R. No. 116111, January 21, 1999.<br><br><sup style="color: rgb(255, 0, 0);">[33]</sup> The Philippine Star, February 2, 2015, B-9.<br><br><sup style="color: rgb(255, 0, 0);">[34]</sup> The Manila Bulletin, February 7, 2015, B-3.<br><br><br><hr width="60%" size="1" noshade="noshade" align="CENTER"><br><br><center><b>DISSENTING OPINION</b></center><br><br><b>LEONEN, <i>J.</i>:</b><br><br>I dissent.<br><br>There was no valid agreement that gave petitioner SM Land, Inc. (petitioner SMLI) a right to a completed competitive challenge.&nbsp; Respondent Bases Conversion and Development Authority (respondent BCDA) did not and may not give consent to any provision that limits the process for selecting respondent BCDA’s joint venture partner to competitive challenge especially when it was shown that such process would be against public interest.<br><br>The Certificate of Successful Negotiation<sup style="color: rgb(255, 0, 0);">[1]</sup> and the Terms of Reference<sup style="color: rgb(255, 0, 0);">[2]</sup> do not show a clear meeting of the minds to limit the whole selection process to a completed competitive challenge.&nbsp; While these documents state that petitioner SMLI and respondent BCDA had “reached an agreement on the purpose, terms and conditions on the [joint venture] development . . . which shall become the terms for the Competitive Challenge[,]”<sup style="color: rgb(255, 0, 0);">[3]</sup> respondent BCDA did not make a binding commitment to enter into a joint venture agreement with petitioner SMLI or to&nbsp; limit the selection process to a completed competitive challenge.&nbsp; The Certificate of Successful Negotiation was worded in a manner that implied that the terms agreed upon by petitioner SMLI and respondent BCDA shall apply only if they decided to proceed with the joint venture development and the competitive challenge.<sup style="color: rgb(255, 0, 0);">[4]</sup><br><br>Similarly, the Terms of Reference contained no such commitment.&nbsp; It only described the competitive challenge procedure should both parties decide to proceed with it.&nbsp; It even contained provisions that confirmed respondent BCDA’s authority to reconsider and terminate the selection process and later adopt other selection processes.<br><br><blockquote><b>III. GENERAL INFORMATION</b><br><br><div align="center">. . .&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; . . .&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; . . .</div><div align="left"><ol start="4"><li><b>Amendment of these TOR.&nbsp; <i>The information and/or procedures contained in these TOR may be amended or replaced at any time, at the discretion of the JV-SC, subject to the approval/confirmation of the BCDA Board, without giving prior notice or providing any reason</i></b>.&nbsp; Should any of the information and/or procedures contained in these TOR be amended or replaced, the JV-SC shall inform and send Supplemental Notices to all PSEs. . . .<br></li></ol></div><div align="center">. . .&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; . . .&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; . . .<br></div><br><b>VIII. QUALIFICATIONS AND WAIVERS</b><br><br><div align="center">. . .&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; . . .&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; . . .</div><b><ol start="3"><li><i>BCDA</i> <i>further reserves the right to call off this disposition prior to acceptance of the proposal(s) and call for a new disposition process under amended rules, and without any liability whatsoever to any or all the PSEs, except the obligation to return the Proposal Security.</i><sup style="color: rgb(255, 0, 0);">[5]</sup> (Emphasis supplied)</li></ol></b></blockquote><br>Petitioner SMLI cannot invoke the principle of estoppel against respondent BCDA.&nbsp; This is not just because of the principle that the government is not bound by its agents’ mistakes.&nbsp; This is because the principle of estoppel presupposes that false representations were made — which is not the case.&nbsp; The Certificate of Successful Negotiation and the Terms of Reference do not state that respondent BCDA shall limit the process of selecting the joint venture partner to a completed competitive challenge.&nbsp; The existence of qualifications and waivers in the Terms of Reference further negates allegations that there was such a representation.<br><br>However, even granting that there was such representation, respondent BCDA was not acting out of capriciousness when it decided to terminate the competitive challenge.&nbsp; It terminated the competitive challenge because petitioner SMLI’s offer was incompatible with public interest and, therefore, void.&nbsp; Moreover, the whole process that led to the issuance of a Certificate of Successful Negotiation was highly irregular.<br><br>Respondents BCDA and its President, Arnel Paciano D. Casanova (Casanova), point to the alleged dubious process that led to the naming of petitioner SMLI as the original proponent.&nbsp; They formally submit that as much as P13 billion pesos may be lost to the government.<sup style="color: rgb(255, 0, 0);">[6]</sup><br><br>According to respondents BCDA and Casanova, the Joint Venture Selection Committee’s recommendation and BCDA Board’s approval of using competitive challenge, instead of the usual public bidding process,<sup style="color: rgb(255, 0, 0);">[7]</sup> are themselves questionable.&nbsp; Respondents BCDA and Casanova cited the April 28, 2010 minutes of respondent BCDA’s special Board meeting to show that the choice of disposition process had already been a concern within respondent BCDA even before petitioner SMLI was declared the original proponent:<br><br><blockquote>5.1.3.&nbsp; Vice Chairman Abaya expressed concern that BCDA might be questioned later on why it opted to go via Annex ‘C’ and not the Annex ‘A’ mode of disposition.&nbsp; In order to justify BCDA going via Annex ‘C’ mode, <i>it should be made clear to the interested proponents that there are already offers higher than the JUSMAG property</i>. . . .<sup style="color: rgb(255, 0, 0);">[8]</sup></blockquote><br><b><i>Petitioner SMLI was not the first developer that submitted a proposal to respondent BCDA.&nbsp; Robinsons Land Corporation had submitted its proposal as early as October 8, 2009 or more than two (2) months before petitioner SMLI submitted its initial proposal of P16,350.00/square meter on December 14, 2009.</i></b><sup style="color: rgb(255, 0, 0);">[9]</sup><b><i>&nbsp; Both proposals were already rejected by respondent BCDA for non-compliance with the set parameters for disposition.</i></b><sup style="color: rgb(255, 0, 0);">[10]</sup><b><i>&nbsp; Instead of terminating the disposition through competitive challenge, however, the Joint Venture Selection Committee “remained in contact with the proponents and even actively solicited their submission of ‘Unsolicited Proposals.’”</i></b><sup style="color: rgb(255, 0, 0);">[11]</sup><b><i>&nbsp; This, respondents BCDA and Casanova argue, gave Robinsons Land Corporation and petitioner SMLI “. . . an unfair advantage over all other developers as it effectively limited the selection process to the two invitees.”</i></b><sup style="color: rgb(255, 0, 0);">[12]</sup><br><br>Respondents BCDA and Casanova also implied that there was an irregularity when the Joint Venture Selection Committee was able to make an evaluation and come up with a recommendation only within three hours from petitioner SMLI’s submission of its unsolicited proposal:<br><br><blockquote><center><b><u>DEAL RUSHED DURING THE ELECTION PERIOD</u></b></center><br>On 4 May 2010, <u>merely six days before the Presidential Elections</u>, SMLI submitted its 3 May 2010 Unsolicited Proposal to BCDA.&nbsp; This Unsolicited Proposal was opened at 9:00 a.m. during the BCDA Business Development Board Committee Meeting in the presence of SMLI representatives.&nbsp; The 3 May 2010 Unsolicited Proposal was thereafter forwarded to BCDA’s Reception Desk where it was stamped as having been received at 9:25 a.m. and then endorsed for inclusion in the Agenda of the BCDA Board Meeting set at 12:00 noon of the same day.<br><br><b><u>In a span of about three hours</u>, the JV-SC received, opened, evaluated and recommended the acceptance of SMLI’s Unsolicited Proposal for the privatization and development of the 33.1 hectare subject Property for Php32,501/sq. m. in Net Present Value (NPV) using a 10% discount rate; and the pursuit of detailed negotiations on the terms and conditions of the Joint Venture under Annex “C” of the NEDA JV Guidelines.</b>&nbsp; This circumstance was not lost to some BCDA Directors.&nbsp; As reflected in the Minutes of the Board Meeting:<br><br><table  ="" width="100%" cellspacing="0" cellpadding="0" border="0" align="CENTER"> <tbody><tr valign="TOP"> <td width="10%"><div align="JUSTIFY">5.2.23. </div></td> <td width="90%"><div align="JUSTIFY">Director Sangil said that the <u>Board was only given a few hours to evaluate the revised proposal by SLI</u>, considering that copies of the same were given only shortly before the Board Meeting started. As such, the Board may not be able to come up with a wise decision on the matter.<sup style="color: rgb(255, 0, 0);">[13]</sup> (Emphasis and underscoring in the original, citations omitted) </div></td> </tr> </tbody></table></blockquote><br>Respondents BCDA and Casanova also mentioned that before the issuance of a Certificate of Successful Negotiation, there had been concerns about the disregard of other more favorable offers to the government for the property.&nbsp; Respondent BCDA quoted a letter from Ayala Land Inc.:<br><br><blockquote>We now formally request that you reconsider your decision and conduct a bidding for the property consistent with the precedent set by BCDA for the Bonifacio South lots with its disposition of the JUSMAG site in February on account of its receipt of a number of offers from various proponents including ours.&nbsp; We believe that BCDA should pursue the best price for the property to uphold public interest and avoid the loss of public funds and revenues.&nbsp; The sudden change in BCDA’s disposition mode as our government transcends to a new administration might also be questionable.<sup style="color: rgb(255, 0, 0);">[14]</sup><br></blockquote><br>Respondents BCDA and Casanova also quoted the July 20, 2010 minutes of the regular BCDA Board meeting, showing the same concerns from some BCDA directors over the disposition of the property:<br><br><blockquote><table  ="" width="100%" cellspacing="0" cellpadding="0" border="0" align="CENTER"> <tbody><tr valign="TOP"> <td width="10%"><div align="JUSTIFY">4.4.31. </div></td> <td width="90%"><div align="JUSTIFY">Director Valencia recalled that in the disposition of the JUSMAG property, the Board could not decide on whether or not to declare ALI as the original proponent. However, subsequent proposals came along which compelled BCDA to dispose of the property through public bidding over a period of two years. Given this example, he <u>suggested that the Board could perhaps defer its decision on the matter until such time that the new administration appoints new BCDA Board Members</u>. He also expressed his concern about the ALI letter which alleges that the BCDA’s mode of disposition might be questionable.</div></td> </tr> <tr valign="TOP"> <td><br></td> <td align="center">. . .&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; . . .&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; . . .</td> </tr> <tr valign="TOP"> <td><div align="JUSTIFY">4.4.40 </div></td> <td><div align="JUSTIFY">Director Valencia said that the ALI offer for the subject property was reduced to its present value, same with the SMLI offer. Regardless of the underlying assumptions for the offers, the value of the property is the same and the peso represented today is the same as that being represented by other proponents. Given this fact, it is <u>prudent for BCDA to wait until new BCDA Directors are appointed by the new administration to avoid the suspicion that BCDA is rushing the disposition of the subject property</u>.</div></td> </tr> <tr valign="TOP"> <td><div align="JUSTIFY"><br></div></td> <td><div align="center">. . .&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; . . .&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; . . .</div></td> </tr> <tr valign="TOP"> <td><div align="JUSTIFY">4.4.52 </div></td> <td><div align="JUSTIFY">Director Seno suggested the <u>possibility of elevating the matter to the Office of the President (OP) as far as the Board’s decision is concerned, explaining the process involved and the actions of the Board every step of the way</u>. The professionalism of the BCDA Board will be questioned if it does not exercise prudence on the matter.<sup style="color: rgb(255, 0, 0);">[15]</sup> (Underscoring in the original)</div></td> </tr> </tbody></table></blockquote><br>Instead of deciding whether to declare Ayala Land Inc. as the original proponent, the Joint Venture Selection Committee asked petitioner SMLI to give an offer that was better than Ayala Land Inc.’s. Petitioner SMLI submitted its improved offer.&nbsp; The BCDA Board of Directors, upon recommendation of the Joint Venture Selection Committee, declared petitioner SMLI as the original proponent.<sup style="color: rgb(255, 0, 0);">[16]</sup><br><br>These are allegations of possible irregularities that should not be dismissed so easily.&nbsp; They involve the conduct of persons entrusted to operate respondent BCDA.&nbsp; They also involve the government’s and our taxpayers’ money.<br><br>The President, who exercises control and supervision over respondent BCDA, should be able to correct errors and address irregularities whenever they come to his attention.&nbsp; He took an oath to faithfully execute our laws and to “consecrate [himself] to the service of the Nation.”<sup style="color: rgb(255, 0, 0);">[17]</sup>&nbsp; Republic Act No. 7227 provides for our policy to enhance the benefits derived from respondent BCDA-administered properties.<sup style="color: rgb(255, 0, 0);">[18]</sup>&nbsp; Respondent BCDA’s projects should be implemented in a manner that would “maximize the use of military camps[.]”<sup style="color: rgb(255, 0, 0);">[19]</sup>&nbsp; It would be a violation of the President’s oath and a grave abuse of discretion on his part if, despite his knowledge, he disregards the irregularities, causing losses to the government. Inaction on his part is, in effect, allowing the government and the taxpayers to suffer the losses.<br><br>Thus, the President decided to refer the disposition of BCDA-administered property to the Office of the Chief Presidential Legal Counsel for study.<sup style="color: rgb(255, 0, 0);">[20]</sup>&nbsp; Respondent BCDA also conducted a new evaluation of petitioner SMLI’s proposal.<sup style="color: rgb(255, 0, 0);">[21]</sup>&nbsp; This resulted in a finding that petitioner SMLI’s proposal would not yield the best value for the government and a recommendation to terminate the competitive challenge and proceed with the usual bidding process.<sup style="color: rgb(255, 0, 0);">[22]</sup>&nbsp; Eventually, the President decided to subject the BCDA-administered property to public bidding instead.<sup style="color: rgb(255, 0, 0);">[23]</sup>&nbsp; This decision is consistent with our policy to maximize the benefits that can be derived from BCDA-administered properties<sup style="color: rgb(255, 0, 0);">[24]</sup> and our policy in favor of public bidding.<sup style="color: rgb(255, 0, 0);">[25]</sup>&nbsp; I reiterate:<br><br><blockquote>BCDA’s acceptance of SMLI’s unsolicited proposal, the issuance of the certificate of successful negotiations, and terms of reference, should be read in light of the preference given to public bidding, the policy in favor of maximized use of properties, and national interest.&nbsp; Any person who deals with the government also accepts the condition that the government is not bound by any provision or interpretation that is against the law, government policies, and national interest.&nbsp; The government may not agree to contract stipulations that are disadvantageous to it.&nbsp; These are conditions that are deemed incorporated in dealings with BCDA.<sup style="color: rgb(255, 0, 0);">[26]</sup></blockquote><br>Even the government may not renege on its contractual obligations.&nbsp; However, there was no clear contractual provision in this case that could limit the President’s power to terminate the competitive challenge procedure. Respondent BCDA’s acceptance letter of petitioner SMLI’s proposal,<sup style="color: rgb(255, 0, 0);">[27]</sup> the Certificate of Successful Negotiation,<sup style="color: rgb(255, 0, 0);">[28]</sup> and the Terms of Reference<sup style="color: rgb(255, 0, 0);">[29]</sup> contained no provision to that effect.<sup style="color: rgb(255, 0, 0);">[30]</sup>&nbsp; Meanwhile, the procedure for competitive challenge under Annex C of the Joint Venture Guidelines is a mere guideline.&nbsp; It is not law.&nbsp; It is subject to modifications that should be consistent with law and public policy.&nbsp; It applies only if the parties clearly and validly agreed to adopt competitive challenge as a procedure.&nbsp; Any modification or contractual provision that is marred by any form of illegality will not vest any right.&nbsp; Respondent BCDA has no authority to agree to a provision that is inconsistent with law or public policy.<br><br>A decision to accommodate petitioner SMLI’s interest at the expense of the government might give the wrong message that we advocate coddling of private interest.&nbsp; It also gives a wrong message that the President may turn a blind eye on irregularities in actions of government representatives to the detriment of public interest.&nbsp; This is especially true since there is even no clear agreement that the disposition process is limited to a specific procedure or that petitioner SMLI is entitled to the completion of that procedure.<sup style="color: rgb(255, 0, 0);">[31]</sup>&nbsp; “Public office is a public trust.”<sup style="color: rgb(255, 0, 0);">[32]</sup>&nbsp; We expect the President and all persons in public service to uphold the public interest.&nbsp; We, therefore, expect the President to act whenever irregularities and actions that are detrimental to the public interest come to his attention.<br><br>The public interest involved in this case is the P13 billion (approximation) that the government stands to lose if it is forced to dispose respondent BCDA-administered property at the price proposed by petitioner SMLI.<sup style="color: rgb(255, 0, 0);">[33]</sup>&nbsp; This value is not speculative. According to respondents BCDA and Casanova, the property’s value is already pegged at P100,000.00/square meter, P78,000.00/square meter, and P500,000.00/square meter by the Bureau of Internal Revenue, Cuervo Appraisers, and the Government Service Insurance System, respectively.<sup style="color: rgb(255, 0, 0);">[34]</sup>&nbsp; Petitioner SMLI’s offer of P38,500.00/square meter is way below the property’s market value.&nbsp; It is true that through competitive challenge, this price can be increased.&nbsp; However, proceeding with the competitive challenge at this floor price means that the government will be bound by a winning offer that, though higher than P38,500.00/square meter, is below the property’s market value.&nbsp; Unlike competitive challenge, “public bidding allows the government to set the minimum contract price[,]”<sup style="color: rgb(255, 0, 0);">[35]</sup> which could more or less ensure that the government will get the maximum benefits from the disposition of its properties.<br><br>We are not saying that government properties can be disposed exclusively through public bidding.&nbsp; We are saying that this is the general rule, and other processes are exceptions.&nbsp; Competitive challenge may apply if there are no other parties interested in the government property or if there is a great need to attract the interest of private sector entities.<sup style="color: rgb(255, 0, 0);">[36]</sup>&nbsp; It may also apply if there is a clear showing that it would be the process that would provide more benefits to the government.&nbsp; The figures above show that competitive challenge would not be the most beneficial in this case.&nbsp; Proceeding with the less advantageous procedure would diminish the benefits that may be obtained for legitimate government purposes.<br><br>Since Section 8 of Republic Act No. 7227 provides that portions of revenues obtained from the privatization of Metro Manila military camps shall go to the Armed Forces of the Philippines’ modernization program, the housing loan program for the homeless, and other projects, this case will have an impact on community welfare including public security.&nbsp; Respondents BCDA and Casanova also raised a possible business implication of this case:<br><br><blockquote>The Honorable Court’s Decision will likewise affect the manner and way by which the government and the private sector conduct joint ventures.&nbsp; The current administration advocates Public-Private Partnership, one of the models of which is a joint venture, and it is to the people’s best interest that the Court determines pressing issues on the construction of NEDA JV Guidelines such as this one that BCDA presents.<br><br>In its 13 August 2014 Decision, the Court stated that “the issue in this case boils down to whether or not the BCDA gravely abused its discretion in issuing Supplemental Notice 5, in unilaterally aborting the Competitive Challenge, and in subjecting the development of the project to public bidding.”<br><br>A definitive ruling as to the extent of applicability of the NEDA JV Guidelines, which is the governing law for joint ventures with the government, will affect not only the Bonifacio South Property subject of this Petition but also the conduct of on-going and future joint ventures with the government.<sup style="color: rgb(255, 0, 0);">[37]</sup>&nbsp; (Citation omitted)</blockquote><br>These are matters and concerns that could have been acted upon by this court En Banc. Rule 2, Section 3 of the Internal Rules of the Supreme Court<sup style="color: rgb(255, 0, 0);">[38]</sup> provides that this court En Banc shall act on matters involving “huge financial impact on businesses or [affecting] the welfare of a community[.]”&nbsp; Thus:<br><br><blockquote>SEC. 3. <i>Court en banc matters and cases.</i> – The Court <i>en banc</i> shall act on the following matters and cases:<br><blockquote><div align="center">. . .&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; . . .&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; . . .<br></div><br>(l) Division cases where the subject matter has a huge financial impact on businesses or affects the welfare of a community[.]</blockquote></blockquote><br>Respondents BCDA and Casanova, therefore, properly filed a Motion<sup style="color: rgb(255, 0, 0);">[39]</sup> dated May 14, 2013, asking for leave of court to refer the case to this court En Banc.<br><br>However, on June 3, 2013, the Third Division denied respondents BCDA and Casanova’s Motion on the ground that “the Court <i>en banc</i> is not an appellate court to which decisions or resolutions of a Division may be appealed pursuant to SC Circular No. 2-89 dated February 7, 1989, as amended by Resolution dated November 18, 1993.”<sup style="color: rgb(255, 0, 0);">[40]</sup><br><br>The issues raised in this case should have been properly addressed and could have been sufficiently deliberated by this court had the case been elevated to this court En Banc.<br><br>ACCORDINGLY, I vote to <b>GRANT</b> the Motion for Reconsideration.<br><br><br><hr width="60%" size="1" noshade="noshade" align="LEFT"><sup style="color: rgb(255, 0, 0);"><br></sup></div><div align="JUSTIFY"><sup style="color: rgb(255, 0, 0);"><br></sup></div><div align="JUSTIFY"><sup style="color: rgb(255, 0, 0);">[1]</sup> <i>Rollo</i>, pp. 64–72.<br><br><sup style="color: rgb(255, 0, 0);">[2]</sup> <i>Id</i>. at 74–88.<br><br><sup style="color: rgb(255, 0, 0);">[3]</sup> <i>Id</i>. at 65.<br><br><sup style="color: rgb(255, 0, 0);">[4]</sup> <i>Id</i>. at 64–65.<br><br><div align="center">CERTIFICATION OF SUCCESSFUL NEGOTIATION<br></div><br><div align="center">. . .&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; . . .&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; . . .<br></div><br>NOW THEREFORE, for and in consideration of the foregoing, BCDA and SMLI have, <i>after successful negotiations pursuant to Stage II of Annex C - Detailed Guidelines for Competitive Challenge Procedure for Public-Private Joint Ventures of the NEDA JV Guidelines, reached an agreement on the purpose, terms and conditions on the JV development of the subject property, which <b>shall become</b> the terms for the Competitive Challenge</i> pursuant to Annex C of the JV Guidelines, as follows: . . . .&nbsp; (Emphasis supplied)<br><br><sup style="color: rgb(255, 0, 0);">[5]</sup> <i>Id</i>. at 77–87.<br><br><sup style="color: rgb(255, 0, 0);">[6]</sup> <i>Id</i>. at 1049.&nbsp; Respondents BCDA and Casanova stated in their Motion to Resolve with Motion for Reconsideration that:<br><blockquote>The proposal of SMLI juxtaposed with the Cuervo appraisal shows the relative value of the offer vis-à-vis market prices to be as follows:<br><br><table  ="" width="100%" cellspacing="0" cellpadding="0" border="1" align="CENTER"> <tbody><tr valign="TOP"> <td width="30%"><div align="JUSTIFY"></div><br></td> <td width="30%"><div align="JUSTIFY">Per Square Meter</div></td> <td width="40%"><div align="JUSTIFY">Value for the Entire Property</div></td> </tr> <tr valign="TOP"> <td><div align="JUSTIFY">SMLI Tender</div></td> <td><div align="JUSTIFY">Php38,500</div></td> <td><div align="JUSTIFY">Php12,743,500,000</div></td> </tr> <tr valign="TOP"> <td><div align="JUSTIFY">Cuervo Appraisal</div></td> <td><div align="JUSTIFY">Php78,000</div></td> <td><div align="JUSTIFY">Php25,843,537,000</div></td> </tr> </tbody></table></blockquote><sup style="color: rgb(255, 0, 0);">[7]</sup> Exec. Order No. 62 (1993) provides that “[a]s a general rule, the privatization process should be conducted through public bidding.”<br><br><sup style="color: rgb(255, 0, 0);">[8]</sup> <i>Rollo, </i>p. 1040.<br><br><sup style="color: rgb(255, 0, 0);">[9]</sup> <i>Id</i>. at 1039 and 1048.<br><br><sup style="color: rgb(255, 0, 0);">[10]</sup> <i>Id</i>. at 1040.<br><br><sup style="color: rgb(255, 0, 0);">[11]</sup> <i>Id</i>. at 1041.<br><br><sup style="color: rgb(255, 0, 0);">[12]</sup> <i>Id</i>.<br><br><sup style="color: rgb(255, 0, 0);">[13]</sup> <i>Id</i>. at 1042.<br><br><sup style="color: rgb(255, 0, 0);">[14]</sup> <i>Id</i>. at 1043.<br><br><sup style="color: rgb(255, 0, 0);">[15]</sup> <i>Id</i>. at 1043–1045.<br><br><sup style="color: rgb(255, 0, 0);">[16]</sup> <i>Id</i>. at 1046.<br><br><sup style="color: rgb(255, 0, 0);">[17]</sup> CONST., Art. VII, Sec. 5.<br><br><sup style="color: rgb(255, 0, 0);">[18]</sup> Rep. Act No. 7227 (1992), Sec. 2.<br><br><sup style="color: rgb(255, 0, 0);">[19]</sup> Exec. Order No. 62 (1993), Sec. 1.4.<br><br><sup style="color: rgb(255, 0, 0);">[20]</sup><i> Rollo, </i>p. 574.<br><br><sup style="color: rgb(255, 0, 0);">[21]</sup> <i>Id</i>. at 633–635.<br><br><sup style="color: rgb(255, 0, 0);">[22]</sup> <i>Id</i>. at 635.<br><br><sup style="color: rgb(255, 0, 0);">[23]</sup> <i>Id</i>. at 637.<br><br><sup style="color: rgb(255, 0, 0);">[24]</sup> Rep. Act No. 7227 (1992), sec. 2; Exec. Order No. 62 (1993), secs. 1.4 and 1.5.<br><br><sup style="color: rgb(255, 0, 0);">[25]</sup> Exec. Order No. 62 (1993), sec. 4.3; Rep. Act No. 9184 (2002), sec. 3(a), 3(b), and 10; Exec. Order No. 423 (2005), secs. 1 and 8; Exec. Order No. 40 (2001), sec. 2.<br><br><sup style="color: rgb(255, 0, 0);">[26]</sup> <i>J</i>. Leonen, Dissenting Opinion in <i>SM Land, Inc. v. Bases Conversion and Development Authority</i>, G.R. No. 203655, August 13, 2014 <http: sc.judiciary.gov.ph="" pdf="" web="" viewer.html?file="/jurisprudence/2014/august2014/203655_leonen.pdf"> <http: sc.judiciary.gov.ph="" pdf="" web="" viewer.html?file="/jurisprudence/2014/august2014/203655_leonen.pdf"> 12 [Per <i>J</i>. Velasco, Jr., Third Division].<br><br><sup style="color: rgb(255, 0, 0);">[27]</sup><i> Rollo</i>, p. 351. The letter was dated May 12, 2010.<br><br><sup style="color: rgb(255, 0, 0);">[28]</sup> <i>Id</i>. at 65 and 70.<br><br><sup style="color: rgb(255, 0, 0);">[29]</sup> <i>Id</i>. at 74–87.<br><br><sup style="color: rgb(255, 0, 0);">[30]</sup> <i>J</i>. Leonen, Dissenting Opinion in <i>SM Land, Inc. v. Bases Conversion and Development Authority, </i>G.R. No. 203655, August 13, 2014 </http:><http: sc.judiciary.gov.ph="" pdf="" web="" viewer.html?file="/jurisprudence/2014/august2014/203655_leonen.pdf"><http: sc.judiciary.gov.ph="" pdf="" web="" viewer.html?file="/jurisprudence/2014/august2014/203655_leonen.pdf"><http: sc.judiciary.gov.ph="" pdf="" web="" viewer.html?file="/jurisprudence/2014/august2014/203655_leonen.pdf"> 3–8 [Per <i>J</i>. Velasco, Jr., Third Division].<br><br><sup style="color: rgb(255, 0, 0);">[31]</sup> See <i>J</i>. Leonen, Dissenting Opinion in<i> SM Land, Inc. v. Bases Conversion and Development Authority</i>, G.R. No. 203655, August 13, 2014 <http: sc.judiciary.gov.ph="" pdf="" web="" viewer.html?file="/jurisprudence/2014/august2014/203655_leonen.pdf"> </http:></http:></http:><http: sc.judiciary.gov.ph="" pdf="" web="" viewer.html?file="/jurisprudence/2014/august2014/203655_leonen.pdf"><http: sc.judiciary.gov.ph="" pdf="" web="" viewer.html?file="/jurisprudence/2014/august2014/203655_leonen.pdf"><http: sc.judiciary.gov.ph="" pdf="" web="" viewer.html?file="/jurisprudence/2014/august2014/203655_leonen.pdf"><http: sc.judiciary.gov.ph="" pdf="" web="" viewer.html?file="/jurisprudence/2014/august2014/203655_leonen.pdf"> 3–8 [Per <i>J</i>. Velasco, Jr., Third Division].<br><br><sup style="color: rgb(255, 0, 0);">[32]</sup> CONST., art. XI, sec. 1.<br><br><sup style="color: rgb(255, 0, 0);">[33]</sup> <i>Rollo</i>, p. 1049.<br><br><sup style="color: rgb(255, 0, 0);">[34]</sup> <i>Id</i>.<br><br><sup style="color: rgb(255, 0, 0);">[35]</sup> <i>J</i>. Leonen, Dissenting Opinion in <i>SM Land, Inc. v. Bases Conversion and Development Authority</i>, G.R. No. 203655, August 13, 2014 <http: sc.judiciary.gov.ph="" pdf="" web="" viewer.html?file="/jurisprudence/2014/august2014/203655_leonen.pdf"> </http:></http:></http:></http:><http: sc.judiciary.gov.ph="" pdf="" web="" viewer.html?file="/jurisprudence/2014/august2014/203655_leonen.pdf"><http: sc.judiciary.gov.ph="" pdf="" web="" viewer.html?file="/jurisprudence/2014/august2014/203655_leonen.pdf"><http: sc.judiciary.gov.ph="" pdf="" web="" viewer.html?file="/jurisprudence/2014/august2014/203655_leonen.pdf"><http: sc.judiciary.gov.ph="" pdf="" web="" viewer.html?file="/jurisprudence/2014/august2014/203655_leonen.pdf"><http: sc.judiciary.gov.ph="" pdf="" web="" viewer.html?file="/jurisprudence/2014/august2014/203655_leonen.pdf"> 10 [Per <i>J</i>. Velasco, Jr., Third Division].<br><br><sup style="color: rgb(255, 0, 0);">[36]</sup> <i>Id</i>. at 10–11.<br><br><sup style="color: rgb(255, 0, 0);">[37]</sup> <i>Rollo,</i> pp. 1031–1032.<br><br><sup style="color: rgb(255, 0, 0);">[38]</sup> As amended in the Resolutions dated July 6, 2010, August 3, 2010, and September 18, 2012.<br><br><sup style="color: rgb(255, 0, 0);">[39]</sup> <i>Rollo</i>, pp. 854–859.<br><br><sup style="color: rgb(255, 0, 0);">[40]</sup> <i>Id</i>. at 860-B.<br></http:></http:></http:></http:></http:></http:></http:></http:></div></p>
+			  
+
+
+  
+</div>
+</div>
+</div>
+<!-- footer template -->
+<div id="appendix" class="clearfix">
+<div class="app_widget">
+<!-- sidebar_bottom_left -->
+</div>
+
+<!-- Comment out to remove Find Widget in sidebar bottom left-->
+<!--
+<div class="widget">
+<h4>Find it!</h4>
+-->
+
+<div id="credits"><center>&copy; Supreme Court E-Library 2019<br />
+This website was designed and developed, and is maintained, by the E-Library Technical Staff in collaboration with the Management Information Systems Office.</center></div>
+</div>
+
+</div>
+
+<!-- <script src="https://elibrary.judiciary.gov.ph/assets/js/jquery-3.3.1.js"></script> -->
+<!-- <script src="https://elibrary.judiciary.gov.ph/assets/js/jquery-confirm.min.js"></script> -->
+
+<!-- <script>
+var jq = jQuery.noConflict();
+    // Checks if first time to visit the site and displays a popup if it is.
+    if(sessionStorage.getItem('firstVisit')){
+        sessionStorage.setItem('firstVisit','1');
+    }else{
+        sessionStorage.setItem('firstVisit','0');
+    }
+    jq(document).ready(function(){
+        if(sessionStorage.getItem('firstVisit') === "0")
+        {
+            jq.alert({
+                icon: 'fas fa-exclamation-triangle',
+                title: 'NOTICE',
+                animation: 'scale',
+                closeAnimation: 'zoom',
+                animationBounce: 2.5,
+                animationSpeed: 500,
+                buttons:{
+                    gotIt: {
+                        text: '<b>Click Here!</b>',
+                    }
+                },
+                boxWidth: '40%',
+                useBootstrap: false,
+                content: ''+
+                '<ol>'+
+                '<li><i>(05-02-2019)</i> Registration for a new E-library account is currently unavailable. However, existing accounts may still be used and accessed. We apologize for any inconvenience.</li>'+						
+                '</ol>',
+                theme: 'custom',
+            });
+        }
+    });
+</script>-->
+
+</body>
+</html>

@@ -8,10 +8,13 @@ from pydantic import BaseModel
 
 from caselens.application.use_cases.build_digest_request import build_digest_header
 from caselens.composition import Services
-from caselens.domain.digest_v2 import LEVEL_SECTIONS, clean_scope, SECTION_TITLES, CaseDigestV2, DigestHeader, DigestState, Level, Section, sections_for
+from caselens.domain.digest_v2 import LEVEL_SECTIONS, clean_scope, SECTION_TITLES, CaseDigestV2, DigestHeader, DigestState, Level, Section, block_heading, sections_for
 from caselens.domain.entities import Case
 from caselens.domain.section_edits import section_text, with_edits
 from caselens.infrastructure.ai.prompts.digest_v1 import DIGEST_VERSION
+from caselens.infrastructure.config import get_settings
+from caselens.infrastructure.elibrary.html_parser import philippine_reports_citation
+from caselens.infrastructure.elibrary.url_scheme import ElibraryUrlScheme
 from caselens.presentation.dependencies import get_services
 
 router = APIRouter(tags=["case digests"])
@@ -73,7 +76,7 @@ class CaseDigestOut(BaseModel):
                 if blocks:
                     sections.append(DigestSectionOut(
                         key=section.value, title=SECTION_TITLES[section], edited=bool(edits and section in edits), text=section_text(blocks),
-                        blocks=[DigestBlockOut(heading=b.heading, as_list=b.as_list, sentences=[DigestSentenceOut(text=s.text, key=s.key, cites=list(s.cites)) for s in b.sentences]) for b in blocks],
+                        blocks=[DigestBlockOut(heading=block_heading(section, b.heading), as_list=b.as_list, sentences=[DigestSentenceOut(text=s.text, key=s.key, cites=list(s.cites)) for s in b.sentences]) for b in blocks],
                     ))
         return cls(
             id=digest.id if digest else None,
@@ -102,6 +105,8 @@ def _stage(digest: CaseDigestV2 | None) -> dict:
     return {"stage": digest.stage.value, "stage_seconds": _since(digest.stage_at), "pending_seconds": _since(digest.updated_at)}
 
 
+_ELIBRARY = ElibraryUrlScheme(get_settings().elibrary_base_url)
+
 _SCOPE = Query("", max_length=300, description="The topic scope the digest is focused on; empty = the standard digest")
 
 
@@ -117,7 +122,10 @@ def _topic(case: Case, scope: str) -> str | None:
 def _header(services: Services, case: Case, scope: str, batch_id: int | None) -> DigestHeader:
     header = build_digest_header(case, _topic(case, scope))
     reporter = services.review_reporter(batch_id, case.main_case_id or case.id) if batch_id is not None else None
-    return replace(header, citation=f"{reporter}, {header.citation}") if reporter else header
+    if reporter:
+        return replace(header, citation=f"{reporter}, {header.citation}", reporter=reporter)
+    # An E-Library page prints its Philippine Reports citation ("755 Phil. 656"); Lawphil's pages print none.
+    return replace(header, reporter=philippine_reports_citation(case.raw_html) if _ELIBRARY.is_official_case_url(case.source_url) else None)
 
 
 def _edits(services: Services, digest: CaseDigestV2 | None, batch_id: int | None) -> dict[Section, str] | None:
@@ -161,7 +169,7 @@ def download_case_digest(
         return Response(status_code=409, content=b'{"detail":"The digest is not ready yet."}', media_type="application/json")
     edits = _edits(services, digest, batch_id)
     draft = with_edits(digest.draft, edits) if edits else digest.draft
-    data = services.case_digest_exporter().export(_header(services, case, scope, batch_id), draft, level, show_sources=sources)
+    data = services.case_digest_exporter().export(_header(services, case, scope, batch_id), draft, level, show_sources=sources, source_url=case.source_url)
     stem = re.sub(r"[^A-Za-z0-9._-]+", "-", f"GR-{case.gr_no}-{level.value}-digest").strip("-")
     return Response(content=data, media_type=_DOCX, headers={"Content-Disposition": f'attachment; filename="{stem}.docx"'})
 

@@ -47,10 +47,10 @@ export function explainCitation(status: CitationStatus, message: string | null):
     if (message?.includes('no year was given')) {
       return "You didn't write the year, and we need it to look the case up. Add the year, or paste the case's Lawphil link."
     }
-    return "We couldn't find this case on Lawphil near the year you wrote. Check the number and year, or paste the case's Lawphil link."
+    return "We couldn't find this case on Lawphil or the SC E-Library. Check the number and year, paste the case's link, or upload the decision file."
   }
   if (status === 'error') {
-    return "Lawphil didn't answer, or the page couldn't be read. Nothing is wrong with your file. Try again in a minute."
+    return "The library (Lawphil or the SC E-Library) didn't answer, or the page couldn't be read. Nothing is wrong with your file. Try again in a minute."
   }
   return null
 }
@@ -73,8 +73,8 @@ export function friendlyError(error: unknown): string {
         return 'This file lists more than one case. Individual is for one case: use Bulk to digest all the cases in it.'
       }
       if (detail.includes('files at a time') || detail.includes('not a valid')) return detail
-      return detail.includes('official Lawphil')
-        ? "That doesn't look like a Lawphil case link. It should start with https://lawphil.net/judjuris/ and end in .html"
+      return detail.includes('official Lawphil') || detail.includes('official SC E-Library')
+        ? "That doesn't look like a decision link. Use a Lawphil link (https://lawphil.net/judjuris/... .html) or an SC E-Library link (https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/...)."
         : 'That request was not valid. Please check it and try again.'
     case 404:
       return "We couldn't find that. It may have been removed."
@@ -91,7 +91,7 @@ export function friendlyError(error: unknown): string {
       }
       return "We couldn't read that file. Try saving it again as a PDF or Word file."
     case 502:
-      return "Lawphil isn't responding right now. Please try again in a minute."
+      return "The library (Lawphil or the SC E-Library) isn't responding right now. Please try again in a minute."
     case 503:
       return "We can't do that right now (a background service isn't reachable). Please try again in a moment."
     default:
@@ -100,9 +100,9 @@ export function friendlyError(error: unknown): string {
 }
 
 export const disclaimer =
-  "Informational only, not legal advice. Lawphil gives no warranty of accuracy or completeness: confirm with the originating body (the Supreme Court)."
+  "Informational only, not legal advice. Neither Lawphil nor the SC E-Library gives a warranty of accuracy or completeness: confirm with the originating body (the Supreme Court)."
 
-/** The search over Lawphil's own list of decisions. "Lawphil's case list" is what a student calls it;
+/** The search over the libraries' own lists of decisions (Lawphil's, and the SC E-Library's for what Lawphil lacks);
  *  there is no talk of catalogs, indexes or crawling. */
 export const searchCopy = {
   boxLabel: 'Find a case by name or G.R. number',
@@ -111,7 +111,7 @@ export const searchCopy = {
   yearPlaceholder: 'optional',
   needSomething: 'Type a case name or a G.R. number, for example Ermita or 180046.',
   results: (total: number, shown: string) =>
-    total === 1 ? `1 decision on Lawphil's list matches ${shown}.` : `${total.toLocaleString('en-PH')} decisions on Lawphil's list match ${shown}.`,
+    total === 1 ? `1 decision on the list matches ${shown}.` : `${total.toLocaleString('en-PH')} decisions on the list match ${shown}.`,
   openAction: 'Open this case',
   opening: 'Opening…',
   inLibrary: 'In your library',
@@ -119,29 +119,29 @@ export const searchCopy = {
   openHint: 'Opening saves the case to your library. The first time takes a few seconds.',
   alsoDecidedWith: (numbers: string[]) => `Decided together with G.R. No. ${numbers.join(', ')}`,
   noExactNumber: (typed: string) =>
-    `No decision numbered ${typed} is on Lawphil's list. These numbers start the same way:`,
-  noMatchName: (typed: string) => `No decision on Lawphil's list matches "${typed}".`,
+    `No decision numbered ${typed} is on the list. These numbers start the same way:`,
+  noMatchName: (typed: string) => `No decision on the list matches "${typed}".`,
   noMatchNameHelp:
-    "Try fewer words, or just a surname. Lawphil's list spells out names, so write 'Commission on Elections' rather than 'Comelec'.",
-  noMatchNumber: (typed: string) => `G.R. No. ${typed} isn't on Lawphil's list.`,
+    "Try fewer words, or just a surname. The list spells out names, so write 'Commission on Elections' rather than 'Comelec'.",
+  noMatchNumber: (typed: string) => `G.R. No. ${typed} isn't on Lawphil's list or the SC E-Library's.`,
   noMatchNumberHelp:
-    "Lawphil's list starts in 1987, so an older case won't be found by number alone. If you know the year it was decided, we can look for it directly (about a minute). Or paste the case's own Lawphil link.",
+    "Lawphil's list starts in 1987 and the SC E-Library's in 1996, so an older case won't be found by number alone. If you know the year it was decided, we can look for it directly (about a minute). Or paste the case's own link, or upload the decision file.",
   lookUpWithYear: 'Look it up with the year',
-  notReadyEmpty: "Lawphil's case list isn't ready yet, so searches can't find anything for now.",
+  notReadyEmpty: "The case list isn't ready yet, so searches can't find anything for now.",
 }
 
-/** How far the one-time read of Lawphil's list has got (shown only until it is done). */
+/** How far the one-time read of the libraries' lists has got (shown only until it is done). */
 export const listProgress = {
-  buildingTitle: "Getting Lawphil's case list ready",
+  buildingTitle: "Getting the case list ready",
   buildingText: (read: number, known: number, percent: number) =>
     known > 0
       ? `${read.toLocaleString('en-PH')} of ${known.toLocaleString('en-PH')} months read (${percent}%). You can already search the newest cases; older ones appear as it goes.`
       : 'Starting… this is a one-time step that takes about 9 minutes.',
-  partialTitle: "Lawphil's case list is only partly read",
+  partialTitle: "The case list is only partly read",
   partialText: (percent: number) => `It stopped at ${percent}%, so older cases may be missing from search results.`,
   continueAction: 'Carry on reading',
   continuing: 'Starting…',
-  emptyTitle: "Lawphil's case list hasn't been read yet",
+  emptyTitle: "The case list hasn't been read yet",
 }
 
 /** The page shown before the app opens, when the owner set an access code. */
@@ -164,13 +164,13 @@ export const guideCopy = {
   title: 'How to use CaseLens',
   description: 'Upload decisions, tag their subject, and get a checked digest of each in the format your professor asks for.',
   promise:
-    'CaseLens keeps the Supreme Court cases you upload, filed under the subjects you choose, and writes a digest of each one. It gets the real decision from Lawphil and shows where everything comes from. It never guesses: where the decision does not say something, the digest says so. You always decide what to keep.',
+    'CaseLens keeps the Supreme Court cases you upload, filed under the subjects you choose, and writes a digest of each one. It gets the real decision from Lawphil (or, when Lawphil lacks it, the Supreme Court E-Library) and shows where everything comes from. It never guesses: where the decision does not say something, the digest says so. You always decide what to keep.',
   libraryTitle: 'From upload to digest',
   librarySteps: [
     {
       title: 'One case: Individual',
       body: [
-        'Open “Individual”. Find the case on Lawphil by its name or G.R. number and press “Choose”, or upload its file (a decision, or your reviewer with one case).',
+        'Open “Individual”. Find the case by its name or G.R. number and press “Choose”, or upload its file (a decision, or your reviewer with one case).',
         'Say what subject it is, then press “Open the case”. You can read the full decision right away; its digest is written in a few minutes.',
       ],
     },
@@ -222,16 +222,16 @@ export const guideCopy = {
     {
       title: 'Find any case',
       body: [
-        'In the Case library, type a case name or a G.R. number in “Find a case by name or G.R. number”. Cases from 1987 onward are in the list. For an older case, add the year or paste its Lawphil link.',
+        'In the Case library, type a case name or a G.R. number in “Find a case by name or G.R. number”. Cases from 1987 onward are in the list. For an older case, add the year or paste its Lawphil or SC E-Library link.',
         'Cases you open are kept in the Case library, with their footnotes, the ruling, and the laws and cases they cite.',
       ],
     },
   ] satisfies GuideStep[],
   goodToKnowTitle: 'Good to know',
   goodToKnow: [
-    'CaseLens gives information, not legal advice. Lawphil gives no warranty that its text is complete or correct: confirm with the Supreme Court.',
+    'CaseLens gives information, not legal advice. Neither Lawphil nor the SC E-Library gives a warranty that its text is complete or correct: confirm with the Supreme Court.',
     'If the writing service is busy, the case is still saved with its full text. The digest is written when the service answers again.',
-    'The text of every decision comes from Lawphil, and each digest links to the official page.',
+    'The text of every decision comes from Lawphil or, when Lawphil does not have it, the Supreme Court E-Library. Each digest links to the page it came from.',
   ],
   faqTitle: 'Questions',
   faq: [
@@ -245,7 +245,7 @@ export const guideCopy = {
     },
     {
       q: 'A case could not be found. What now?',
-      a: 'Check the number and year you wrote, or paste the case’s Lawphil link. For a case before 1987, write the year, like 88211 (1969).',
+      a: 'Check the number and year you wrote, paste the case’s Lawphil or SC E-Library link, or upload the decision file. For a case before 1987, write the year, like 88211 (1969).',
     },
   ],
   start: 'Open the case library',
@@ -297,10 +297,10 @@ export const libraryCopy = {
   caseDigest: 'Case digest',
   readDigest: 'Read the digest',
   digestWriting: 'Digest being written…',
-  lawphilTitle: 'Also on Lawphil, not saved yet',
-  lawphilHelp: 'These decisions are on Lawphil’s list but not in your library yet. Press “Open this case” to save one.',
-  lawphilMore: (n: number) => `See all ${n} matches on Lawphil’s list`,
-  lawphilNone: 'Nothing else on Lawphil’s list matches.',
+  lawphilTitle: 'Also on Lawphil or the SC E-Library, not saved yet',
+  lawphilHelp: 'These decisions are on the libraries’ lists but not in your library yet. Press “Open this case” to save one.',
+  lawphilMore: (n: number) => `See all ${n} matches on the list`,
+  lawphilNone: 'Nothing else on the list matches.',
   digestFailed: 'The digest could not be written yet.',
   fullText: 'Full text',
   download: 'Download',
@@ -319,9 +319,9 @@ export const libraryCopy = {
   noMatch: (q: string) => `No saved case matches “${q}”`,
   searchLabel: 'Filter your saved cases',
   savedTitle: 'Saved cases',
-  savedNote: 'Only the cases already saved in CaseLens are listed here. To find any other decision, use “Find any decision on Lawphil” above.',
-  lawphilSearch: 'Find any decision on Lawphil',
-  lawphilSearchHelp: 'Finds every decision on Lawphil’s list, saved or not. Open one to save it to your library.',
+  savedNote: 'Only the cases already saved in CaseLens are listed here. To find any other decision, use “Find any decision” above.',
+  lawphilSearch: 'Find any decision',
+  lawphilSearchHelp: 'Finds every decision on Lawphil’s list and the SC E-Library’s, saved or not. Open one to save it to your library.',
   searchPlaceholder: 'Case name or G.R. number',
   ponente: (name: string) => `${name}, J.`,
   subjectLabel: 'Subject tags',
@@ -336,7 +336,7 @@ export const individualCopy = {
   description: 'One case: find it or upload it, say what subject it is, and open its full text. Its digest is written for you too.',
   step1: '1. Which case?',
   step2: '2. What subject?',
-  findTab: 'Find it on Lawphil',
+  findTab: 'Find the case',
   fileTab: 'Upload the file',
   choose: 'Choose',
   chosen: 'Chosen',
@@ -348,7 +348,7 @@ export const individualCopy = {
   fileLabel: 'The case file (PDF or Word)',
   open: 'Open the case',
   opening: 'Opening…',
-  needCase: 'Choose a case first: find it on Lawphil, or upload its file.',
+  needCase: 'Choose a case first: find it by name or number, or upload its file.',
   timeNote: 'You can read the full decision right away. The case digest takes about 3 to 5 minutes.',
 }
 
@@ -503,7 +503,7 @@ export const uploadCopy = {
   nothing: 'Add a file, or a G.R. number, first.',
   timeNote: 'We write a case digest of each case from the Court’s own decision. It takes about 3 to 5 minutes per case. You can leave the page.',
   failedToStart: 'We could not send all the files. The ones already sent are being worked on: see My uploads in the Case library.',
-  searchHelp: 'Find the case on Lawphil’s list, then press “Generate digest”. The tags and topic scope below apply to it.',
+  searchHelp: 'Find the case on the list, then press “Generate digest”. The tags and topic scope below apply to it.',
   generateOne: 'Generate digest',
   generating: 'Starting…',
 }
@@ -629,7 +629,7 @@ export const bulkCopy = {
   textHelp: 'One per line, or separated by commas. Add a year if the case is older than 1987, like 88211 (1969).',
   textPlaceholder: '88211\nG.R. No. 180046\n173931',
   filesLabel: 'Decision files (PDF or Word)',
-  filesHelp: 'A file is one case. We read its G.R. number from the top of the page, then get the official decision from Lawphil.',
+  filesHelp: 'A file is one case. We read its G.R. number from the top of the page, then get the official decision from Lawphil (or the SC E-Library).',
   filesChosen: (n: number) => (n === 1 ? '1 file chosen' : `${n} files chosen`),
   start: 'Start',
   starting: 'Starting…',
@@ -646,7 +646,7 @@ export const bulkCopy = {
     duplicate: 'Same case as an earlier one',
     not_found: 'Not found',
     unreadable: 'Could not read',
-    failed: 'Lawphil did not answer',
+    failed: 'The library did not answer',
   } as Record<string, string>,
   summary: {
     found: 'in the library',
@@ -660,7 +660,7 @@ export const bulkCopy = {
   digestsFailed: (n: number) => `${n === 1 ? '1 digest' : `${n} digests`} could not be written. Open the case and press “Write it again”.`,
   working: 'Working on it. You can leave this page and come back; it keeps going.',
   done: 'All done.',
-  retry: 'Retry the ones Lawphil did not answer',
+  retry: 'Retry the ones the library did not answer',
   retried: (n: number) => `${n} queued again.`,
   openLibrary: 'Open the case library',
   showOnly: 'Show',

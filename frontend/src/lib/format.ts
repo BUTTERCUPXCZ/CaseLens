@@ -107,3 +107,8 @@ export const justiceName = (name: string): string => toTitleCase(name)
 /** "EN BANC" -> "En Banc", "SECOND DIVISION" -> "Second Division". */
 export const divisionName = (division: string): string =>
   division.toLowerCase().replace(/\b[a-z]/g, (letter) => letter.toUpperCase())
+
+/** The library a decision's page belongs to: "SC E-Library" for the Supreme Court E-Library, otherwise "Lawphil". */
+export function libraryName(url: string | null | undefined): 'Lawphil' | 'SC E-Library' {
+  return url && /^https:\/\/elibrary\.judiciary\.gov\.ph\//i.test(url) ? 'SC E-Library' : 'Lawphil'
+}

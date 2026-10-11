@@ -22,7 +22,7 @@ describe('results from Lawphil’s own list (real responses)', () => {
   it('shows a decision as Lawphil lists it, with its number, date and a way to open it', async () => {
     await show('review center ermita')
 
-    expect(await screen.findByText(/1 decision on Lawphil's list matches "review center ermita"/)).toBeInTheDocument()
+    expect(await screen.findByText(/1 decision on the list matches "review center ermita"/)).toBeInTheDocument()
     // the title is Lawphil's own text, typos included ("Associations", "Secretatry")
     expect(
       screen.getByText('Review Center Associations of the Philippines vs. Executive Secretatry Eduardo Ermita, et al.'),
@@ -59,7 +59,7 @@ describe('results from Lawphil’s own list (real responses)', () => {
 
     await user.click(await screen.findByRole('button', { name: 'Open this case' }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent("Lawphil isn't responding right now")
+    expect(await screen.findByRole('alert')).toHaveTextContent("The library (Lawphil or the SC E-Library) isn't responding right now")
   })
 
   it('a case already in the library is read, not fetched again (synthetic: the real row marked as saved)', async () => {
@@ -81,7 +81,7 @@ describe('results from Lawphil’s own list (real responses)', () => {
   it('a number with no exact match says so before showing the numbers that start the same way', async () => {
     respond(noExact)
     await show('14744')
-    expect(await screen.findByText("No decision numbered 14744 is on Lawphil's list. These numbers start the same way:")).toBeInTheDocument()
+    expect(await screen.findByText("No decision numbered 14744 is on the list. These numbers start the same way:")).toBeInTheDocument()
     expect(screen.getAllByRole('button', { name: 'Open this case' })).toHaveLength(3)
   })
 
@@ -95,7 +95,7 @@ describe('results from Lawphil’s own list (real responses)', () => {
   it('big result sets are paged and the total is honest', async () => {
     respond(people)
     await show('people philippines')
-    expect(await screen.findByText(/10,073 decisions on Lawphil's list match/)).toBeInTheDocument()
+    expect(await screen.findByText(/10,073 decisions on the list match/)).toBeInTheDocument()
     expect(screen.getByText(/Showing 1–20 of 10,073|Showing 1–5 of 10,073/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Earlier/ })).toBeDisabled()
     expect(screen.getByRole('button', { name: /Later/ })).toBeEnabled()
@@ -106,7 +106,7 @@ describe('no results', () => {
   it('names the search and says what to try (real empty response)', async () => {
     respond(empty)
     await show('zzzzqqqq')
-    expect(await screen.findByText(`No decision on Lawphil's list matches "zzzzqqqq".`)).toBeInTheDocument()
+    expect(await screen.findByText(`No decision on the list matches "zzzzqqqq".`)).toBeInTheDocument()
     expect(screen.getByText(/write 'Commission on Elections' rather than 'Comelec'/)).toBeInTheDocument()
   })
 
@@ -114,7 +114,7 @@ describe('no results', () => {
     respond({ ...empty, understood_as: 'number', items: [] }) // synthetic: the real empty response, read as a number
     await show('14744', 1958)
 
-    expect(await screen.findByText("G.R. No. 14744 isn't on Lawphil's list.")).toBeInTheDocument()
+    expect(await screen.findByText("G.R. No. 14744 isn't on Lawphil's list or the SC E-Library's.")).toBeInTheDocument()
     expect(screen.getByText(/starts in 1987/)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /Look it up with the year 1958/ })).toHaveAttribute('href', expect.stringContaining('/lookup'))
     expect(screen.getByLabelText(/Paste the case’s Lawphil link/)).toBeInTheDocument()
@@ -123,8 +123,8 @@ describe('no results', () => {
   it('while the list is still being read, an empty answer does not claim the case does not exist', async () => {
     respond({ ...empty, catalog: { state: 'building', entries: 0, months_read: 0, months_known: 0, percent: 0 } })
     await show('ermita')
-    expect(await screen.findByText("Lawphil's case list isn't ready yet, so searches can't find anything for now.")).toBeInTheDocument()
-    expect(screen.queryByText(/No decision on Lawphil's list matches/)).toBeNull()
+    expect(await screen.findByText("The case list isn't ready yet, so searches can't find anything for now.")).toBeInTheDocument()
+    expect(screen.queryByText(/No decision on the list matches/)).toBeNull()
   })
 })
 
@@ -135,7 +135,7 @@ describe('progress of Lawphil’s list (synthetic variations of the real respons
     withCatalog({ state: 'building', entries: 15000, months_read: 212, months_known: 464, percent: 46 })
     await show('ermita')
 
-    expect(await screen.findByText("Getting Lawphil's case list ready")).toBeInTheDocument()
+    expect(await screen.findByText("Getting the case list ready")).toBeInTheDocument()
     expect(screen.getByText(/212 of 464 months read \(46%\)/)).toBeInTheDocument()
     expect(screen.getByRole('progressbar', { name: '212 of 464 months read' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Open this case' })).toBeEnabled() // results still usable
@@ -153,7 +153,7 @@ describe('progress of Lawphil’s list (synthetic variations of the real respons
     withCatalog({ state: 'partial', entries: 20098, months_read: 264, months_known: 464, percent: 56 })
     await show('ermita')
 
-    expect(await screen.findByText("Lawphil's case list is only partly read")).toBeInTheDocument()
+    expect(await screen.findByText("The case list is only partly read")).toBeInTheDocument()
     expect(screen.getByText(/stopped at 56%/)).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Carry on reading' }))
     await waitFor(() => expect(started).toBe(true))

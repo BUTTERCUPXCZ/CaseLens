@@ -101,6 +101,37 @@ def test_no_checking_step_when_code_settles_every_sentence():
     assert stages(ScriptedDigestWriter(draft(("In February 1986, Marcos was deposed.", ["P6"])))) == [DigestStage.WRITING]
 
 
+def _summary(*paragraphs):
+    """A Case Summary of paragraphs of (text, cites, key) sentences, plus the core every finished digest needs."""
+    blocks = tuple(DigestBlock(tuple(AnswerSentence(t, tuple(c), k) for t, c, k in p)) for p in paragraphs)
+    core = draft(("In February 1986, Marcos was deposed.", ["P6"])).sections
+    return DigestDraft({**core, Section.CASE_SUMMARY: blocks})
+
+
+def test_a_whole_case_summary_is_kept():
+    result = run(ScriptedDigestWriter(_summary(
+        [("In February 1986, Marcos was deposed.", ["P6"], False)],
+        [("The President decided to bar the Marcoses from returning.", ["P9"], True)],
+    )))
+    assert len(result.draft.sections[Section.CASE_SUMMARY]) == 2
+
+
+def test_a_case_summary_that_lost_its_opening_is_left_out():
+    result = run(ScriptedDigestWriter(_summary(
+        [("Marcos was deposed in 1999.", ["P6"], False)],  # a number the decision does not have: dropped
+        [("The President decided to bar the Marcoses from returning.", ["P9"], True)],
+    )), repair=False)
+    assert Section.CASE_SUMMARY not in result.draft.sections  # it would begin mid-story
+
+
+def test_a_case_summary_that_lost_its_disposition_is_left_out():
+    result = run(ScriptedDigestWriter(_summary(
+        [("In February 1986, Marcos was deposed.", ["P6"], False)],
+        [("The Court dismissed the petition in 1999.", ["P9"], True)],  # dropped: the summary never says how the case ended
+    )), repair=False)
+    assert Section.CASE_SUMMARY not in result.draft.sections
+
+
 def test_with_repair_off_nothing_is_rewritten():
     writer = ScriptedDigestWriter(draft(("Marcos was deposed in 1999.", ["P6"])), repairs={0: AnswerSentence("Marcos was deposed.", ("P6",))})
     assert texts(run(writer, repair=False)) == [] and writer.repair_calls == []
@@ -256,5 +287,9 @@ def test_the_writer_is_told_the_digest_says_only_what_the_decision_says():
 
     assert "in your own words" not in SYSTEM_RULES and "ONLY WHAT THE DECISION SAYS" in SYSTEM_RULES
     assert 'no "dissents" block at all' in SYSTEM_RULES.replace("\n  ", " ")
-    assert '"case_summary": ONE paragraph' in SYSTEM_RULES
-    assert DIGEST_VERSION.startswith("digest-v5")  # digests written before this are shown as not current
+    rules = " ".join(SYSTEM_RULES.split())
+    assert '"case_summary": the whole case told in short, as FOUR paragraph blocks' in rules
+    assert "The issues were (1) whether ..., and (2) whether ..." in rules and "How the case reached the Court" in rules
+    assert '"doctrine": the legal rules this case decides, as NUMBERED blocks' in rules and '"1. Innocent purchaser for value' in rules
+    assert "Never give a block a heading that only repeats its section's name" in rules
+    assert DIGEST_VERSION.startswith("digest-v6")  # digests written before this are shown as not current

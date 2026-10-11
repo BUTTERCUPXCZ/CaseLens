@@ -125,9 +125,23 @@ class WriteCaseDigest:
                     kept_blocks.append(DigestBlock(keep, block.heading, block.as_list))
             if kept_blocks:
                 result.draft.sections[section] = tuple(kept_blocks)
+        if Section.CASE_SUMMARY in draft.sections and not self._summary_whole(draft, verdicts):
+            # A summary that begins mid-story or never says how the case ended is not a summary: the short download prints Facts,
+            # Issue and Ruling instead (see `sections_for`).
+            result.draft.sections.pop(Section.CASE_SUMMARY, None)
+            logger.info("digest: case summary left out: its opening paragraph or its disposition did not pass the checks")
         for line in result.dropped:
             logger.info("digest: dropped %s (%s): %s", line.section.value, line.reason[:120], line.text[:160])
         return result
+
+    @staticmethod
+    def _summary_whole(draft: DigestDraft, verdicts) -> bool:
+        """The Case Summary kept its first paragraph (the facts) and, if the writer marked one, its key sentence (the disposition)."""
+        blocks = draft.sections[Section.CASE_SUMMARY]
+        opening = any((Section.CASE_SUMMARY, 0, i) in verdicts for i in range(len(blocks[0].sentences)))
+        keys = [(b, i) for b, block in enumerate(blocks) for i, s in enumerate(block.sentences) if s.key]
+        disposition = not keys or any((Section.CASE_SUMMARY, b, i) in verdicts for b, i in keys)
+        return opening and disposition
 
     def _judge(self, entries, sources, verdicts, failed, result: DigestResult, before_check: Callable[[], None] | None = None) -> None:
         """Sort every sentence by code; send to the second model only those code cannot settle. A sentence that passes goes into

@@ -26,16 +26,16 @@ _NO_CASE_IN_FILE = (
     "(like “Digest 1: Facts and Doctrine” followed by “Review Center v Ermita, 538 SCRA 428, GR no 180046”)."
 )
 _ONE_CASE = "Individual is for one case. This has more than one: use Bulk for several cases."
-_LAWPHIL_DOWN = "Lawphil did not answer, or its page could not be read. Press Retry to try again."
-_NOT_A_LAWPHIL_PAGE = "That is not a Lawphil case page, so it was not opened."
+_LAWPHIL_DOWN = "The library (Lawphil or the SC E-Library) did not answer, or its page could not be read. Press Retry to try again."
+_NOT_A_LAWPHIL_PAGE = "That is not a Lawphil or SC E-Library decision page, so it was not opened."
 
 
 def _not_found(item: BulkItem) -> str:
     if item.year is not None:
-        return f"G.R. No. {item.gr_no} was not found on Lawphil near {item.year}."
+        return f"G.R. No. {item.gr_no} was not found on Lawphil near {item.year}, nor on the SC E-Library."
     return (
-        f"G.R. No. {item.gr_no} is not on Lawphil's list of decisions, which starts in 1987. "
-        f"If it is older, write it with its year, like {item.gr_no} (1969), and try again."
+        f"G.R. No. {item.gr_no} is not on Lawphil's list of decisions (from 1987) nor on the SC E-Library's (from 1996). "
+        f"If it is older, write it with its year, like {item.gr_no} (1969), and try again. Or upload the decision file."
     )
 
 

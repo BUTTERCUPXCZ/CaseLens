@@ -47,7 +47,9 @@ class LawphilCaseSource(CaseLocator, CaseFetcher):
         if self._catalog is not None:
             # Oldest first: a number's Decision comes before the Resolutions on it (a motion for reconsideration is decided later),
             # and the Decision is the case a student means. An undated row goes last.
-            entries = sorted(self._catalog.find_by_number(gr_no), key=lambda e: (e.decision_date is None, e.decision_date or date.min))
+            # Only Lawphil's own rows: the E-Library's rows of the same catalog are read by its own source.
+            own = [e for e in self._catalog.find_by_number(gr_no) if self._scheme.is_official_case_url(e.source_url)]
+            entries = sorted(own, key=lambda e: (e.decision_date is None, e.decision_date or date.min))
             from_catalog = list(dict.fromkeys(e.source_url for e in entries))
             if from_catalog:
                 return from_catalog

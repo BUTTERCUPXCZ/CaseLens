@@ -36,6 +36,13 @@ class Settings(BaseSettings):
     lawphil_min_interval_seconds: float = 1.0
     lawphil_timeout_seconds: float = 30.0
     lawphil_max_retries: int = 3
+    # The Supreme Court E-Library: read when Lawphil does not have a decision. Same politeness as Lawphil (one page a second).
+    elibrary_enabled: bool = True
+    elibrary_base_url: str = "https://elibrary.judiciary.gov.ph"
+    elibrary_first_year: int = 1996  # its monthly lists of Supreme Court decisions start in 1996
+    elibrary_min_interval_seconds: float = 1.0
+    elibrary_timeout_seconds: float = 30.0
+    elibrary_max_retries: int = 3
 
     # AI that answers the digest's questions (explanations only; never the Court's own text).
     gemini_api_key: str | None = None

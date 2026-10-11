@@ -228,11 +228,12 @@ class UploadCitationModel(Base):
 
 
 class CatalogEntryModel(Base):
-    """One row of one of Lawphil's monthly lists (a case we can open, not yet saved)."""
+    """One row of a library's monthly list (Lawphil's or the SC E-Library's): a case we can open, not yet saved."""
 
     __tablename__ = "catalog_entries"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    source: Mapped[str] = mapped_column(String(16), server_default="lawphil")  # lawphil | elibrary
     source_url: Mapped[str] = mapped_column(Text)
     link_number: Mapped[str] = mapped_column(String(32))  # the number in the link: the page we open
     label_key: Mapped[str] = mapped_column(Text)  # the numbers printed on the row, joined: tells joint rows apart
@@ -249,6 +250,8 @@ class CatalogEntryModel(Base):
     __table_args__ = (
         UniqueConstraint("source_url", "label_key", name="uq_catalog_entries_row"),
         Index("ix_catalog_entries_year_month", "year", "month"),
+        Index("ix_catalog_entries_source_year_month", "source", "year", "month"),
+        Index("ix_catalog_entries_link_number_source", "link_number", "source", "decision_date"),
         Index(
             "ix_catalog_entries_title_trgm",
             "title",
@@ -280,9 +283,10 @@ class CatalogMonthModel(Base):
 
     __tablename__ = "catalog_months"
 
+    source: Mapped[str] = mapped_column(String(16), primary_key=True, server_default="lawphil")  # lawphil | elibrary
     year: Mapped[int] = mapped_column(Integer, primary_key=True)
     month: Mapped[int] = mapped_column(Integer, primary_key=True)
-    status: Mapped[str] = mapped_column(String(16))  # read | broken
+    status: Mapped[str] = mapped_column(String(16))  # pending | read | absent | broken
     entries: Mapped[int] = mapped_column(Integer)
     read_at: Mapped[datetime] = mapped_column(UTCDateTime(), server_default=func.now())
 

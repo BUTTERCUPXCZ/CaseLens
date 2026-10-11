@@ -78,7 +78,16 @@ export function AppSidebar() {
           >
             Lawphil
           </a>
-          , the Arellano Law Foundation's free law library.
+          , the Arellano Law Foundation's free law library, and from the{' '}
+          <a
+            href="https://elibrary.judiciary.gov.ph"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-sidebar-foreground"
+          >
+            Supreme Court E-Library
+          </a>
+          .
         </p>
       </SidebarFooter>
     </Sidebar>

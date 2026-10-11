@@ -63,4 +63,7 @@ def ponente_of(case: Case) -> str | None:
 def build_digest_header(case: Case, subject: str | None) -> DigestHeader:
     when = f", {_long_date(case.decision_date)}" if case.decision_date else ""
     court = f" ({division_name(case.division)})" if case.division else ""
-    return DigestHeader(surname_only(short_case_name(case.title)), f"G.R. No. {case.gr_no}{when}{court}", subject, ponente_of(case))
+    return DigestHeader(
+        surname_only(short_case_name(case.title)), f"G.R. No. {case.gr_no}{when}{court}", subject, ponente_of(case),
+        number=f"G.R. No. {case.gr_no}", decided=_long_date(case.decision_date) if case.decision_date else None,
+    )

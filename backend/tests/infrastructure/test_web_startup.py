@@ -99,3 +99,43 @@ def test_a_failed_call_never_stops_the_keep_awake():
 
     keep_awake_while_busy("https://x.example.com", has_work=has_work, ping=ping, every=0.001, stop=stop).join(timeout=5)
     assert len(pinged) == 2
+
+
+def test_an_updated_library_gets_only_the_elibrarys_list_from_the_shipped_file(tmp_path):
+    """A library that already has Lawphil's list (an earlier version) gets the SC E-Library's rows, with new ids, and nothing twice."""
+    def library(name):
+        url = f"sqlite:///{(tmp_path / name).as_posix()}"
+        upgrade_sqlite(url)
+        return make_engine(url), url
+
+    def add(engine, source, number, url):
+        with engine.begin() as connection:
+            entry_id = connection.execute(insert(CatalogEntryModel.__table__).returning(CatalogEntryModel.id), {
+                "source": source, "source_url": url, "link_number": number, "label_key": number, "title": f"Case {number}",
+                "decision_date": date(2015, 3, 11), "year": 2015, "month": 3, "index_url": "x",
+            }).scalar_one()
+            connection.execute(insert(CatalogNumberModel.__table__), {"entry_id": entry_id, "number": number})
+            connection.execute(insert(CatalogMonthModel.__table__), {"source": source, "year": 2015, "month": 3, "status": "read", "entries": 1})
+
+    source, source_url = library("source.db")
+    add(source, "lawphil", "111111", "https://lawphil.net/judjuris/juri2015/mar2015/gr_111111_2015.html")
+    with source.begin() as connection:  # the E-Library's row, under its own month row
+        entry_id = connection.execute(insert(CatalogEntryModel.__table__).returning(CatalogEntryModel.id), {
+            "source": "elibrary", "source_url": "https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/60169", "link_number": "193038",
+            "label_key": "193038", "title": "NOBLEZA VS. NUEGA", "decision_date": date(2015, 3, 11), "year": 2015, "month": 3, "index_url": "x",
+        }).scalar_one()
+        connection.execute(insert(CatalogNumberModel.__table__), {"entry_id": entry_id, "number": "193038"})
+        connection.execute(insert(CatalogMonthModel.__table__), {"source": "elibrary", "year": 2015, "month": 3, "status": "read", "entries": 1})
+    source.dispose()
+    seed = tmp_path / "catalog.sqlite"
+    export_catalog(source_url, seed)
+
+    older, _ = library("caselens.db")
+    add(older, "lawphil", "222222", "https://lawphil.net/judjuris/juri2015/mar2015/gr_222222_2015.html")  # its own Lawphil list
+    assert import_catalog(older, seed) == 1  # only the E-Library's row
+    assert import_catalog(older, seed) == 0
+    with older.connect() as connection:
+        rows = connection.execute(select(CatalogEntryModel.source, CatalogEntryModel.link_number).order_by(CatalogEntryModel.id)).all()
+        numbers = connection.execute(select(CatalogNumberModel.number).order_by(CatalogNumberModel.id)).scalars().all()
+        months = connection.execute(select(CatalogMonthModel.source).order_by(CatalogMonthModel.source)).scalars().all()
+    assert rows == [("lawphil", "222222"), ("elibrary", "193038")] and numbers == ["222222", "193038"] and months == ["elibrary", "lawphil"]

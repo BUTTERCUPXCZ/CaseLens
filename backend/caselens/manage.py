@@ -61,28 +61,30 @@ def download_all(first_year: int, last_year: int, limit: int | None) -> int:
     return 1 if report.stopped else 0
 
 
-def catalog(action: str) -> int:
+def catalog(action: str, source: str = "all") -> int:
     from caselens.infrastructure.config import get_settings
 
+    failed = False
     with SessionLocal() as session:
         services = Services(session)
         if action == "status":
             status = services.catalog_status().execute()
             print(f"{status.state}: {status.entries} decisions, {status.months_read} of {status.months_known} monthly lists read ({status.percent}%)")
             return 0
-        if action == "build":
-            report = services.build_catalog().build(get_settings().catalog_first_year)
-        else:
-            report = services.build_catalog().refresh()
-    print(
-        f"read {report.read}, skipped {report.skipped}, {report.entries} decisions, "
-        f"{len(report.missing)} missing, {len(report.failed)} failed, {len(report.broken)} broken"
-    )
-    for url, reason in report.failed:
-        print(f"  FAILED {url}: {reason}")
-    for url in report.broken:
-        print(f"  BROKEN (layout changed?) {url}")
-    return 1 if report.failed or report.broken else 0
+        for builder in services.build_catalogs():  # Lawphil's lists, then the SC E-Library's
+            if source not in ("all", builder.source):
+                continue
+            report = builder.build(get_settings().catalog_first_year) if action == "build" else builder.refresh()
+            print(
+                f"{builder.source}: read {report.read}, skipped {report.skipped}, {report.entries} decisions, "
+                f"{len(report.missing)} missing, {len(report.failed)} failed, {len(report.broken)} broken"
+            )
+            for url, reason in report.failed:
+                print(f"  FAILED {url}: {reason}")
+            for url in report.broken:
+                print(f"  BROKEN (layout changed?) {url}")
+            failed = failed or bool(report.failed or report.broken)
+    return 1 if failed else 0
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -96,13 +98,14 @@ def main(argv: list[str] | None = None) -> int:
     dl.add_argument("--to-year", type=int, default=2100)
     dl.add_argument("--limit", type=int, default=None, help="stop after this many pages (to try it out)")
     commands.add_parser("resume-digests", help="start the case digests that waited for the monthly limit")
-    cat = commands.add_parser("catalog", help="the searchable copy of Lawphil's lists (network)")
+    cat = commands.add_parser("catalog", help="the searchable copy of Lawphil's and the SC E-Library's lists (network)")
     cat.add_argument("action", choices=["build", "refresh", "status"])
+    cat.add_argument("--source", choices=["all", "lawphil", "elibrary"], default="all", help="which library's lists (default: all)")
     args = parser.parse_args(argv)
     if args.command == "download-all":
         return download_all(args.from_year, args.to_year, args.limit)
     if args.command == "catalog":
-        return catalog(args.action)
+        return catalog(args.action, args.source)
     return {"reparse": reparse, "refetch": refetch, "resume-digests": resume_digests}[args.command]()
 
 
